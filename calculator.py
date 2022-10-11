@@ -1,4 +1,4 @@
-def spawn_override(rnd):
+def spawn_override(rnd: int) -> float:
     overrides = {
         "1": 2,
         "2": 1.9,
@@ -67,28 +67,21 @@ def spawn_override(rnd):
 
     return overrides[str(rnd)]
 
-def wrong_input():
-    print("Wrong input!")
-    return []
 
+def split_input(user_input: str) -> list:
+    if " " not in user_input:
+        return []
 
-def split_input(user_input):
-    details = []
     raw = str(user_input).split(" ")
-    if len(raw) != 2:
-        return wrong_input()
-
-    for number in raw:
-        try:
-            n = int(number)
-        except ValueError:
-            return wrong_input()
-        details.append(n)
+    try:
+        details = [int(x) for x in raw]
+    except ValueError:
+        return []
 
     return details
 
 
-def get_readable_time(time_struct):
+def get_readable_time(time_struct: list) -> str:
     h, m, s = time_struct[3], time_struct[4], time_struct[5]
     if h == 0 and m == 0:
         return f"{s} seconds"
@@ -96,7 +89,7 @@ def get_readable_time(time_struct):
         return f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}"
 
 
-def get_zombies(rnd, players):
+def get_zombies(rnd: int, players: int) -> int:
     zombie_max_ai, zombie_ai_per_player = 24, 6
 
     multiplier = rnd / 5
@@ -128,28 +121,37 @@ def get_zombies(rnd, players):
     return max_zm
 
 
-def round_spawn_delay(spawn: float) -> float:
-    # spawn += 0.05
+def round_spawn_delay(spawn: float, rnd: int) -> float:
+    """https://docs.google.com/spreadsheets/d/12uRE4LLZPrNT3Or6CPajfgOYHg_deIKNLB_46ZWL3Ho/edit?usp=sharing"""
+    
+    spawn = round(spawn, 2)
 
-    # saved_spawn = 0.0
-    # while (spawn > 0.10):
-    #     spawn -= 0.10
-    #     saved_spawn += 0.10
+    # All kinds of loving exceptions like that
+    if rnd in (2, 3, 5, 9):
+        spawn += 0.10
+    elif rnd < 20 or rnd in (22, 23, 25, 27, 29, 31):
+        spawn += 0.05
 
-    # if spawn > 0.05:
-    #     spawn = 0.10
-    # else:
-    #     spawn = 0.05
-    # spawn += saved_spawn
+    saved_spawn = 0.0
+    while (spawn > 0.10):
+        spawn -= 0.10
+        saved_spawn += 0.10
 
-    # if CALC_DEBUG:
-    #     print(f"spawn: {spawn} / saved_spawn: {saved_spawn}")
+    if spawn < 0.015:
+        spawn = 0.00
+    elif spawn < 0.065:
+        spawn = 0.05
+    else:
+        spawn = 0.10
+    spawn += saved_spawn
 
-    # return round(spawn, 4)
+    if CALC_DEBUG:
+        print(f"spawn: {spawn} / saved_spawn: {saved_spawn}")
+
     return spawn
 
 
-def get_spawn_delay(rnd):
+def get_spawn_delay(rnd: int) -> float:
     zombie_spawn_delay = 2.0
 
     if rnd == 1:
@@ -161,7 +163,7 @@ def get_spawn_delay(rnd):
     if CALC_DEBUG:
         print(f"zombie_spawn_delay: {zombie_spawn_delay}")
 
-    zombie_spawn_delay = round_spawn_delay(zombie_spawn_delay)
+    zombie_spawn_delay = round_spawn_delay(zombie_spawn_delay, rnd)
 
     # This check should now be obsolete
     if zombie_spawn_delay < 0.08:
@@ -180,9 +182,14 @@ def print_sequence():
     network_frame = get_network_frame(1)
     for x in range(1, 65):
         zombies = get_zombies(x, 1)
-        spawn_delay = get_spawn_delay(x) + network_frame
+        spawn_delay = round(get_spawn_delay(x) + network_frame, 2)
         ts = gmtime(zombies * spawn_delay)
         nice_result = get_readable_time(ts)
+
+        if len(str(spawn_delay)) == 3:
+            spawn_delay = str(f"{spawn_delay}0")
+        else:
+            spawn_delay = str(spawn_delay)
         # print(f"{zombies} zombies on round {x} will spawn in {nice_result} with spawnrate of {round(spawn_delay, 2)} (network frame: {network_frame})")
         print(spawn_delay)
     return
@@ -212,6 +219,10 @@ def main():
 
         ts = gmtime(zombies * spawn_delay)
         nice_result = get_readable_time(ts)
+
+        if len(str(spawn_delay)) == 3:
+            spawn_delay = str(f"{spawn_delay}0")
+
         input(f"{zombies} zombies on round {arguments[0]} will spawn in {nice_result} with spawnrate of {round(spawn_delay, 2)} (network frame: {network_frame})")
 
 
