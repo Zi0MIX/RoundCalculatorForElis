@@ -15,6 +15,8 @@ def get_readable_time(time_struct: list) -> str:
     h, m, s = time_struct[3], time_struct[4], time_struct[5]
     if h == 0 and m == 0:
         return f"{s} seconds"
+    elif h == 0:
+        return f"{str(m).zfill(2)}:{str(s).zfill(2)}"
     else:
         return f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}"
 
@@ -27,7 +29,7 @@ def get_zombies(rnd: int, players: int) -> int:
         multiplier = 1.0
     elif rnd >= 10:
         multiplier *= (rnd * 0.15)
-        
+ 
     if players == 1:
         temp = int(zombie_max_ai + (0.5 * zombie_ai_per_player * multiplier))
     else:
@@ -53,7 +55,7 @@ def get_zombies(rnd: int, players: int) -> int:
 
 def round_spawn_delay(spawn: float, rnd: int) -> float:
     """https://docs.google.com/spreadsheets/d/12uRE4LLZPrNT3Or6CPajfgOYHg_deIKNLB_46ZWL3Ho/edit?usp=sharing"""
-    
+
     spawn = round(spawn, 2)
 
     # All kinds of loving exceptions like that
@@ -86,8 +88,8 @@ def get_spawn_delay(rnd: int, players: int) -> float:
 
     if rnd == 1:
         return zombie_spawn_delay
-    
-    for _ in range(0, rnd):
+
+    for _ in range(rnd):
         zombie_spawn_delay *= 0.95
 
     if CALC_DEBUG:
@@ -110,10 +112,13 @@ def get_network_frame(players: int) -> float:
 
 
 def main():
+    from colorama import Fore, reinit, deinit
     print("Welcome in perfect round times calculator by Zi0.")
     print("Source: https://github.com/Zi0MIX/ZM-RoundCalculator")
     print("Enter values separated by spacebar: (round) (players) (range)")
     print("Round and Players arguments are mandatory, others are optional. Check ARGUMENTS.MD on GitHub for info.")
+    FR, FC = Fore.RESET, Fore.CYAN
+
     while True:
         user_input = input("> ")
 
@@ -124,7 +129,7 @@ def main():
         round_range = [arguments[0]]
         if len(arguments) >= 3 and arguments[2]:
             round_range = range(1, arguments[0])
-        
+
         network_frame = get_network_frame(arguments[1])
 
         for rnd in round_range:
@@ -141,10 +146,14 @@ def main():
             else:
                 spawn_delay = str(round(spawn_delay, 2))
 
-            print(f"{zombies} zombies on round {rnd} will spawn in {nice_result} with spawnrate of {spawn_delay} (network frame: {network_frame})")
+            reinit()
+            print(f"Round {FC}{rnd}{FR} will spawn in {FC}{nice_result}{FR} and consist of {FC}{zombies}{FR} zombies. Network frame: {FC}{network_frame}{FR}\n")
+            deinit()
 
 
 if __name__ == "__main__":
     CALC_DEBUG = False
     from time import gmtime
+    from colorama import init
+    init()
     main()
