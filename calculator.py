@@ -112,11 +112,16 @@ def get_network_frame(players: int) -> float:
 
 
 def main():
-    from colorama import Fore, reinit, deinit
+    from colorama import Fore, init, reinit, deinit
+    import os
+
+    os.system("cls")    # Bodge for colorama not working after compile
     print("Welcome in perfect round times calculator by Zi0.")
     print("Source: https://github.com/Zi0MIX/ZM-RoundCalculator")
     print("Enter values separated by spacebar: (round) (players) (range)")
     print("Round and Players arguments are mandatory, others are optional. Check ARGUMENTS.MD on GitHub for info.")
+
+    init()
     FR, FC = Fore.RESET, Fore.CYAN
 
     while True:
@@ -132,6 +137,7 @@ def main():
 
         network_frame = get_network_frame(arguments[1])
 
+        reinit()
         for rnd in round_range:
             zombies = get_zombies(rnd, arguments[1])
             spawn_delay = get_spawn_delay(rnd, arguments[1])
@@ -146,14 +152,12 @@ def main():
             else:
                 spawn_delay = str(round(spawn_delay, 2))
 
-            reinit()
             print(f"Round {FC}{rnd}{FR} will spawn in {FC}{nice_result}{FR} and consist of {FC}{zombies}{FR} zombies. Network frame: {FC}{network_frame}{FR}\n")
-            deinit()
+
+        deinit()
 
 
 if __name__ == "__main__":
     CALC_DEBUG = False
     from time import gmtime
-    from colorama import init
-    init()
     main()
