@@ -12,8 +12,10 @@ def split_input(user_input: str) -> list | bool:
 
 
 def get_readable_time(time_struct: list) -> str:
-    h, m, s = time_struct[3], time_struct[4], time_struct[5]
-    if h == 0 and m == 0:
+    d, h, m, s = time_struct[2], time_struct[3], time_struct[4], time_struct[5]
+    if d > 1:   # It always has at least 1
+        return f"{str(h + ((d - 1) * 24)).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}"
+    elif h == 0 and m == 0:
         return f"{s} seconds"
     elif h == 0:
         return f"{str(m).zfill(2)}:{str(s).zfill(2)}"
@@ -51,6 +53,28 @@ def get_zombies(rnd: int, players: int) -> int:
         print(f"multiplier: {multiplier} / temp: {temp} / max_zm: {max_zm}")
 
     return max_zm
+
+
+def get_dogs(rnd: int, players: int, doground_count: int) -> int:
+
+    dogs_default = 6
+    if doground_count > 2:
+        dogs_default = 8
+    
+    return int(dogs_default * players)
+
+
+def get_dogs_spawnrate(doground_count: int) -> float:
+    
+    spawnrate = 1.5
+    if doground_count == 1:
+        spawnrate = 3.0
+    elif doground_count == 2:
+        spawnrate = 2.5
+    elif doground_count == 3:
+        spawnrate = 2.0
+
+    return spawnrate
 
 
 def round_spawn_delay(spawn: float, rnd: int) -> float:
@@ -123,6 +147,9 @@ def main():
 
     init()
     FR, FC = Fore.RESET, Fore.CYAN
+    _rnd_wait_initial, _between_round_wait = 10.25, 12.50
+    _perfect_dog_rounds = [int(x) for x in range(256) if x % 4 == 1 and x > 4]
+    _dog_wait_start, _dog_wait_end = 7, 8
 
     while True:
         user_input = input("> ")
@@ -131,20 +158,33 @@ def main():
         if not isinstance(arguments, list) or len(arguments) < 2:
             continue
 
+        players = arguments[1]
+
         round_range = [arguments[0]]
         if len(arguments) >= 3 and arguments[2]:
             round_range = range(1, arguments[0])
 
-        network_frame = get_network_frame(arguments[1])
+        network_frame = get_network_frame(players)
+
+        get_perfect_round_times = False
+        ingame_time = _rnd_wait_initial
+        if len(arguments) >= 4 and arguments[3]:
+            get_perfect_round_times = True
+
+        calculate_with_dogs = False
+        dog_round_count = 0
+        if len(arguments) >= 5 and arguments[4]:
+            calculate_with_dogs = True
 
         reinit()
         for rnd in round_range:
-            zombies = get_zombies(rnd, arguments[1])
-            spawn_delay = get_spawn_delay(rnd, arguments[1])
+            zombies = get_zombies(rnd, players)
+            spawn_delay = get_spawn_delay(rnd, players)
 
             spawn_delay += network_frame
 
-            ts = gmtime(zombies * spawn_delay)
+            raw = zombies * spawn_delay
+            ts = gmtime(raw)
             nice_result = get_readable_time(ts)
 
             if len(str(spawn_delay)) == 3:
@@ -152,7 +192,22 @@ def main():
             else:
                 spawn_delay = str(round(spawn_delay, 2))
 
-            print(f"Round {FC}{rnd}{FR} will spawn in {FC}{nice_result}{FR} and consist of {FC}{zombies}{FR} zombies. Network frame: {FC}{network_frame}{FR}\n")
+            if get_perfect_round_times:
+                if rnd in (30, 50, 70, 100, 163, 200, 255):
+                # if rnd in range(31):
+                    print(f"Theoritical fastest time to round {rnd} for {players} players: {get_readable_time(gmtime(ingame_time))}")
+
+                if rnd in _perfect_dog_rounds and calculate_with_dogs:
+                    dog_round_count += 1
+                    dogs = get_dogs(rnd, players, dog_round_count)
+                    spawnrate = get_dogs_spawnrate(dog_round_count)
+                    raw = dogs * spawnrate
+                    ingame_time += _dog_wait_start + _dog_wait_end
+
+                ingame_time += raw + _between_round_wait
+            else:
+                # print(f"Round {FC}{rnd}{FR} will spawn in {FC}{nice_result}{FR} and consist of {FC}{zombies}{FR} zombies. Network frame: {FC}{network_frame}{FR}\n")
+                print(nice_result)
 
         deinit()
 
