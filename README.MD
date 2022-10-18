@@ -10,3 +10,6 @@
 
 # Dependencies
 - You can just run the program directly from .py file if you don't trust the exe file in releases, it requires one outside dependency, [colorama](https://pypi.org/project/colorama/).
+
+# Misc
+- You can check more mathematical approach to the calculations on [BMXs fork](https://github.com/rmoffatt/ZM-RoundCalculator).
