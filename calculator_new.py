@@ -175,9 +175,9 @@ def calculator_handler(fc, fr):
 
     arg_range, arg_perfect_round, arg_clear_output = False, False, False
     map_name = ""
+
+    result = Round(rnd, players)
     if len(raw_input) == 2:
-        result = Round(rnd, players)
-        print(result.raw_time)
         print(f"Round {fc}{rnd}{fr} will spawn in {fc}{get_readable_time(result.round_time)}{fr} and consist of {fc}{result.zombies}{fr} zombies. Network frame: {fc}{result.network_frame}{fr}\n")
     else:
         for arg in raw_input[2:]:
@@ -207,7 +207,7 @@ def calculator_handler(fc, fr):
                     if not arg_range and arg_clear_output:
                         print(get_readable_time(gmtime(time_total)))
                     elif not arg_range:
-                        print(f"Perfect time to round {fc}{r + 1}{fr} is {fc}{get_readable_time(gmtime(time_total))}{fr} on {fc}{map_name}{fr}\n")
+                        print(f"Perfect time to round {fc}{rnd + 1}{fr} is {fc}{get_readable_time(gmtime(time_total))}{fr} on {fc}{map_name}{fr}\n")
 
 
                 case "zm_sumpf" | "zm_factory" | "zm_theater":
@@ -232,9 +232,7 @@ def calculator_handler(fc, fr):
 
         if arg_range:
             for r in range(1, rnd):
-
                 result = Round(r, players)
-
                 if arg_clear_output:
                     print(get_readable_time(result.round_time))
                 else:
@@ -245,7 +243,7 @@ def calculator_handler(fc, fr):
         if arg_clear_output:
             print(get_readable_time(result.round_time))
         else:
-            print(f"Round {fc}{r}{fr} will spawn in {fc}{get_readable_time(result.round_time)}{fr} and consist of {fc}{result.zombies}{fr} zombies. Network frame: {fc}{result.network_frame}{fr}\n")
+            print(f"Round {fc}{rnd}{fr} will spawn in {fc}{get_readable_time(result.round_time)}{fr} and consist of {fc}{result.zombies}{fr} zombies. Network frame: {fc}{result.network_frame}{fr}\n")
 
     return
 
