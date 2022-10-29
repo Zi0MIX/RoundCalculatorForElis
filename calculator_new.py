@@ -147,6 +147,11 @@ class DogRound(Round):
         self.round_time = gmtime(self.raw_time)
 
 
+def map_translator(map_code: str) -> str:
+    # Add translations here
+    return map_code
+
+
 def get_readable_time(raw_time) -> str:
     d, h, m, s = raw_time[2], raw_time[3], raw_time[4], raw_time[5]
     if d > 1:   # It always has at least 1
@@ -161,14 +166,14 @@ def get_readable_time(raw_time) -> str:
     return new_time
 
 
-def print_times(time_to_print: str, round_number: int, map_name: str, clear_output: bool = False) -> None:
+def print_times(time_to_print: str, round_number: int, map_code: str, clear_output: bool = False) -> None:
     from colorama import Fore
     fc, fr = Fore.CYAN, Fore.RESET
 
     if clear_output:
         print(time_to_print)
     else:
-        print(f"Perfect time to round {fc}{round_number}{fr} is {fc}{time_to_print}{fr} on {fc}{map_name}{fr}\n")
+        print(f"Perfect time to round {fc}{round_number}{fr} is {fc}{time_to_print}{fr} on {fc}{map_code}{fr}\n")
     return
 
 
@@ -185,7 +190,7 @@ def calculator_handler(fc, fr):
         return
 
     arg_range, arg_perfect_round, arg_clear_output = False, False, False
-    map_name = ""
+    map_code = ""
 
     result = Round(rnd, players)
     if len(raw_input) == 2:
@@ -201,10 +206,11 @@ def calculator_handler(fc, fr):
 
         if arg_perfect_round:
             print("Enter map code (eg. zm_theater)")
-            map_name = input("> ").lower()
+            map_code = input("> ").lower()
+            map_name = map_translator(map_code)
 
             time_total = cfg.RND_WAIT_INITIAL
-            match map_name:
+            match map_code:
                 case "zm_prototype" | "zm_asylum" | "zm_coast" | "zm_temple" | "zm_transit" | "zm_nuked" | "zm_prison" | "zm_buried" | "zm_tomb":
                     for r in range(1, rnd):
                         time_total += Round(r, players).raw_time
@@ -212,16 +218,16 @@ def calculator_handler(fc, fr):
 
                         readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
                         if arg_range and arg_clear_output:
-                            print_times(readable_time, r + 1, map_name, clear_output=True)
+                            print_times(readable_time, r + 1, map_code, clear_output=True)
                         elif arg_range:
-                            print_times(readable_time, r + 1, map_name)
+                            print_times(readable_time, r + 1, map_code)
 
                     readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
 
                     if not arg_range and arg_clear_output:
-                        print_times(readable_time, rnd, map_name, clear_output=True)
+                        print_times(readable_time, rnd, map_code, clear_output=True)
                     elif not arg_range:
-                        print_times(readable_time, rnd, map_name)
+                        print_times(readable_time, rnd, map_code)
 
 
                 case "zm_sumpf" | "zm_factory" | "zm_theater":
@@ -240,7 +246,7 @@ def calculator_handler(fc, fr):
                         time_total += cfg.RND_WAIT_BETWEEN
 
                 case _:
-                    print(f"Map {fc}{map_name}{fr} is not supported.")
+                    print(f"Map {fc}{map_code}{fr} is not supported.")
 
             return
 
