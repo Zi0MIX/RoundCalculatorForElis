@@ -161,6 +161,17 @@ def get_readable_time(raw_time) -> str:
     return new_time
 
 
+def print_times(time_to_print: str, round_number: int, map_name: str, clear_output: bool = False) -> None:
+    from colorama import Fore
+    fc, fr = Fore.CYAN, Fore.RESET
+
+    if clear_output:
+        print(time_to_print)
+    else:
+        print(f"Perfect time to round {fc}{round_number}{fr} is {fc}{time_to_print}{fr} on {fc}{map_name}{fr}\n")
+    return
+
+
 def calculator_handler(fc, fr):
     raw_input = input("> ").lower()
     raw_input = raw_input.split(" ")
@@ -185,7 +196,7 @@ def calculator_handler(fc, fr):
                 arg_range = True
             if arg == "-p":
                 arg_perfect_round = True
-            if arg == "c":
+            if arg == "-c":
                 arg_clear_output = True
 
         if arg_perfect_round:
@@ -199,15 +210,18 @@ def calculator_handler(fc, fr):
                         time_total += Round(r, players).raw_time
                         time_total += cfg.RND_WAIT_BETWEEN
 
+                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
                         if arg_range and arg_clear_output:
-                            print(get_readable_time(gmtime(time_total)))
+                            print_times(readable_time, r + 1, map_name, clear_output=True)
                         elif arg_range:
-                            print(f"Perfect time to round {fc}{r + 1}{fr} is {fc}{get_readable_time(gmtime(time_total))}{fr} on {fc}{map_name}{fr}\n")
+                            print_times(readable_time, r + 1, map_name)
+
+                    readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
 
                     if not arg_range and arg_clear_output:
-                        print(get_readable_time(gmtime(time_total)))
+                        print_times(readable_time, rnd, map_name, clear_output=True)
                     elif not arg_range:
-                        print(f"Perfect time to round {fc}{rnd + 1}{fr} is {fc}{get_readable_time(gmtime(time_total))}{fr} on {fc}{map_name}{fr}\n")
+                        print_times(readable_time, rnd, map_name)
 
 
                 case "zm_sumpf" | "zm_factory" | "zm_theater":

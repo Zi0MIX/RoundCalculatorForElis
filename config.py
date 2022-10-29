@@ -1,5 +1,6 @@
-RND_WAIT_INITIAL = 10.25
+RND_WAIT_INITIAL = 8.25         # From initial_blackscreen_passed to start_of_round
 RND_WAIT_BETWEEN = 12.50
+RND_BETWEEN_NUMBER_FLAG = 4.0   # Verify the value
 
 ZOMBIE_MAX_AI = 24
 ZOMBIE_AI_PER_PLAYER = 6
