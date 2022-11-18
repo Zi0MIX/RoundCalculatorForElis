@@ -189,7 +189,7 @@ def calculator_handler():
     except (ValueError, IndexError):
         return
 
-    arg_range, arg_perfect_round, arg_clear_output, arg_break = False, False, False, True
+    arg_range, arg_perfect_round, arg_clear_output, arg_break, arg_detailed = False, False, False, True, False
     map_code = ""
 
     result = Round(rnd, players)
@@ -205,6 +205,8 @@ def calculator_handler():
                 arg_clear_output = True
             if arg == "-b":
                 arg_break = False
+            if arg == "-d":
+                arg_detailed = True
 
         if arg_perfect_round:
             print("Enter map code (eg. zm_theater)")
@@ -218,13 +220,20 @@ def calculator_handler():
                         time_total += Round(r, players).raw_time
                         time_total += cfg.RND_WAIT_BETWEEN
 
-                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
+                        if arg_detailed:
+                           readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
+                        else:
+                            readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
+
                         if arg_range and arg_clear_output:
                             print_times(readable_time, r + 1, map_code, arg_break, clear_output=True)
                         elif arg_range:
                             print_times(readable_time, r + 1, map_code, arg_break)
 
-                    readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
+                    if arg_detailed:
+                        readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
+                    else:
+                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
 
                     if not arg_range and arg_clear_output:
                         print_times(readable_time, rnd, map_code, arg_break, clear_output=True)
@@ -255,19 +264,29 @@ def calculator_handler():
         if arg_range:
             for r in range(1, rnd):
                 result = Round(r, players)
-                if arg_clear_output:
-                    print(get_readable_time(result.round_time))
+                if arg_detailed:
+                    readable_time = f"{int(result.raw_time * 1000)} ms"
                 else:
-                    print(f"Round {cfg.COL}{r}{cfg.RES} will spawn in {cfg.COL}{get_readable_time(result.round_time)}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
+                    readable_time = get_readable_time(result.round_time)
+
+                if arg_clear_output:
+                    print(readable_time)
+                else:
+                    print(f"Round {cfg.COL}{r}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
                     if arg_break:
                         print()
 
             return
 
-        if arg_clear_output:
-            print(get_readable_time(result.round_time))
+        if arg_detailed:
+            readable_time = f"{int(result.raw_time * 1000)} ms"
         else:
-            print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{get_readable_time(result.round_time)}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
+            readable_time = get_readable_time(result.round_time)
+
+        if arg_clear_output:
+            print(readable_time)
+        else:
+            print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
             if arg_break:
                 print()
 
