@@ -24,41 +24,12 @@ class Round:
         return
 
 
-    def round_spawn_delay(self):
-        """https://docs.google.com/spreadsheets/d/12uRE4LLZPrNT3Or6CPajfgOYHg_deIKNLB_46ZWL3Ho/edit?usp=sharing"""
-
-        self.zombie_spawn_delay = round(self.zombie_spawn_delay, 2)
-
-        # All kinds of loving exceptions like that
-        if self.number in (2, 3, 5, 9):
-            self.zombie_spawn_delay += 0.10
-        elif self.number < 20 or self.number in (22, 23, 25, 27, 29, 31):
-            self.zombie_spawn_delay += 0.05
-
-        saved_spawn = 0.0
-        while (self.zombie_spawn_delay > 0.10):
-            self.zombie_spawn_delay -= 0.10
-            saved_spawn += 0.10
-
-        if self.zombie_spawn_delay < 0.015:
-            self.zombie_spawn_delay = 0.00
-        elif self.zombie_spawn_delay < 0.065:
-            self.zombie_spawn_delay = 0.05
-        else:
-            self.zombie_spawn_delay = 0.10
-        self.zombie_spawn_delay += saved_spawn
-
-        return
-
-
     def get_spawn_delay(self):
         self.zombie_spawn_delay = 2.0
 
         if self.number > 1:
             for _ in range(self.number):
                 self.zombie_spawn_delay *= 0.95
-
-            self.round_spawn_delay()
 
             if self.zombie_spawn_delay < 0.2 and self.players == 1:
                 self.zombie_spawn_delay = 0.2
@@ -95,9 +66,25 @@ class Round:
         return
 
 
+    def extract_decimals(self):
+        dec = "000"
+        # '> 0' could result in 00000001 triggering the expression
+        if int(str(self.raw_time).split(".")[1]) >= 1:
+            dec = str(self.raw_time).split(".")[1][:3]
+
+        while len(dec) < 3:
+            dec += "0"
+        self.decimals = dec
+
+        return
+
+
     def get_round_time(self):
         self.raw_time = self.zombies * (self.zombie_spawn_delay + self.network_frame)
+
+        self.extract_decimals()
         self.round_time = gmtime(self.raw_time)
+
         return
 
 
@@ -152,16 +139,16 @@ def map_translator(map_code: str) -> str:
     return map_code
 
 
-def get_readable_time(raw_time) -> str:
+def get_readable_time(raw_time, decimals: str) -> str:
     d, h, m, s = raw_time[2], raw_time[3], raw_time[4], raw_time[5]
     if d > 1:   # It always has at least 1
-        new_time = f"{str(h + ((d - 1) * 24)).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}"
+        new_time = f"{str(h + ((d - 1) * 24)).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}.{decimals}"
     elif h == 0 and m == 0:
-        new_time = f"{s} seconds"
+        new_time = f"{s}.{decimals} seconds"
     elif h == 0:
-        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}"
+        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}.{decimals}"
     else:
-        new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}"
+        new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}.{decimals}"
 
     return new_time
 
@@ -194,7 +181,7 @@ def calculator_handler():
 
     result = Round(rnd, players)
     if len(raw_input) == 2:
-        print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{get_readable_time(result.round_time)}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}\n")
+        print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{get_readable_time(result.round_time, result.decimals)}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}\n")
     else:
         for arg in raw_input[2:]:
             if arg == "-r":
@@ -223,7 +210,7 @@ def calculator_handler():
                         if arg_detailed:
                            readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
                         else:
-                            readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
+                            readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals)
 
                         if arg_range and arg_clear_output:
                             print_times(readable_time, r + 1, map_code, arg_break, clear_output=True)
@@ -233,7 +220,7 @@ def calculator_handler():
                     if arg_detailed:
                         readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
                     else:
-                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG))
+                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals)
 
                     if not arg_range and arg_clear_output:
                         print_times(readable_time, rnd, map_code, arg_break, clear_output=True)
@@ -267,7 +254,7 @@ def calculator_handler():
                 if arg_detailed:
                     readable_time = f"{int(result.raw_time * 1000)} ms"
                 else:
-                    readable_time = get_readable_time(result.round_time)
+                    readable_time = get_readable_time(result.round_time, result.decimals)
 
                 if arg_clear_output:
                     print(readable_time)
@@ -281,7 +268,7 @@ def calculator_handler():
         if arg_detailed:
             readable_time = f"{int(result.raw_time * 1000)} ms"
         else:
-            readable_time = get_readable_time(result.round_time)
+            readable_time = get_readable_time(result.round_time, result.decimals)
 
         if arg_clear_output:
             print(readable_time)
