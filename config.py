@@ -1,3 +1,9 @@
+from colorama import Fore
+
+
+COL = Fore.MAGENTA
+RES = Fore.RESET
+
 RND_WAIT_INITIAL = 8.25         # From initial_blackscreen_passed to start_of_round
 RND_WAIT_BETWEEN = 12.50
 RND_BETWEEN_NUMBER_FLAG = 4.0   # Verify the value
