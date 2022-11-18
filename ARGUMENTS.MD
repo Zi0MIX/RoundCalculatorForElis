@@ -13,5 +13,6 @@ Arguments that are optional, that can change behaviour of the calculator
 - `break` - If there is a clear row between entries. Add "-b" to disable this argument, as it's enabled by default.
 - `detailed` - Prints miliseconds instead of readable time. Add "-d" to the input.
 - `nodecimals` - Disable decimals in time output, seconds will be round up. Add "-n" to the input. Has no effect if used with `detailed`.
+- `speedrun time` - Shows time accordingly to split rules as oppose to actual round starts. Add "-s" to disable this argument, as it's enabled by default.
 
 I didn't add any validation for those you'll just get weird results if you mess with numbers

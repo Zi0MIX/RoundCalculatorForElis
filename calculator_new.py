@@ -185,7 +185,8 @@ def calculator_handler():
     except (ValueError, IndexError):
         return
 
-    arg_range, arg_perfect_round, arg_clear_output, arg_break, arg_detailed, arg_nodecimal = False, False, False, True, False, False
+    arg_speedrun_time, arg_break = True, True
+    arg_range, arg_perfect_round, arg_clear_output, arg_detailed, arg_nodecimal = False, False, False, False, False
     map_code = ""
 
     result = Round(rnd, players)
@@ -205,23 +206,30 @@ def calculator_handler():
                 arg_detailed = True
             if arg == "-n":
                 arg_nodecimal = True
+            if arg == "-s":
+                arg_speedrun_time = False
 
         if arg_perfect_round:
             print("Enter map code (eg. zm_theater)")
             map_code = input("> ").lower()
             map_name = map_translator(map_code)
 
+            adjust_to_split = 0
+            if arg_speedrun_time:
+                adjust_to_split = cfg.RND_BETWEEN_NUMBER_FLAG
+
             time_total = cfg.RND_WAIT_INITIAL
             match map_code:
                 case "zm_prototype" | "zm_asylum" | "zm_coast" | "zm_temple" | "zm_transit" | "zm_nuked" | "zm_prison" | "zm_buried" | "zm_tomb":
                     for r in range(1, rnd):
-                        time_total += Round(r, players).raw_time
+                        result = Round(r, players)
+                        time_total += result.raw_time
                         time_total += cfg.RND_WAIT_BETWEEN
 
                         if arg_detailed:
-                           readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
+                           readable_time = f"{int((time_total - adjust_to_split) * 1000)} ms"
                         else:
-                            readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals, arg_nodecimal)
+                            readable_time = get_readable_time(gmtime(time_total - adjust_to_split), result.decimals, arg_nodecimal)
 
                         if arg_range and arg_clear_output:
                             print_times(readable_time, r + 1, map_code, arg_break, clear_output=True)
@@ -229,9 +237,9 @@ def calculator_handler():
                             print_times(readable_time, r + 1, map_code, arg_break)
 
                     if arg_detailed:
-                        readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
+                        readable_time = f"{int((time_total - adjust_to_split) * 1000)} ms"
                     else:
-                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals, arg_nodecimal)
+                        readable_time = get_readable_time(gmtime(time_total - adjust_to_split), result.decimals, arg_nodecimal)
 
                     if not arg_range and arg_clear_output:
                         print_times(readable_time, rnd, map_code, arg_break, clear_output=True)
