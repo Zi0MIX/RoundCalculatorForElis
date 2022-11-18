@@ -3,6 +3,7 @@ from colorama import Fore
 
 COL = Fore.YELLOW
 RES = Fore.RESET
+DEC = 3
 
 RND_WAIT_INITIAL = 8.25         # From initial_blackscreen_passed to start_of_round
 RND_WAIT_BETWEEN = 12.50

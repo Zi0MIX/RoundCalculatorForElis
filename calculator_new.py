@@ -67,12 +67,12 @@ class Round:
 
 
     def extract_decimals(self):
-        dec = "000"
+        dec = "0"
         # '> 0' could result in 00000001 triggering the expression
         if int(str(self.raw_time).split(".")[1]) >= 1:
             dec = str(self.raw_time).split(".")[1][:3]
 
-        while len(dec) < 3:
+        while len(dec) < cfg.DEC:
             dec += "0"
         self.decimals = dec
 
