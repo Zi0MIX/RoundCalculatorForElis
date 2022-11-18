@@ -31,10 +31,8 @@ class Round:
             for _ in range(self.number):
                 self.zombie_spawn_delay *= 0.95
 
-            if self.zombie_spawn_delay < 0.2 and self.players == 1:
-                self.zombie_spawn_delay = 0.2
-            elif self.zombie_spawn_delay < 0.15:
-                self.zombie_spawn_delay = 0.15
+            if self.zombie_spawn_delay < 0.1:
+                self.zombie_spawn_delay = 0.1
 
         return
 
