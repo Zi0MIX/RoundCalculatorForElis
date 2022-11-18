@@ -147,8 +147,10 @@ def get_readable_time(raw_time, decimals: str, nodecimal: bool) -> str:
         s += 1
         if s > 59:
             m += 1
+            s -= 60
             if m > 59:
                 h += 1
+                m -= 60
 
     if d > 1:   # It always has at least 1
         new_time = f"{str(h + ((d - 1) * 24)).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
