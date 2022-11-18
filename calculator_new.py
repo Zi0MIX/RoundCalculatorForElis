@@ -278,7 +278,7 @@ def calculator_handler():
                 if arg_clear_output:
                     print(readable_time)
                 else:
-                    print(f"Round {cfg.COL}{r}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
+                    print(f"Round {cfg.COL}{r}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and has {cfg.COL}{result.zombies}{cfg.RES} zombies. Spawnrate: {cfg.COL}{result.zombie_spawn_delay}{cfg.RES} Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
                     if arg_break:
                         print()
 
@@ -292,7 +292,7 @@ def calculator_handler():
         if arg_clear_output:
             print(readable_time)
         else:
-            print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
+            print(f"Round {cfg.COL}{r}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and has {cfg.COL}{result.zombies}{cfg.RES} zombies. Spawnrate: {cfg.COL}{result.zombie_spawn_delay}{cfg.RES} Network frame: {cfg.COL}{result.network_frame}{cfg.RES}")
             if arg_break:
                 print()
 
