@@ -139,16 +139,25 @@ def map_translator(map_code: str) -> str:
     return map_code
 
 
-def get_readable_time(raw_time, decimals: str) -> str:
+def get_readable_time(raw_time, decimals: str, nodecimal: bool) -> str:
     d, h, m, s = raw_time[2], raw_time[3], raw_time[4], raw_time[5]
+    dec = f".{decimals}"
+    if nodecimal:
+        dec = ""
+        s += 1
+        if s > 59:
+            m += 1
+            if m > 59:
+                h += 1
+
     if d > 1:   # It always has at least 1
-        new_time = f"{str(h + ((d - 1) * 24)).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}.{decimals}"
+        new_time = f"{str(h + ((d - 1) * 24)).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
     elif h == 0 and m == 0:
-        new_time = f"{s}.{decimals} seconds"
+        new_time = f"{s}{dec} seconds"
     elif h == 0:
-        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}.{decimals}"
+        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
     else:
-        new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}.{decimals}"
+        new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
 
     return new_time
 
@@ -176,12 +185,12 @@ def calculator_handler():
     except (ValueError, IndexError):
         return
 
-    arg_range, arg_perfect_round, arg_clear_output, arg_break, arg_detailed = False, False, False, True, False
+    arg_range, arg_perfect_round, arg_clear_output, arg_break, arg_detailed, arg_nodecimal = False, False, False, True, False, False
     map_code = ""
 
     result = Round(rnd, players)
     if len(raw_input) == 2:
-        print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{get_readable_time(result.round_time, result.decimals)}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}\n")
+        print(f"Round {cfg.COL}{rnd}{cfg.RES} will spawn in {cfg.COL}{get_readable_time(result.round_time, result.decimals, False)}{cfg.RES} and consist of {cfg.COL}{result.zombies}{cfg.RES} zombies. Network frame: {cfg.COL}{result.network_frame}{cfg.RES}\n")
     else:
         for arg in raw_input[2:]:
             if arg == "-r":
@@ -194,6 +203,8 @@ def calculator_handler():
                 arg_break = False
             if arg == "-d":
                 arg_detailed = True
+            if arg == "-n":
+                arg_nodecimal = True
 
         if arg_perfect_round:
             print("Enter map code (eg. zm_theater)")
@@ -210,7 +221,7 @@ def calculator_handler():
                         if arg_detailed:
                            readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
                         else:
-                            readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals)
+                            readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals, arg_nodecimal)
 
                         if arg_range and arg_clear_output:
                             print_times(readable_time, r + 1, map_code, arg_break, clear_output=True)
@@ -220,7 +231,7 @@ def calculator_handler():
                     if arg_detailed:
                         readable_time = f"{int((time_total - cfg.RND_BETWEEN_NUMBER_FLAG) * 1000)} ms"
                     else:
-                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals)
+                        readable_time = get_readable_time(gmtime(time_total - cfg.RND_BETWEEN_NUMBER_FLAG), result.decimals, arg_nodecimal)
 
                     if not arg_range and arg_clear_output:
                         print_times(readable_time, rnd, map_code, arg_break, clear_output=True)
@@ -254,7 +265,7 @@ def calculator_handler():
                 if arg_detailed:
                     readable_time = f"{int(result.raw_time * 1000)} ms"
                 else:
-                    readable_time = get_readable_time(result.round_time, result.decimals)
+                    readable_time = get_readable_time(result.round_time, result.decimals, arg_nodecimal)
 
                 if arg_clear_output:
                     print(readable_time)
@@ -268,7 +279,7 @@ def calculator_handler():
         if arg_detailed:
             readable_time = f"{int(result.raw_time * 1000)} ms"
         else:
-            readable_time = get_readable_time(result.round_time, result.decimals)
+            readable_time = get_readable_time(result.round_time, result.decimals, arg_nodecimal)
 
         if arg_clear_output:
             print(readable_time)
