@@ -1,4 +1,4 @@
-
+*.exe
 *.pyc
 /venv
-*.gsc
+/compiled
