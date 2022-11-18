@@ -168,14 +168,14 @@ def get_readable_time(raw_time) -> str:
 
 def print_times(time_to_print: str, round_number: int, map_code: str, arg_break: bool, clear_output: bool = False) -> None:
     from colorama import Fore
-    fc, fr = Fore.CYAN, Fore.RESET
+    fc, fr = Fore.MAGENTA, Fore.RESET
 
     if clear_output:
         print(time_to_print)
     else:
         print(f"Perfect time to round {fc}{round_number}{fr} is {fc}{time_to_print}{fr} on {fc}{map_code}{fr}")
         if arg_break:
-            print("\n")
+            print()
     return
 
 
@@ -262,16 +262,16 @@ def calculator_handler(fc, fr):
                 else:
                     print(f"Round {fc}{r}{fr} will spawn in {fc}{get_readable_time(result.round_time)}{fr} and consist of {fc}{result.zombies}{fr} zombies. Network frame: {fc}{result.network_frame}{fr}")
                     if arg_break:
-                        print("\n")
+                        print()
 
             return
 
         if arg_clear_output:
             print(get_readable_time(result.round_time))
         else:
-            print(f"Round {fc}{rnd}{fr} will spawn in {fc}{get_readable_time(result.round_time)}{fr} and consist of {fc}{result.zombies}{fr} zombies. Network frame: {fc}{result.network_frame}{fr}\n")
+            print(f"Round {fc}{rnd}{fr} will spawn in {fc}{get_readable_time(result.round_time)}{fr} and consist of {fc}{result.zombies}{fr} zombies. Network frame: {fc}{result.network_frame}{fr}")
             if arg_break:
-                print("\n")
+                print()
 
     return
 
@@ -287,8 +287,8 @@ def main():
     print("Enter round number and amount of players separated by spacebar, then optional arguments")
     print("Round and Players arguments are mandatory, others are optional. Check ARGUMENTS.MD on GitHub for info.")
 
-    FC, FR = Fore.CYAN, Fore.RESET
-    
+    FC, FR = Fore.MAGENTA, Fore.RESET
+
     while True:
         reinit()
         calculator_handler(FC, FR)
