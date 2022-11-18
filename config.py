@@ -1,7 +1,7 @@
 from colorama import Fore
 
 
-COL = Fore.MAGENTA
+COL = Fore.YELLOW
 RES = Fore.RESET
 
 RND_WAIT_INITIAL = 8.25         # From initial_blackscreen_passed to start_of_round
