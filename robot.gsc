@@ -35,7 +35,8 @@ KillerRobot()
         foreach(zombie in get_round_enemy_array())
         {
             zombie doDamage(zombie.maxhealth + 69, self.origin, self);
-            print(getTime() - last_kill);
+            print("diff = " + getTime() + " - " + last_kill + " = " + (getTime() - last_kill));
+            last_kill = int(getTime());
         }
     }
 }

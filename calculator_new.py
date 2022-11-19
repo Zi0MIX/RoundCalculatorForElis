@@ -135,7 +135,9 @@ class Round:
 
 
     def get_round_time(self):
-        self.raw_time = self.zombies * (self.zombie_spawn_delay + self.network_frame)
+        delay = self.zombie_spawn_delay + self.network_frame
+        self.raw_time = self.zombies * delay
+        self.raw_time -= delay
 
         # self.extract_decimals()
 
