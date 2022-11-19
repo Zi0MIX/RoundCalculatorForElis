@@ -136,8 +136,8 @@ class Round:
 
     def get_round_time(self):
         delay = self.zombie_spawn_delay + self.network_frame
-        self.raw_time = self.zombies * delay
-        self.raw_time -= delay
+        self.raw_time = (self.zombies * delay) - delay
+        self.round_time = round(self.raw_time, 2)
 
         # self.extract_decimals()
 
@@ -225,8 +225,8 @@ def map_translator(map_code: str) -> str:
     return map_code
 
 
-def get_readable_time(raw_time: int) -> str:
-    h, m, s, ms = 0, 0, 0, int(raw_time * 1000)
+def get_readable_time(round_time: int) -> str:
+    h, m, s, ms = 0, 0, 0, int(round_time * 1000)
 
     while ms > 999:
         s += 1
@@ -290,14 +290,14 @@ def print_round_times(rnd: Round) -> None:
     if args["speedrun_time"]:
         split_adj = cfg.RND_BETWEEN_NUMBER_FLAG
 
-    readable_time = get_readable_time(rnd.raw_time - split_adj)
+    readable_time = get_readable_time(rnd.round_time - split_adj)
 
     if args["clear_output"] and not args["detailed"]:
         print(readable_time)
     elif args["clear_output"] and args["detailed"]:
         print(readable_time * 1000)
     elif args["detailed"]:
-        print(f"Round {cfg.COL}{rnd.number}{cfg.RES} will spawn in {cfg.COL}{rnd.raw_time * 1000}{cfg.RES}ms and has {cfg.COL}{rnd.zombies}{cfg.RES} zombies. Spawnrate: {cfg.COL}{rnd.zombie_spawn_delay}{cfg.RES} Network frame: {cfg.COL}{rnd.network_frame}{cfg.RES}")
+        print(f"Round {cfg.COL}{rnd.number}{cfg.RES} will spawn in {cfg.COL}{rnd.round_time * 1000}{cfg.RES}ms and has {cfg.COL}{rnd.zombies}{cfg.RES} zombies. Spawnrate: {cfg.COL}{rnd.zombie_spawn_delay}{cfg.RES} Network frame: {cfg.COL}{rnd.network_frame}{cfg.RES}")
     elif not args["detailed"] and not args["clear_output"]:
         print(f"Round {cfg.COL}{rnd.number}{cfg.RES} will spawn in {cfg.COL}{readable_time}{cfg.RES} and has {cfg.COL}{rnd.zombies}{cfg.RES} zombies. Spawnrate: {cfg.COL}{rnd.zombie_spawn_delay}{cfg.RES} Network frame: {cfg.COL}{rnd.network_frame}{cfg.RES}")
 
@@ -401,7 +401,7 @@ def calculator_handler():
 
                 for r in range(1, rnd):
                     result = Round(r, players)
-                    time_total += result.raw_time + time_offset
+                    time_total += result.round_time + time_offset
 
                     if args["range"]:
                         print_perfect_times(time_total, result.number + 1, map_code)
@@ -418,11 +418,11 @@ def calculator_handler():
                         result = DogRound(r, players, dog_rounds)
                         dog_rounds += 1
                         time_total += cfg.DOGS_WAIT_START
-                        time_total += result.raw_time
+                        time_total += result.round
                         time_total += cfg.DOGS_WAIT_END
                     else:
                         result = Round(r, players)
-                        time_total += result.raw_time
+                        time_total += result.round_time
 
                     time_total += time_offset
 
