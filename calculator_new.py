@@ -187,7 +187,39 @@ class DogRound(Round):
 
 
 def map_translator(map_code: str) -> str:
-    # Add translations here
+    if map_code == "zm_prototype":
+        return "Nacht Der Untoten"
+    if map_code == "zm_asylum":
+        return "Verruckt"
+    if map_code == "zm_sumpf":
+        return "Shi No Numa"
+    if map_code == "zm_factory":
+        return "Der Riese"
+    if map_code == "zm_theater":
+        return "Kino Der Toten"
+    if map_code == "zm_pentagon":
+        return "FIVE"
+    if map_code == "zm_cosmodrome":
+        return "Ascension"
+    if map_code == "zm_coast":
+        return "Call of the Dead"
+    if map_code == "zm_temple":
+        return "Shangri-La"
+    if map_code == "zm_moon":
+        return "Moon"
+    if map_code == "zm_transit":
+        return "Tranzit"
+    if map_code == "zm_nuked":
+        return "Nuketown"
+    if map_code == "zm_highrise":
+        return "Die Rise"
+    if map_code == "zm_prison":
+        return "Mob of the Dead"
+    if map_code == "zm_buried":
+        return "Buried"
+    if map_code == "zm_tomb":
+        return "Origins"
+
     return map_code
 
 
