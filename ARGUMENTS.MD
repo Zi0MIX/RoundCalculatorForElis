@@ -22,6 +22,7 @@ Arguments that are optional, that can change behaviour of the calculator
 Those arguments are for advanced calculator functions and will cancel optional arguments. They were made specifically for one scenario and usually aren't needed
 | ARGUMENT | CALL | EFFECT |
 | --- | --- | --- |
+| debug | `-db` | Produces richer print meant for debugging the calculation. |
 | post spawnrate | `-ps` | Prints processed spawnrate values after rounding. |
 | raw spawnrate | `-rs` | Prints raw spawnrate values emulating gsc function. |
 | zombie count | `-zc` | Prints zombie counts. |

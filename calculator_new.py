@@ -314,6 +314,8 @@ def calculator_custom(base_input: list, mods: list) -> None:
             print(rnd.zombie_spawn_delay)
         if "-zc" in mods:
             print(rnd.zombies)
+        if "-db" in mods:
+            print(vars(rnd))
 
     return
 
@@ -374,6 +376,8 @@ def calculator_handler():
             mods.append("-zc")
         if arg == "-ps" or arg == "-processedspawnrate":
             mods.append("-ps")
+        if arg == "-db" or arg == "-debug":
+            mods.append("-db")
 
     if len(mods):
         calculator_custom(raw_input[:2], mods)
