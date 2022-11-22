@@ -197,7 +197,7 @@ class DogRound(ZombieRound):
 
 
     def get_teleport_time(self):
-        """Seems to be the best indication of representing spawncap accurately, at least in case of solo when comparing to actual gameplay"""
+        # Seems to be the best indication of representing spawncap accurately, at least in case of solo when comparing to actual gameplay
         self.teleport_time = DOGS_WAIT_TELEPORT * (self.dogs / (2 * self.players))
         return
 
@@ -228,13 +228,13 @@ class DogRound(ZombieRound):
 
 
     def add_teleport_time(self):
-        """Call if dog teleport time should be added for each dog on class level"""
+        # Call if dog teleport time should be added for each dog on class level
         self.raw_time += self.teleport_time
         return
 
 
     def round_up(self):
-        """round_wait() function clocks every .5 seconds"""
+        # round_wait() function clocks every .5 seconds
         time_in_ms = round(self.raw_time * 1000)
         if not time_in_ms % 500:
             self.round_time = self.raw_time
