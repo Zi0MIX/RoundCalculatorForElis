@@ -1,9 +1,31 @@
 from dataclasses import dataclass
 from colorama import Fore
-import config as conf
 
 COL = Fore.YELLOW
 RES = Fore.RESET
+
+DEC = 3
+
+# Time from "initial_blackscreen_passed" to "start_of_round" triggers
+RND_WAIT_INITIAL = 8.25
+# Time from "end_of_round" to "start_of_round"
+RND_WAIT_END = 12.50
+# Time from "end_of_round" to "between_round_over"
+RND_WAIT_BETWEEN = RND_WAIT_END - 2.5
+# Time difference between "start_of_round" trigger and new round number appearing
+RND_BETWEEN_NUMBER_FLAG = 4.0
+
+ZOMBIE_MAX_AI = 24
+ZOMBIE_AI_PER_PLAYER = 6
+
+# Perfect dog rounds, r5 then all 4 rounders
+DOGS_PERFECT = [int(x) for x in range(256) if x % 4 == 1 and x > 4]
+DOGS_WAIT_START = 7.05      # 0.05 from ingame timing, code says 7 dot
+DOGS_WAIT_END = 8
+# Time between dog spawning to dog appearing on the map
+DOGS_WAIT_TELEPORT = 1.5
+
+MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
 
 
 @dataclass
@@ -109,9 +131,9 @@ class ZombieRound:
             multiplier *= (self.number * 0.15)
     
         if self.players == 1:
-            temp = int(conf.ZOMBIE_MAX_AI + (0.5 * conf.ZOMBIE_AI_PER_PLAYER * multiplier))
+            temp = int(ZOMBIE_MAX_AI + (0.5 * ZOMBIE_AI_PER_PLAYER * multiplier))
         else:
-            temp = int(conf.ZOMBIE_MAX_AI + ((self.players - 1) * conf.ZOMBIE_AI_PER_PLAYER * multiplier))
+            temp = int(ZOMBIE_MAX_AI + ((self.players - 1) * ZOMBIE_AI_PER_PLAYER * multiplier))
 
         self.zombies = temp
         if self.number < 2:
@@ -134,7 +156,7 @@ class ZombieRound:
         if int(str(self.raw_time).split(".")[1]) >= 1:
             dec = str(self.raw_time).split(".")[1][:3]
 
-        while len(dec) < conf.DEC:
+        while len(dec) < DEC:
             dec += "0"
         self.decimals = dec
 
@@ -176,7 +198,7 @@ class DogRound(ZombieRound):
 
     def get_teleport_time(self):
         """Seems to be the best indication of representing spawncap accurately, at least in case of solo when comparing to actual gameplay"""
-        self.teleport_time = conf.DOGS_WAIT_TELEPORT * (self.dogs / (2 * self.players))
+        self.teleport_time = DOGS_WAIT_TELEPORT * (self.dogs / (2 * self.players))
         return
 
 
@@ -299,7 +321,7 @@ def print_perfect_times(time_total: float, rnd: int, map_code: str) -> None:
 
     split_adj = 0.0
     if args["speedrun_time"]:
-        split_adj = conf.RND_BETWEEN_NUMBER_FLAG
+        split_adj = RND_BETWEEN_NUMBER_FLAG
 
     readable_time = get_readable_time(time_total - split_adj)
 
@@ -322,7 +344,7 @@ def print_round_times(rnd: ZombieRound) -> str:
 
     split_adj = 0
     if args["speedrun_time"]:
-        split_adj = conf.RND_BETWEEN_NUMBER_FLAG
+        split_adj = RND_BETWEEN_NUMBER_FLAG
 
     readable_time = get_readable_time(rnd.round_time - split_adj)
 
@@ -437,14 +459,14 @@ def calculator_handler():
         print("Enter map code (eg. zm_theater)")
         map_code = input("> ").lower()
 
-        time_total = conf.RND_WAIT_INITIAL
+        time_total = RND_WAIT_INITIAL
 
         match map_code:
             case "zm_prototype" | "zm_asylum" | "zm_coast" | "zm_temple" | "zm_transit" | "zm_nuked" | "zm_prison" | "zm_buried" | "zm_tomb":
 
                 for r in range(1, rnd):
                     result = ZombieRound(r, players)
-                    round_duration = result.round_time + conf.RND_WAIT_END
+                    round_duration = result.round_time + RND_WAIT_END
                     time_total += round_duration
                     all_results.append(round_duration)
 
@@ -459,16 +481,16 @@ def calculator_handler():
                 dog_rounds = 0
                 for r in range(1, rnd):
 
-                    if r in conf.DOGS_PERFECT:
+                    if r in DOGS_PERFECT:
                         result = DogRound(r, players, dog_rounds)
                         if args["teleport_time"]:
                             result.add_teleport_time()
                         dog_rounds += 1
-                        round_duration = conf.DOGS_WAIT_START + conf.DOGS_WAIT_TELEPORT + result.round_time + conf.DOGS_WAIT_END + conf.RND_WAIT_END
+                        round_duration = DOGS_WAIT_START + DOGS_WAIT_TELEPORT + result.round_time + DOGS_WAIT_END + RND_WAIT_END
                         time_total += round_duration
                     else:
                         result = ZombieRound(r, players)
-                        round_duration = result.round_time + conf.RND_WAIT_END
+                        round_duration = result.round_time + RND_WAIT_END
                         time_total += round_duration
 
                     all_results.append(round_duration)
