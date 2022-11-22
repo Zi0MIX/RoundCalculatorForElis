@@ -7,16 +7,21 @@ Arguments at the beginning of the input, the calculator will not work without th
 
 #### Optional arguments
 Arguments that are optional, that can change behaviour of the calculator
-| ARGUMENT | CALL | EFFECT |
-| --- | --- | --- |
-| break | `-b` | Defines if there is a clear row between entries. Argument enabled by default, use to disable. |
-| clear output | `-c` | Prints raw times instead of sentences. Useful for spreadsheets. |
-| detailed | `-d` | Prints miliseconds instead of readable time. |
-| lower time | `-l` | In case `nodecimals` is used, the time will be rounded down instead of up. Has no effect otherwise. |
-| nodecimals | `-n` | Disable decimals in time output, seconds will be round up. Has no effect if used with `detailed`. |
-| perfect times | `-p` | Instead of giving round times, it shows perfect times up to that round. If used with `range`, will print perfect times for all rounds up to the selected one. |
-| range | `-r` | Whether to print out times up to provided round. |
-| speedrun time | `-s` | Shows time accordingly to split rules as oppose to actual round starts. Argument enabled by default, use to disable. |
+| ARGUMENT | CALL | DEFAULT STATE | EFFECT |
+| --- | --- | --- | --- |
+| all results | `-a` | `false` | Enable display of a list of values used for calculating results, meant to debug `range`. |
+| break | `-b` | `true` | Enable clear row between outputs. |
+| clear output | `-c` | `false` | Enable printing raw time. |
+| detailed | `-d` | `false` | Enable printing time values in ms. |
+| lower time | `-l` | `false` | In case `nodecimals` is used, the time will be rounded down instead of up. |
+| nodecimals | `-n` | `true` | Disable decimals in time output, seconds will be round up. Has no effect if used with `detailed`. |
+| perfect times | `-p` | `false` | Instead of giving round times, it shows perfect times up to that round. If used with `range`, will print perfect times for all rounds up to the selected one. |
+| range | `-r` | `false` | Whether to print out times up to provided round. |
+| speedrun time | `-s` | `false` | Shows time accordingly to split rules as oppose to actual round starts. |
+| teleport time | `-t` | `true` | Add time it takes for dogs to appear on the map to mitigate spawncap problem on later dog rounds. |
+- `break` is enabled by default as it increases readability.
+- `nodecimals` is enabled by default, as the GSC function responsible for round ends clocks every 1 second on normal rounds, however you can still kill zombies with accuracy up to 50ms.
+- `teleport time` is enabled by default, as the true result is closer to values with this argument, neither are however, perfect.
 
 #### Custom calculator arguments
 Those arguments are for advanced calculator functions and will cancel optional arguments. They were made specifically for one scenario and usually aren't needed
