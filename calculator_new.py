@@ -29,6 +29,10 @@ class ZombieRound:
 
     def get_round_spawn_delay(self, raw_delay: float) -> float:
         self.raw_spawn_delay = raw_delay
+
+        if raw_delay < 0.01:
+            raw_delay = 0.01
+
         inside = str(raw_delay).split(".")
 
         if not len(inside[1]):
