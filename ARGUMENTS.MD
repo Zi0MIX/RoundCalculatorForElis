@@ -28,6 +28,7 @@ Those arguments are for advanced calculator functions and will cancel optional a
 | ARGUMENT | CALL | EFFECT |
 | --- | --- | --- |
 | debug | `-db` | Produces richer print meant for debugging the calculation. |
+| debug dogs | `-ddb` | Produces richer print meant for debugging calculation for dog rounds. |
 | post spawnrate | `-ps` | Prints processed spawnrate values after rounding. |
 | raw spawnrate | `-rs` | Prints raw spawnrate values emulating gsc function. |
 | zombie count | `-zc` | Prints zombie counts. |
