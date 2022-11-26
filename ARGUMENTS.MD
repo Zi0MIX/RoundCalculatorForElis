@@ -9,7 +9,6 @@ Arguments at the beginning of the input, the calculator will not work without th
 Arguments that are optional, that can change behaviour of the calculator
 | ARGUMENT | CALL | DEFAULT STATE | EFFECT |
 | --- | --- | --- | --- |
-| all results | `-a` | `false` | Enable display of a list of values used for calculating results, meant to debug `range`. |
 | break | `-b` | `true` | Enable clear row between outputs. |
 | clear output | `-c` | `false` | Enable printing raw time. |
 | detailed | `-d` | `false` | Enable printing time values in ms. |
