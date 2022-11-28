@@ -92,7 +92,7 @@ class ZombieRound:
             if real_decimals[0] == "10":
                 real_decimals[0] = "0"
                 inside[0] = str(int(inside[0]) + 1)
-        
+
         inside[1] = "".join(real_decimals)
         # print(f"{inside} / original: {str(self.raw_spawn_delay).split('.')}")
 
@@ -123,7 +123,7 @@ class ZombieRound:
             multiplier = 1.0
         elif self.number >= 10:
             multiplier *= (self.number * 0.15)
-    
+
         if self.players == 1:
             temp = int(ZOMBIE_MAX_AI + (0.5 * ZOMBIE_AI_PER_PLAYER * multiplier))
         else:
@@ -388,7 +388,6 @@ def convert_arguments(list_of_args: list) -> dict:
         return converted
     except Exception as err:
         return return_error(str(err))
-        
 
 
 def get_mods() -> list:
@@ -703,6 +702,7 @@ if __name__ == "__main__":
 else:
     from sys import argv
     COL, RES = "", ""
+
     # CLI input
     if argv:
         argv = eval_argv(argv)
