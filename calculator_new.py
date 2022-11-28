@@ -487,7 +487,8 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str) -> dict:
     return a
 
 
-def get_round_times(rnd: ZombieRound) -> dict:
+def get_round_times(rnd) -> dict:
+    """Rnd: ZombieRound | DogRound"""
 
     a = get_answer_blueprint()
     a["type"] = "round_time"
