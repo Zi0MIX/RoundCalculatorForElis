@@ -100,6 +100,7 @@ Program outputs data as an array of dictionaries(jsons). Structure:
     "round": int,
     "players": int,
     "zombies": int,
+    "hordes": float,
     "time_seconds": float,
     "time_output": str,
     "special_average": float,
@@ -125,8 +126,10 @@ You can preserve this format or come up with your own.
 | `round` | `int` | 1-255 | Round number. |
 | `players` | `int` | 1-4 | Player number. |
 | `zombies` | `int` | 0+ | Zombies number. |
+| `hordes` | `float` | any | Number of hordes. |
 | `time_seconds` | `float` | any | Numeric value for time in seconds. |
 | `time_output` | `str` | any | Time value to be print out. |
+| `special_average` | `float` | any | The average of special rounds. |
 | `spawnrate` | `float` | any | Spawnrate in seconds. |
 | `raw_spawnrate` | `float` | any | Raw spawnrate in seconds. |
 | `network_frame` | `float` | `0.05` / `0.10` | Network frame value. |
