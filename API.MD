@@ -20,8 +20,8 @@ Input types have to be specified while using `argv` method. If wrong type specif
 | str | `argv` | All arguments are passed via argv to the program without using {key: value} ralation. Order of inputs must be strictly preserved. Preferred type for `argv` implementation. |
 | json | `main_api()` and `argv` | All arguments are passed via dictionary(json) structure. All required keys must be provided, however they don't all have to be filled unless selected function requires that. Enforced type for `main_api()` implementation. |
 
-- Type str
-`<script_name> <type_of_data> <round_number> <player_number> <map_name> (<arguments> <mods>)`
+- Type str</br>
+`<script_name> <type_of_data> <round_number> <player_number> <map_name> (<arguments> <mods>)` 
 | ARGV | DATA RANGE | DESCRIPTION |
 | --- | --- | --- |
 | `script_name` | name_of_script.extension | Name of the script on your local computer. Can be a Python file or exe. |
@@ -32,8 +32,8 @@ Input types have to be specified while using `argv` method. If wrong type specif
 | `arguments` | any | Optional arguments to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. Passing the argument will change it's default state. |
 | `mods` | any | Optional mods to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. The program will only support one mod at a time, however more can be passed, they'll just have no effect. |
 
-- Type json
-All of those keys are mandatory.
+- Type json</br>
+All of those keys are mandatory. 
 | KEY | TYPE | VALUES | DESCRIPTION |
 | --- | --- | --- | --- |
 | `rounds` | `int` | Number of rounds for the calculator. |
