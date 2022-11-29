@@ -308,6 +308,13 @@ def get_arguments() -> dict:
             "default_state": False,
             "exp": "Show time in miliseconds instead of formatted string."
         },
+        "even_time": {
+            "use_in_web": True,
+            "readable_name": "Even time",
+            "shortcode": "-e",
+            "default_state": False,
+            "exp": "Time output always has 5 symbols."
+        },
         "hordes": {
             "use_in_web": True,
             "readable_name": "Hordes",
@@ -463,9 +470,11 @@ def get_readable_time(round_time: float) -> str:
     while s > 59:
         m += 1
         s -= 60
-    while m > 59:
-        h += 1
-        m -= 60
+    # Do not reduce minutes to hours if even_time is on
+    if not args["even_time"]:
+        while m > 59:
+            h += 1
+            m -= 60
 
     dec = f".{str(ms).zfill(3)}"
     # Clear decimals and append a second, this way it's always rounding up
@@ -488,6 +497,9 @@ def get_readable_time(round_time: float) -> str:
         new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
     else:
         new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
+
+    if args["even_time"]:
+        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}"
 
     return new_time
 
