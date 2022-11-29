@@ -13,6 +13,7 @@ The column `TYPE` is meant for API users.
 | `break` | `-b` | `true` | UI | Enable clear row between outputs. |
 | `clear` | `-c` | `false` | UI | Enable printing raw time. |
 | `detailed` | `-d` | `false` | In-Program | Enable printing time values in ms. |
+| `hordes` | `-h-` | `false` | UI | Prints the amount of hordes instead of number of zombies. |
 | `lower_time` | `-l` | `false` | In-Program | In case `nodecimals` is used, the time will be rounded down instead of up. |
 | `nodecimal` | `-n` | `true` | In-Program | Disable decimals in time output, seconds will be round up. Has no effect if used with `detailed`. |
 | `perfect_times` | `-p` | `false` | In-Program | Instead of giving round times, it shows perfect times up to that round. If used with `range`, will print perfect times for all rounds up to the selected one. |

@@ -144,6 +144,8 @@ class ZombieRound:
         elif self.number < 6:
             self.zombies = int(temp * 0.9)
 
+        self.hordes = round(self.zombies / 24, 2)
+
         return
 
 
@@ -273,6 +275,7 @@ def get_answer_blueprint() -> dict:
         "round": 0,
         "players": 0,
         "zombies": 0,
+        "hordes": 0.0,
         "time_output": "00:00",
         "spawnrate": 0.0,
         "raw_spawnrate": 0.0,
@@ -304,6 +307,13 @@ def get_arguments() -> dict:
             "shortcode": "-d",
             "default_state": False,
             "exp": "Show time in miliseconds instead of formatted string."
+        },
+        "hordes": {
+            "use_in_web": True,
+            "readable_name": "Hordes",
+            "shortcode": "-h",
+            "default_state": False,
+            "exp": "Show the amount of hordes instead of the amount of zombies in the output."
         },
         "lower_time": {
             "use_in_web": True,
@@ -510,6 +520,7 @@ def get_round_times(rnd) -> dict:
     a["round"] = rnd.number
     a["players"] = rnd.players
     a["zombies"] = rnd.zombies
+    a["hordes"] = rnd.hordes
     a["raw_time"] = rnd.raw_time
     a["spawnrate"] = rnd.zombie_spawn_delay
     a["raw_spawnrate"] = rnd.raw_spawn_delay
@@ -690,12 +701,18 @@ def display_results(results: list[dict]) -> list[dict]:
     for res in results:
 
         # Assemble print
+        zm_word = "hordes"
         match res["type"]:
             case "round_time":
+                enemies = res["zombies"]
+                if args["hordes"]:
+                    zm_word = "hordes"
+                    enemies = res["hordes"]
+
                 if args["clear"]:
                     print(res["time_output"])
                 else:
-                    print(f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{res['zombies']}{RES} zombies. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES}).")
+                    print(f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES}).")
 
                 if args["break"]:
                     print()
