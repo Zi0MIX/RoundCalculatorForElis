@@ -362,11 +362,11 @@ def curate_arguments(provided_args: dict) -> dict:
 
     defaults = get_arguments()
 
-    for rule in rules:
-        master = rule["master"]
-        slave = rule["slave"]
+    for rule in rules.keys():
+        master = rules[rule]["master"]
+        slave = rules[rule]["slave"]
 
-        if rule["eval_true"]:
+        if rules[rule]["eval_true"]:
             if provided_args[master]:
                 provided_args[slave] = False
         else:
@@ -734,20 +734,20 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list) -> dict:
-    if isinstance(arguments, dict):
-        arguments["args"] = curate_arguments(arguments["args"])
-    else:
+    if isinstance(arguments, list):
         arguments = convert_arguments(arguments)
         # Passing error
         if "type" in arguments.keys():
             print(arguments["message"])
             return arguments
 
+    arguments["args"] = curate_arguments(arguments["args"])
+
     if OWN_PRINT:
         return display_results(calculator_handler(arguments))
     return calculator_handler(arguments)
 
-print(__name__)
+# print(__name__)
 if __name__ == "__main__":
     from sys import argv
 
