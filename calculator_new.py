@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+
+
+OWN_PRINT = True
 DEC = 3
 
 # Time from "initial_blackscreen_passed" to "start_of_round" triggers
@@ -20,7 +24,6 @@ DOGS_WAIT_END = 8
 DOGS_WAIT_TELEPORT = 1.5
 
 MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
-
 
 @dataclass
 class ZombieRound:
@@ -238,35 +241,43 @@ class DogRound(ZombieRound):
         return
 
 
-def return_error(err_code: Exception | str) -> list[dict]:
+def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
+    if nolist:
+        return {"type": "error", "message": str(err_code)}
     return [{"type": "error", "message": str(err_code)}]
 
 
 def eval_argv(cli_in: list) -> list | dict:
-    cli_in = cli_in[1:]
+    try:
+        cli_in = cli_in[1:]
 
-    if cli_in[0] == "json":
-        from json import loads
-        cli_out = loads(" ".join(cli_in[1:]))
-    elif cli_in[0] == "str":
-        cli_out = cli_in[1:]
-    else:
-        return return_error("Inproper 'type' argument provided. Values have to be either 'str' or 'json'")
-    return cli_out
+        if cli_in[0] == "json":
+            from json import loads
+            cli_out = loads(" ".join(cli_in[1:]))
+        elif cli_in[0] == "str":
+            cli_out = cli_in[1:]
+        else:
+            raise TypeError("Inproper 'type' argument provided. Values have to be either 'str' or 'json'")
+
+        return cli_out
+    except (IndexError, TypeError) as err:
+        return return_error(err)
 
 
 def get_answer_blueprint() -> dict:
     """Check outputs.MD for reference"""
     return {
         "type": "",
-        "arguments": [],
+        "mod": "",
+        "message": "",
         "round": 0,
         "players": 0,
         "zombies": 0,
-        "time": "00:00",
+        "time_output": "00:00",
         "spawnrate": 0.0,
         "raw_spawnrate": 0.0,
         "network_frame": 0.0,
+        "map_name": "",
         "class_content": {},
     }
 
@@ -371,23 +382,25 @@ def convert_arguments(list_of_args: list) -> dict:
         converted.update({"rounds": int(list_of_args[0])})
         converted.update({"players": int(list_of_args[1])})
         converted.update({"map_code": str(list_of_args[2])})
+        # We set arguments to true, easier handling and CLI entry point can be processed fully, doesn't hurt
         converted.update({"arguments": True})
 
         default_arguments, arguments = get_arguments(), {}
         # Fill up dict with default values
-        [arguments.update({default_arguments[a]: default_arguments[a]["default_state"]}) for a in default_arguments.keys()]
+        [arguments.update({a: default_arguments[a]["default_state"]}) for a in default_arguments.keys()]
         # Override arguments with opposite bool if argument is detected in input
-        [arguments.update({default_arguments[x]: not default_arguments[x]["default_state"]}) for x in default_arguments.keys() if default_arguments[x]["shortcode"] in list_of_args[3:]]
+        if len(list_of_args) > 3:
+            [arguments.update({x: not default_arguments[x]["default_state"]}) for x in default_arguments.keys() if default_arguments[x]["shortcode"] in list_of_args[3:]]
         converted.update({"args": arguments})
 
-        default_mods = get_mods()
         converted.update({"mods": []})
-        # Append mod if it's shortcode is detected in input
-        [converted["mods"].append(m) for m in list_of_args[3:] if m in default_mods]
+        if len(list_of_args) > 3:
+            default_mods = get_mods()
+            converted.update({"mods": [m for m in list_of_args[3:] if m in default_mods]})
 
         return converted
     except Exception as err:
-        return return_error(str(err))
+        return return_error(str(err), nolist=True)
 
 
 def get_mods() -> list:
@@ -445,6 +458,7 @@ def get_readable_time(round_time: float) -> str:
         m -= 60
 
     dec = f".{str(ms).zfill(3)}"
+    # Clear decimals and append a second, this way it's always rounding up
     if args["nodecimal"] and not args["lower_time"]:
         dec = ""
         s += 1
@@ -454,6 +468,7 @@ def get_readable_time(round_time: float) -> str:
             if m > 59:
                 h += 1
                 m -= 60
+    # Otherwise just clear decimals, it then rounds down
     elif args["nodecimal"]:
         dec = ""
 
@@ -470,7 +485,7 @@ def get_readable_time(round_time: float) -> str:
 def get_perfect_times(time_total: float, rnd: int, map_code: str) -> dict:
 
     a = get_answer_blueprint()
-    a["type"] = "perfect_time"
+    a["type"] = "perfect_times"
     a["round"] = rnd
     a["raw_time"] = time_total
     a["map_name"] = map_translator(map_code)
@@ -480,9 +495,9 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str) -> dict:
         split_adj = RND_BETWEEN_NUMBER_FLAG
 
     if args["detailed"]:
-        a["readable_time"] = str(time_total * 1000)
+        a["time_output"] = str(round(time_total * 1000)) + " ms"
     else:
-        a["readable_time"] = get_readable_time(time_total - split_adj)
+        a["time_output"] = get_readable_time(time_total - split_adj)
 
     return a
 
@@ -506,7 +521,7 @@ def get_round_times(rnd) -> dict:
         split_adj = RND_BETWEEN_NUMBER_FLAG
 
     if args["detailed"]:
-        a["time_output"] = str(rnd.round_time * 1000)
+        a["time_output"] = str(round(rnd.round_time * 1000)) + " ms"
     else:
         a["time_output"] = get_readable_time(rnd.round_time - split_adj)
 
@@ -516,29 +531,34 @@ def get_round_times(rnd) -> dict:
 def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
     calc_result = []
     for r in range(1, rnd + 1):
+        zm_round = ZombieRound(r, players)
+        dog_round = DogRound(r, players, r)
+
         a = get_answer_blueprint()
         a["type"] = "mod"
         a["round"] = r
         a["players"] = players
-
-        zm_round = ZombieRound(r, players)
-        dog_round = DogRound(r, players, r)
+        a["raw_spawnrate"] = zm_round.raw_spawn_delay
+        a["spawnrate"] = zm_round.zombie_spawn_delay
+        a["zombies"] = zm_round.zombies
+        a["class_content"] = vars(zm_round)
 
         if "-rs" in mods:
-            a["arguments"].append("-rs")
-            a["raw_spawnrate"] = zm_round.raw_spawn_delay
+            a["mod"] = "-rs"
+            a["message"] = str(a["raw_spawnrate"])
         elif "-ps" in mods:
-            a["arguments"].append("-ps")
-            a["spawnrate"] = zm_round.zombie_spawn_delay
+            a["mod"] = "-ps"
+            a["message"] = str(a["spawnrate"])
         elif "-zc" in mods:
-            a["arguments"].append("-zc")
-            a["zombies"] = zm_round.zombies
+            a["mod"] = "-zc"
+            a["message"] = str(a["zombies"])
         elif "-db" in mods:
-            a["arguments"].append("-db")
-            a["class_content"] = vars(zm_round)
+            a["mod"] = "-db"
+            a["message"] = str(a["class_content"])
         elif "-ddb" in mods:
-            a["arguments"].append("-ddb")
+            a["mod"] = "-ddb"
             a["class_content"] = vars(dog_round)
+            a["message"] = str(a["class_content"])
 
         calc_result.append(a)
 
@@ -557,17 +577,12 @@ def calculator_handler(json_input: dict | None = None):
                 raise ValueError("Wrong data input")
             rnd, players = int(raw_input[0]), int(raw_input[1])
 
-            use_arguments = len(raw_input) == 2
-        except (ValueError, IndexError):
-            return
+            use_arguments = len(raw_input) > 2
+        except (ValueError, IndexError) as err:
+            return [{"type": err}]
     # Assign variables from json otherwise
     else:
         rnd, players, map_code, use_arguments = int(json_input["rounds"]), int(json_input["players"]), str(json_input["map_code"]), json_input["arguments"] or len(json_input["mods"])
-
-    # We do not process all the argument logic if arguments are not defined
-    result = ZombieRound(rnd, players)
-    if use_arguments:
-        return [get_round_times(result)]
 
     all_arguments = get_arguments()
     global args
@@ -576,17 +591,23 @@ def calculator_handler(json_input: dict | None = None):
     # Assemble arguments list
     [args.update({key: all_arguments[key]["default_state"]}) for key in all_arguments.keys()]
 
+    # We do not process all the argument logic if arguments are not defined
+    result = ZombieRound(rnd, players)
+    if not use_arguments:
+        return [get_round_times(result)]
+
     # Define state of arguments
     if json_input is None:
         selected_arguments = raw_input[2:]
         for key in args.keys():
-            args[key].update({"current_state": all_arguments[key]["shortcode"] in selected_arguments})
+            if all_arguments[key]["shortcode"] in selected_arguments:
+                args.update({key: not all_arguments[key]["default_state"]})
     else:
         for key in args.keys():
-            args[key].update({"current_state": json_input["args"][key]})
+            args.update({key: json_input["args"][key]})
 
     # Define state of mods
-    if json_input in None:
+    if json_input is None:
         selected_mods = raw_input[2:]
     else:
         selected_mods = json_input["mods"]
@@ -599,7 +620,7 @@ def calculator_handler(json_input: dict | None = None):
     all_results = []
 
     # Process perfect splits
-    if args["perfect_round"]:
+    if args["perfect_times"]:
 
         if json_input is None:
             print("Enter map code (eg. zm_theater)")
@@ -660,6 +681,39 @@ def calculator_handler(json_input: dict | None = None):
     return [get_round_times(ZombieRound(rnd, players))]
 
 
+def display_results(results: list[dict]) -> None:
+    for res in results:
+
+        # Assemble print
+        match res["type"]:
+            case "round_time":
+                if args["clear"]:
+                    print(res["time_output"])
+                else:
+                    print(f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{res['zombies']}{RES} zombies. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES}).")
+
+                if args["break"]:
+                    print()
+
+            case "perfect_times":
+                if args["clear"]:
+                    print(res["time_output"])
+                else:
+                    print(f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}.")
+
+                if args["break"]:
+                    print()
+
+            case "mod":
+                print(res["message"])
+
+            case "error":
+                print("An error occured, if your inputs are correct, please contact the creator.")
+                print(res["message"])
+
+    return
+
+
 def main_app() -> None:
     import os
     from colorama import init, reinit, deinit
@@ -674,7 +728,8 @@ def main_app() -> None:
 
     while True:
         reinit()
-        calculator_handler(None)
+        result = calculator_handler(None)
+        display_results(result)
         deinit()
 
 
@@ -687,27 +742,24 @@ def main_api(arguments: dict | list) -> dict:
         if "type" in arguments.keys():
             print(arguments["message"])
             return arguments
+
+    if OWN_PRINT:
+        return display_results(calculator_handler(arguments))
     return calculator_handler(arguments)
 
-
-from dataclasses import dataclass
-
+print(__name__)
 if __name__ == "__main__":
-    from colorama import Fore
-    COL, RES = Fore.YELLOW, Fore.RESET
-    YEL, GRE, RED, CYA = Fore.YELLOW, Fore.GREEN, Fore.RED, Fore.CYAN
-
-    # Standalone app
-    main_app()
-
-else:
     from sys import argv
-    COL, RES = "", ""
 
-    # CLI input
-    if argv:
+    if len(argv) > 1:
+        COL, RES = "", ""
         argv = eval_argv(argv)
-        if isinstance(argv, list) and "type" in argv[0].keys():
-            print(argv[0]["message"])
-        else:
-            main_api(argv)
+        main_api(argv)
+    else:
+        from colorama import Fore
+        # For output syntax highlighting use COL variable
+        COL, RES = Fore.YELLOW, Fore.RESET
+        YEL, GRE, RED, CYA = Fore.YELLOW, Fore.GREEN, Fore.RED, Fore.CYAN
+
+        # Standalone app
+        main_app()

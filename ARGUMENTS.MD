@@ -31,5 +31,3 @@ Those arguments are for advanced calculator functions and will cancel optional a
 | post spawnrate | `-ps` | Prints processed spawnrate values after rounding. |
 | raw spawnrate | `-rs` | Prints raw spawnrate values emulating gsc function. |
 | zombie count | `-zc` | Prints zombie counts. |
-
-I didn't add any validation for those you'll just get weird results if you mess with numbers
