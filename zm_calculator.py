@@ -729,7 +729,7 @@ def display_results(results: list[dict]) -> list[dict]:
     for res in results:
 
         # Assemble print
-        zm_word = "hordes"
+        zm_word = "zombies"
         match res["type"]:
             case "round_time":
                 enemies = res["zombies"]
