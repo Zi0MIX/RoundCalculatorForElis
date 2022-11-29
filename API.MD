@@ -31,6 +31,7 @@ Input types have to be specified while using `argv` method. If wrong type specif
 | `map_name` | any | Is is required to pass a map name while using this format. However, unless `perfect_times` argument is used, valid map code is not necessary, therefore you can pass any placeholder instead. |
 | `arguments` | any | Optional arguments to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. Passing the argument will change it's default state. |
 | `mods` | any | Optional mods to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. The program will only support one mod at a time, however more can be passed, they'll just have no effect. |
+| `spec_rounds` | - | Currently not supported in this mode. |
 
 ##### Type json
 All of those keys are mandatory.
@@ -42,6 +43,7 @@ All of those keys are mandatory.
 | `use_arguments` | `bool` | Have to `true` if any of the arguments is changed. It's recommended to have it as `false` if none are changed from default state, however if passed state is always `true`, the calculator will still work. This boolean defines if arguements are analyzed during processing. |
 | `args` | `dict` | Contains calculator arguments `key`: `bool`, all arguments have to be passed, use `get_arguments()` to extract dictrionaries with argument properties. |
 | `mods` | `list[str]` | Contains mods for calculator, pass empty array if none mods are activated. Use `get_mods()` to extract an array of available arguments. |
+| `spec_rounds` | `tuple[int]` | Contains an override for special rounds to replace perfect special rounds with. If unused or unchanged, pass empty array. |
 
 ## Functions
 Some of the functions used in main program can succesfully be used in UI to obtain helpful information. Those functions are:
@@ -56,7 +58,8 @@ Some of the functions used in main program can succesfully be used in UI to obta
 | VARIABLE | TYPE | DESCRIPTION |
 | --- | --- | --- |
 | `OWN_PRINT` | `bool` | Controls the use of built in function responsible for displaying results. It's recommended to keep it on `False` for web implementation and handle output yourself, as you'll have no control over the format of the output. The program will still return data normally after printing it.
-| `MAP_LIST` | `tuple` (will convert to array) | Controls which maps are accepted if `perfect_times` argument is used. Do not modify unless you're also implementing changes in the calculator itself. |
+| `MAP_LIST` | `tuple`(array) | Controls which maps are accepted if `perfect_times` argument is used. Do not modify unless you're also implementing changes in the calculator itself. |
+| `MAP_DOGS` | `tuple`(array) | Controls which maps are maps with dog rounds. |
 
 ## Arguments
 Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD).
@@ -67,6 +70,8 @@ Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-Round
     * Some arguments conflict with others, or simply won't work unless certain combination of other arguments is achieved. It's briefly explained in the description of each argument, if you require more informations about conflicts, please check out `curate_arguments()` function in the program.
 - `use_in_web`
     * If you want to use provided mechanism for determining which arguments are to be used in UI, but want to use different set than what is defined, head to `get_arguments()` function and modify boolean under the key `use_in_web` for the argument you wish to modify.
+- `special_rounds`
+    * Recommended use is to keep this argument disabled for web ui, and the pass is as `True` to keep the functionality on at all times, then manage it by controlling what is passed as special round (look in `Type json`)
 
 ##### Structure of argument dictionary
 ```json
@@ -97,6 +102,7 @@ Program outputs data as an array of dictionaries(jsons). Structure:
     "zombies": int,
     "time_seconds": float,
     "time_output": str,
+    "special_average": float,
     "spawnrate": float,
     "raw_spawnrate": float,
     "network_frame": float,

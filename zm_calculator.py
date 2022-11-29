@@ -24,6 +24,8 @@ DOGS_WAIT_END = 8
 DOGS_WAIT_TELEPORT = 1.5
 
 MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
+MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
+
 
 @dataclass
 class ZombieRound:
@@ -281,6 +283,7 @@ def get_answer_blueprint() -> dict:
         "zombies": 0,
         "hordes": 0.0,
         "time_output": "00:00",
+        "special_average": 0.0,
         "spawnrate": 0.0,
         "raw_spawnrate": 0.0,
         "network_frame": 0.0,
@@ -361,6 +364,13 @@ def get_arguments() -> dict:
             "default_state": False,
             "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
         },
+        "special_rounds": {
+            "use_in_web": False,
+            "readable_name": "Special rounds",
+            "shortcode": "-spec",
+            "default_state": False,
+            "exp": "Add own set of special rounds to perfect times predictor to maps that support it."
+        },
         "speedrun_time": {
             "use_in_web": True,
             "readable_name": "Speedrun time",
@@ -412,6 +422,8 @@ def convert_arguments(list_of_args: list) -> dict:
         converted.update({"map_code": str(list_of_args[2])})
         # We set arguments to true, easier handling and CLI entry point can be processed fully, doesn't hurt
         converted.update({"arguments": True})
+        # Currently not supported from CLI call
+        converted.update({"spec_rounds": tuple()})
 
         default_arguments, arguments = get_arguments(), {}
         # Fill up dict with default values
@@ -470,6 +482,16 @@ def map_translator(map_code: str) -> str:
         return "Origins"
 
     return map_code
+
+
+def import_dogrounds() -> tuple:
+    print(f"{CYA}Enter special rounds separated with space.{RES}")
+    raw_special = str(input("> "))
+
+    list_special = [int(x) for x in raw_special.split(" ") if x.isdigit()]
+    if len(list_special):
+        return tuple(list_special)
+    return DOGS_PERFECT
 
 
 def get_readable_time(round_time: float) -> str:
@@ -665,53 +687,75 @@ def calculator_handler(json_input: dict | None = None):
             print("Enter map code (eg. zm_theater)")
             map_code = input("> ").lower()
 
+        if map_code not in MAP_LIST:
+            if json_input is None:
+                print(f"Map {COL}{map_translator(map_code)}{RES} is not supported.")
+            return return_error(f"{map_translator(map_code)} is not supported")
+
         time_total = RND_WAIT_INITIAL
+
+        try:
+            # Not map with dogs
+            if map_code not in MAP_DOGS:
+                set_dog_rounds = tuple()
+            # Not specified special_rounds or is remix
+            elif not args["special_rounds"] or args["remix"]:
+                set_dog_rounds = DOGS_PERFECT
+            # Not api mode or empty api entry provided -> take input
+            elif not json_input or not len(json_input["spec_rounds"]):
+                set_dog_rounds = import_dogrounds()
+            # Take entry from api call
+            else:
+                set_dog_rounds = tuple(json_input["spec_rounds"])
+        except KeyError:
+            if not json_input:
+                print("Warning: Key error dog rounds")
+            set_dog_rounds = DOGS_PERFECT
+
+        dog_rounds_average = 0.0
+        if len(set_dog_rounds):
+            from statistics import mean
+            dog_rounds_average = round(mean(set_dog_rounds), 1)
 
         dog_rounds = 1
         for r in range(1, rnd):
             zm_round = ZombieRound(r, players)
             dog_round = DogRound(r, players, dog_rounds)
 
-            # Logic for later here
-            set_dog_rounds = DOGS_PERFECT
-            if args["remix"]:
-                set_dog_rounds = DOGS_PERFECT
-
-            is_dog_round = r in set_dog_rounds
-
             # Handle arguments here
             if args["teleport_time"]:
                 dog_round.add_teleport_time()
 
-            match map_code:
-                case "zm_prototype" | "zm_asylum" | "zm_coast" | "zm_temple" | "zm_transit" | "zm_nuked" | "zm_prison" | "zm_buried" | "zm_tomb":
-                    round_duration = zm_round.round_time + RND_WAIT_END
-                    time_total += round_duration
+            is_dog_round = r in set_dog_rounds
 
-                case "zm_sumpf" | "zm_factory" | "zm_theater":
-                    if is_dog_round:
-                        dog_rounds += 1
-                        round_duration = DOGS_WAIT_START + DOGS_WAIT_TELEPORT + dog_round.round_time + DOGS_WAIT_END + RND_WAIT_END
-                        time_total += round_duration
-                    else:
-                        round_duration = zm_round.round_time + RND_WAIT_END
-                        time_total += round_duration
-
-                case _:
-                    if json_input is None:
-                        print(f"Map {COL}{map_translator(map_code)}{RES} is not supported.")
-                    return return_error(f"{map_translator(map_code)} is not supported")
+            if is_dog_round:
+                dog_rounds += 1
+                round_duration = DOGS_WAIT_START + DOGS_WAIT_TELEPORT + dog_round.round_time + DOGS_WAIT_END + RND_WAIT_END
+                time_total += round_duration
+            else:
+                round_duration = zm_round.round_time + RND_WAIT_END
+                time_total += round_duration
 
             if args["range"]:
+                remembered_dog_average = 0.0
+
                 res = get_perfect_times(time_total, r + 1, map_code)
                 res["class_content"] = vars(zm_round)
+                res["special_average"] = remembered_dog_average
                 if is_dog_round:
                     res["class_content"] = vars(dog_round)
+
+                    # Get new average on each dog round
+                    temp_dog_rounds = [d for d in set_dog_rounds if d <= r]
+                    res["special_average"] = round(sum(temp_dog_rounds) / len(temp_dog_rounds), 1)
+                    remembered_dog_average = res["special_average"]
+
                 all_results.append(res)
 
         if not args["range"]:
             res = get_perfect_times(time_total, rnd, map_code)
             res["class_content"] = vars(zm_round)
+            res["special_average"] = dog_rounds_average
             if is_dog_round:
                 res["class_content"] = vars(dog_round)
             all_results.append(res)
