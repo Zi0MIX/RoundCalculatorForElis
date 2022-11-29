@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 
 OWN_PRINT = True
+COL, RES = "", ""
 DEC = 3
 
 # Time from "initial_blackscreen_passed" to "start_of_round" triggers
@@ -846,7 +847,6 @@ if __name__ == "__main__":
     from sys import argv
 
     if len(argv) > 1:
-        COL, RES = "", ""
         argv = eval_argv(argv)
         main_api(argv)
     else:
