@@ -13,7 +13,7 @@ API has 2 main input methods, `argv` and `main_api()` call
 - `argv` is essentially just passing arguments to the program via command line, simply typing them right after the name of the program.
 - `main_api()` is a function to be called from outside systems (it's also used in argv implementation under the hood).
 
-#### Input types
+## Input types
 Input types have to be specified while using `argv` method. If wrong type specified, program will encounter errors.
 | TYPE | METHODS | DESCRIPTION |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ All of those keys are mandatory.
 | `args` | `dict` | Contains calculator arguments `key`: `bool`, all arguments have to be passed, use `get_arguments()` to extract dictrionaries with argument properties. |
 | `mods` | `list[str]` | Contains mods for calculator, pass empty array if none mods are activated. Use `get_mods()` to extract an array of available arguments. |
 
-#### Functions
+## Functions
 Some of the functions used in main program can succesfully be used in UI to obtain helpful information. Those functions are:
 | CALL | ARGUMENTS | OUTPUT |
 | --- | --- | --- |
@@ -52,21 +52,40 @@ Some of the functions used in main program can succesfully be used in UI to obta
 | `get_mods()` | - | Returns a list of strings contaitning custom mod flags. If one or more of those mods are detected in input, the program will abandon it's normal workflow and apply a mod. |
 | `map_translator()` | `map_code`:`str` | Returns the name of the map in readable format. Supports all maps from global variable `MAP_LIST`. |
 
-#### Global variables
+## Global variables
 | VARIABLE | TYPE | DESCRIPTION |
 | --- | --- | --- |
 | `OWN_PRINT` | `bool` | Controls the use of built in function responsible for displaying results. It's recommended to keep it on `False` for web implementation and handle output yourself, as you'll have no control over the format of the output. The program will still return data normally after printing it.
 | `MAP_LIST` | `tuple` (will convert to array) | Controls which maps are accepted if `perfect_times` argument is used. Do not modify unless you're also implementing changes in the calculator itself. |
 
-#### Arguments
+## Arguments
 Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD).
 - Arguments to be handled in UI
     * Those arguments are used in the program only if it's own function for assembling the output is used, if you're handling the output yourself, you have to support those arguments in UI.
     * Check column `TYPE` in `Optional arguments` table in the doc linked above. Arguments listed as `UI` require handling outside of the main program.
 - Conflicts
-    Some arguments conflict with others, or simply won't work unless certain combination of other arguments is achieved. It's briefly explained in the description of each argument, if you require more informations about conflicts, please check out `curate_arguments()` function in the program.
+    * Some arguments conflict with others, or simply won't work unless certain combination of other arguments is achieved. It's briefly explained in the description of each argument, if you require more informations about conflicts, please check out `curate_arguments()` function in the program.
+- `use_in_web`
+    * If you want to use provided mechanism for determining which arguments are to be used in UI, but want to use different set than what is defined, head to `get_arguments()` function and modify boolean under the key `use_in_web` for the argument you wish to modify.
 
-#### Output
+##### Structure of argument dictionary
+```json
+"argument_key": {
+    "use_in_web": bool,
+    "readable_name": str,
+    "shortcode": str,
+    "default_state": bool,
+    "exp": str
+}
+```
+- `use_in_web` - Can be used to determine whether the argument shows in your interface.
+- `readable_name` - Can be used to get a readable name for each argument, recommended solution for the scenario where new arguments are implemented.
+- `shortcode` - Shortcode used to toggle the state of the argument in terminal implementations.
+- `default_state` - Provides default state for each argument, selecting an argument will toggle the default state.
+- `exp` - Short explanation of what the argument is doing.
+    
+
+## Output
 Program outputs data as an array of dictionaries(jsons). Structure:
 ```json
 [{
@@ -89,8 +108,8 @@ If not changed by arguments, current format for in-program outputs goes as is:
 - Perfect round times:
 `Round <round> will spawn in <time_output> and has <zombies> zombies. (Spawnrate: <spawnrate> / Network frame: <network_frame>).`
 - Perfect times:
-`Perfect time to round <round> is <time_output> on <map_name>.`
-You can, but don't have to preserve this format.
+`Perfect time to round <round> is <time_output> on <map_name>.`</br>
+You can preserve this format or come up with your own.
 
 | KEY | TYPE | DATA | DESCRIPTION |
 | --- | --- | --- | --- |
