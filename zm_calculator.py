@@ -106,6 +106,10 @@ class ZombieRound:
         self.zombie_spawn_delay = 2.0
         self.raw_spawn_delay = 2.0
 
+        if args["remix"]:
+            self.zombie_spawn_delay = 1.0
+            self.raw_spawn_delay = 1.0
+
         if self.number > 1:
             for _ in range(1, self.number):
                 self.zombie_spawn_delay *= 0.95
@@ -349,6 +353,13 @@ def get_arguments() -> dict:
             "shortcode": "-r",
             "default_state": False,
             "exp": "Show results for all rounds leading to selected number."
+        },
+        "remix": {
+            "use_in_web": True,
+            "readable_name": "Remix",
+            "shortcode": "-remix",
+            "default_state": False,
+            "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
         },
         "speedrun_time": {
             "use_in_web": True,
@@ -661,7 +672,12 @@ def calculator_handler(json_input: dict | None = None):
             zm_round = ZombieRound(r, players)
             dog_round = DogRound(r, players, dog_rounds)
 
-            is_dog_round = r in DOGS_PERFECT
+            # Logic for later here
+            set_dog_rounds = DOGS_PERFECT
+            if args["remix"]:
+                set_dog_rounds = DOGS_PERFECT
+
+            is_dog_round = r in set_dog_rounds
 
             # Handle arguments here
             if args["teleport_time"]:
