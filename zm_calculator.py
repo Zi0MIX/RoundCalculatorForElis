@@ -806,7 +806,7 @@ def display_results(results: list[dict]) -> list[dict]:
                 print("An error occured, if your inputs are correct, please contact the creator.")
                 print(res["message"])
 
-    return
+    return results
 
 
 def main_app() -> None:
