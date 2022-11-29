@@ -267,7 +267,7 @@ def eval_argv(cli_in: list) -> list | dict:
 def get_answer_blueprint() -> dict:
     """Check outputs.MD for reference"""
     return {
-        "type": "",
+        "type": "blueprint",
         "mod": "",
         "message": "",
         "round": 0,
@@ -582,7 +582,12 @@ def calculator_handler(json_input: dict | None = None):
             return [{"type": err}]
     # Assign variables from json otherwise
     else:
-        rnd, players, map_code, use_arguments = int(json_input["rounds"]), int(json_input["players"]), str(json_input["map_code"]), json_input["arguments"] or len(json_input["mods"])
+        rnd, players, map_code = int(json_input["rounds"]), int(json_input["players"]), str(json_input["map_code"])
+        # try/except clause supports transition between keys, remove later
+        try:
+            use_arguments = json_input["arguments"] or len(json_input["mods"])
+        except KeyError:
+            use_arguments = json_input["use_arguments"] or len(json_input["mods"])
 
     all_arguments = get_arguments()
     global args
@@ -681,7 +686,7 @@ def calculator_handler(json_input: dict | None = None):
     return [get_round_times(ZombieRound(rnd, players))]
 
 
-def display_results(results: list[dict]) -> None:
+def display_results(results: list[dict]) -> list[dict]:
     for res in results:
 
         # Assemble print
