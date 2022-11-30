@@ -297,6 +297,7 @@ def get_arguments() -> dict:
     return {
         "break": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Break",
             "shortcode": "-b",
             "default_state": True,
@@ -304,6 +305,7 @@ def get_arguments() -> dict:
         },
         "clear": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Clear output",
             "shortcode": "-c",
             "default_state": False,
@@ -311,6 +313,7 @@ def get_arguments() -> dict:
         },
         "detailed": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Detailed",
             "shortcode": "-d",
             "default_state": False,
@@ -318,6 +321,7 @@ def get_arguments() -> dict:
         },
         "even_time": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Even time",
             "shortcode": "-e",
             "default_state": False,
@@ -325,6 +329,7 @@ def get_arguments() -> dict:
         },
         "hordes": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Hordes",
             "shortcode": "-h",
             "default_state": False,
@@ -332,6 +337,7 @@ def get_arguments() -> dict:
         },
         "lower_time": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Lower Time",
             "shortcode": "-l",
             "default_state": False,
@@ -339,6 +345,7 @@ def get_arguments() -> dict:
         },
         "nodecimal": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Nodecimal",
             "shortcode": "-n",
             "default_state": True,
@@ -346,6 +353,7 @@ def get_arguments() -> dict:
         },
         "perfect_times": {
             "use_in_web": True,
+            "require_map": True,
             "readable_name": "Perfect times",
             "shortcode": "-p",
             "default_state": False,
@@ -353,6 +361,7 @@ def get_arguments() -> dict:
         },
         "range": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Range",
             "shortcode": "-r",
             "default_state": False,
@@ -360,13 +369,15 @@ def get_arguments() -> dict:
         },
         "remix": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Remix",
             "shortcode": "-remix",
             "default_state": False,
             "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
         },
         "special_rounds": {
-            "use_in_web": False,
+            "use_in_web": True,
+            "require_map": False,
             "readable_name": "Special rounds",
             "shortcode": "-spec",
             "default_state": False,
@@ -374,6 +385,7 @@ def get_arguments() -> dict:
         },
         "speedrun_time": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Speedrun time",
             "shortcode": "-s",
             "default_state": False,
@@ -381,6 +393,7 @@ def get_arguments() -> dict:
         },
         "teleport_time": {
             "use_in_web": True,
+            "require_map": False,
             "readable_name": "Teleport time",
             "shortcode": "-t",
             "default_state": True,
