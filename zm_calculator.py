@@ -250,6 +250,12 @@ class DogRound(ZombieRound):
         return
 
 
+def toggle_ownprint(state: bool) -> None:
+    """Toogle state of global `OWN_PRINT`"""
+    OWN_PRINT = state
+    return
+
+
 def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
     if nolist:
         return {"type": "error", "message": str(err_code)}
