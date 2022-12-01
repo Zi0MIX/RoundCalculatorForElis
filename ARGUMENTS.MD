@@ -19,8 +19,8 @@ The column `TYPE` is meant for API users.
 | `nodecimal` | `-n` | `true` | In-Program | Disable decimals in time output, seconds will be round up. Has no effect if used with `detailed`. |
 | `perfect_times` | `-p` | `false` | In-Program | Instead of giving round times, it shows perfect times up to that round. If used with `range`, will print perfect times for all rounds up to the selected one. |
 | `range` | `-r` | `false` | In-Program | Whether to print out times up to provided round. |
-| `remix` | `-remix` | `false` | In-Program | If logic from [Remix](https://github.com/5and5/BO1-Remix) mod is used. |
-| `special_rounds` | `-spec` | `false` | In-Program | Instead of using best possible special round scenario (average 4.0), apply own set of special rounds.
+| `remix` | `-x` | `false` | In-Program | If logic from [Remix](https://github.com/5and5/BO1-Remix) mod is used. |
+| `special_rounds` | `-S` | `false` | In-Program | Instead of using best possible special round scenario (average 4.0), apply own set of special rounds.
 | `speedrun_time` | `-s` | `false` | In-Program | Shows time accordingly to split rules as oppose to actual round starts. |
 | `teleport_time` | `-t` | `true` | In-Program | Add time it takes for dogs to appear on the map to mitigate spawncap problem on later dog rounds. |
 

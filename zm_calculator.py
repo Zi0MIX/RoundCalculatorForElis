@@ -377,7 +377,7 @@ def get_arguments() -> dict:
             "use_in_web": True,
             "require_map": False,
             "readable_name": "Remix",
-            "shortcode": "-remix",
+            "shortcode": "-x",
             "default_state": False,
             "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
         },
@@ -385,7 +385,7 @@ def get_arguments() -> dict:
             "use_in_web": True,
             "require_map": False,
             "readable_name": "Special rounds",
-            "shortcode": "-spec",
+            "shortcode": "-S",
             "default_state": False,
             "exp": "Add own set of special rounds to perfect times predictor to maps that support it."
         },
