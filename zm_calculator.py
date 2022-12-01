@@ -436,31 +436,28 @@ def curate_arguments(provided_args: dict) -> dict:
 
 def convert_arguments(list_of_args: list) -> dict:
     converted = {}
-    try:
-        converted.update({"rounds": int(list_of_args[0])})
-        converted.update({"players": int(list_of_args[1])})
-        converted.update({"map_code": str(list_of_args[2])})
-        # We set arguments to true, easier handling and CLI entry point can be processed fully, doesn't hurt
-        converted.update({"arguments": True})
-        # Currently not supported from CLI call
-        converted.update({"spec_rounds": tuple()})
+    converted.update({"rounds": int(list_of_args[0])})
+    converted.update({"players": int(list_of_args[1])})
+    converted.update({"map_code": str(list_of_args[2])})
+    # We set arguments to true, easier handling and CLI entry point can be processed fully, doesn't hurt
+    converted.update({"arguments": True})
+    # Currently not supported from CLI call
+    converted.update({"spec_rounds": tuple()})
 
-        default_arguments, arguments = get_arguments(), {}
-        # Fill up dict with default values
-        [arguments.update({a: default_arguments[a]["default_state"]}) for a in default_arguments.keys()]
-        # Override arguments with opposite bool if argument is detected in input
-        if len(list_of_args) > 3:
-            [arguments.update({x: not default_arguments[x]["default_state"]}) for x in default_arguments.keys() if default_arguments[x]["shortcode"] in list_of_args[3:]]
-        converted.update({"args": arguments})
+    default_arguments, arguments = get_arguments(), {}
+    # Fill up dict with default values
+    [arguments.update({a: default_arguments[a]["default_state"]}) for a in default_arguments.keys()]
+    # Override arguments with opposite bool if argument is detected in input
+    if len(list_of_args) > 3:
+        [arguments.update({x: not default_arguments[x]["default_state"]}) for x in default_arguments.keys() if default_arguments[x]["shortcode"] in list_of_args[3:]]
+    converted.update({"args": arguments})
 
-        converted.update({"mods": []})
-        if len(list_of_args) > 3:
-            default_mods = get_mods()
-            converted.update({"mods": [m for m in list_of_args[3:] if m in default_mods]})
+    converted.update({"mods": []})
+    if len(list_of_args) > 3:
+        default_mods = get_mods()
+        converted.update({"mods": [m for m in list_of_args[3:] if m in default_mods]})
 
-        return converted
-    except Exception as err:
-        return return_error(str(err), nolist=True)
+    return converted
 
 
 def get_mods() -> list:
@@ -648,14 +645,11 @@ def calculator_handler(json_input: dict | None = None):
         raw_input = input("> ").lower()
         raw_input = raw_input.split(" ")
 
-        try:
-            if not isinstance(raw_input, list) or len(raw_input) < 2:
-                raise ValueError("Wrong data input")
-            rnd, players = int(raw_input[0]), int(raw_input[1])
+        if not isinstance(raw_input, list) or len(raw_input) < 2:
+            raise ValueError("Wrong data input")
+        rnd, players = int(raw_input[0]), int(raw_input[1])
 
-            use_arguments = len(raw_input) > 2
-        except (ValueError, IndexError) as err:
-            return [{"type": err}]
+        use_arguments = len(raw_input) > 2
     # Assign variables from json otherwise
     else:
         rnd, players, map_code = int(json_input["rounds"]), int(json_input["players"]), str(json_input["map_code"])
@@ -714,7 +708,7 @@ def calculator_handler(json_input: dict | None = None):
         if map_code not in MAP_LIST:
             if json_input is None:
                 print(f"Map {COL}{map_translator(map_code)}{RES} is not supported.")
-            return return_error(f"{map_translator(map_code)} is not supported")
+            raise ValueError(f"{map_translator(map_code)} is not supported")
 
         time_total = RND_WAIT_INITIAL
 
@@ -847,33 +841,44 @@ def main_app() -> None:
     print("Round and Players arguments are mandatory, others are optional. Check ARGUMENTS.MD on GitHub for info.")
 
     while True:
-        reinit()
-        result = calculator_handler(None)
-        display_results(result)
-        deinit()
+        try:
+            reinit()
+            result = calculator_handler(None)
+            display_results(result)
+            deinit()
+        except Exception as err:
+            display_results(return_error(err))
 
 
-def main_api(arguments: dict | list) -> dict:
-    if isinstance(arguments, list):
-        arguments = convert_arguments(arguments)
-        # Passing error
-        if "type" in arguments.keys():
-            print(arguments["message"])
-            return arguments
+def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
+    try:
+        if argv_trigger:
+            arguments = eval_argv(argv)
 
-    arguments["args"] = curate_arguments(arguments["args"])
+        if isinstance(arguments, list):
+            arguments = convert_arguments(arguments)
+            # Passing error
+            if "type" in arguments.keys():
+                print(arguments["message"])
+                return arguments
 
-    if OWN_PRINT:
-        return display_results(calculator_handler(arguments))
-    return calculator_handler(arguments)
+        arguments["args"] = curate_arguments(arguments["args"])
+
+        if OWN_PRINT:
+            return display_results(calculator_handler(arguments))
+        return calculator_handler(arguments)
+
+    except Exception as err:
+        if OWN_PRINT:
+            return display_results(return_error(err))
+        return return_error(err)
 
 # print(__name__)
 if __name__ == "__main__":
     from sys import argv
 
     if len(argv) > 1:
-        argv = eval_argv(argv)
-        main_api(argv)
+        main_api(argv, argv_trigger=True)
     else:
         from colorama import Fore
         # For output syntax highlighting use COL variable
