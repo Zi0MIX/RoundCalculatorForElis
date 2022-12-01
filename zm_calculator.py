@@ -481,9 +481,17 @@ def curate_arguments(provided_args: dict) -> dict:
 
     defaults = get_arguments()
 
+    registered_pairs = []
+
     for rule in rules.keys():
         master = rules[rule]["master"]
         slave = rules[rule]["slave"]
+
+        # Ignore rules that repeat or contradict with already applied ones
+        if [master, slave] in registered_pairs or [slave, master] in registered_pairs:
+            continue
+
+        registered_pairs.append([master, slave])
 
         if rules[rule]["eval_true"]:
             if provided_args[master]:
