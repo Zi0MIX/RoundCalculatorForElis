@@ -70,11 +70,12 @@ Api config is a file that can be used for changing certain behaviours of the pro
 | --- | --- | --- |
 | `own_print` | `bool` | Used to toggle `OWN_PRINT` variable. |
 | `color_override` | `str` | Override the color of the programs built in prints. Accepted values are:
-- `red`
-- `green`
-- `blue`
-- `yellow`
-- `cyan` 
+* `red`
+* `green`
+* `blue`
+* `yellow`
+* `cyan` 
+
 |
 | `arg_overrides` | `json` | Here you can define overrides for default properties of each argument. Inside of this key define json with following structure:
 `key`: json with overrides
