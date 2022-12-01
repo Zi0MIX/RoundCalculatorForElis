@@ -68,21 +68,33 @@ Api config is a file that can be used for changing certain behaviours of the pro
 
 <table>
 <tr>
-<td> KEY </td> <td> TYPE </td> <td> CONTENT </td>
+<td> KEY </td>
+<td> TYPE </td>
+<td> CONTENT </td>
 </tr>
 <tr>
-<td> `own_print` </td> <td> `bool` </td> <td> Used to toggle `OWN_PRINT` variable. </td>
+<td> `own_print` </td>
+<td> `bool` </td> 
+<td> Used to toggle `OWN_PRINT` variable. </td>
 </tr>
 <tr>
-<td> `color_override` </td> <td> `str` </td> <td> Override the color of the programs built in prints. Accepted values are:
-- red
-- green
-- yellow
-- blue
--cyan </td>
+<td> `color_override` </td>
+<td> `str` </td>
+<td> 
+Override the color of the programs built in prints. Accepted values are:</br>
+- red </br>
+- green </br>
+- yellow </br>
+- blue </br>
+- cyan
+</td>
 </tr>
 <tr>
-<td> `arg_overrides` </td> <td> `json` </td> <td> Here you can define overrides for default properties of each argument. Inside of this key define json with following structure: Example: 
+<td> `arg_overrides` </td>
+<td> `json` </td>
+<td> 
+Here you can define overrides for default properties of each argument. Inside of this key define json with following structure: Example: 
+
 ```json
 {
     "break": {
@@ -91,10 +103,15 @@ Api config is a file that can be used for changing certain behaviours of the pro
     }
 }
 ```
+
 </td>
 </tr>
 <tr>
-<td> `new_rules` </td> <td> `json` </td> <td> Define additional rules for argument conflicts. Example: 
+<td> `new_rules` </td>
+<td> `json` </td>
+<td>
+Define additional rules for argument conflicts. Example: 
+
 ```json
 {
     "my_new_rule1": {
@@ -104,16 +121,22 @@ Api config is a file that can be used for changing certain behaviours of the pro
     }
 }
 ```
+
 </td>
 </tr>
 <tr>
-<td> `custom_translations` </td> <td> `json` </td> <td> Apply your own translations to `map_translator()` function. Example:
+<td> `custom_translations` </td>
+<td> `json` </td>
+<td> 
+Apply your own translations to `map_translator()` function. Example:
+
 ```json
 {
     "my_custom_map": "Best map",
     "his_custom_map": "Bad map"
 }
 ```
+
 </td>
 </tr>
 </table>
