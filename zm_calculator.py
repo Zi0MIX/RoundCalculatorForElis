@@ -250,6 +250,46 @@ class DogRound(ZombieRound):
         return
 
 
+def save_results_locally(to_save: list, path_override: str = "") -> None:
+    from os.path import join
+    from time import localtime, time
+    try:
+        import PySimpleGUI as sg
+    except ModuleNotFoundError:
+        sg = None
+
+    # Avoid the rare situation where this is called from API and 'CYA' is undefined
+    try:
+        CYA
+    except NameError:
+        CYA = ""
+
+    output = "\n".join(to_save)
+
+    if sg is None and not path_override:
+        print(f"{CYA}Enter path to where you want to save the file{RES}")
+        path = str(input("> "))
+    elif sg is None and path_override:
+        path = path_override
+    else:
+        while True:
+            save_folder = sg.popup_get_folder("Save as: ", keep_on_top=True)
+
+            if save_folder is None:
+                print("Cancelled saving results.")
+                return
+
+            path = save_folder
+            break
+
+    t = localtime(time())
+    a_filename = f"zm_round_calculator_{str(t[0]).zfill(4)}-{str(t[1]).zfill(2)}-{str(t[2]).zfill(2)}_{str(t[3]).zfill(2)}-{str(t[4]).zfill(2)}-{str(t[5]).zfill(2)}.txt"
+    with open(join(path, a_filename), "w", encoding="utf-8") as newfile:
+        newfile.write(output)
+
+    return
+
+
 def toggle_ownprint(state: bool) -> None:
     """Toogle state of global `OWN_PRINT`"""
     OWN_PRINT = state
@@ -377,6 +417,14 @@ def get_arguments() -> dict:
             "shortcode": "-x",
             "default_state": False,
             "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
+        },
+        "save": {
+            "use_in_web": False,
+            "require_map": False,
+            "readable_name": "Save",
+            "shortcode": "-v",
+            "default_state": False,
+            "exp": "Save output to text file."
         },
         "special_rounds": {
             "use_in_web": True,
@@ -787,6 +835,8 @@ def calculator_handler(json_input: dict | None = None):
 
 
 def display_results(results: list[dict]) -> list[dict]:
+    readable_results = []
+
     for res in results:
 
         # Assemble print
@@ -799,28 +849,40 @@ def display_results(results: list[dict]) -> list[dict]:
                     enemies = res["hordes"]
 
                 if args["clear"]:
-                    print(res["time_output"])
+                    readable_result = res["time_output"]
                 else:
-                    print(f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES}).")
+                    readable_result = f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES})."
 
+                readable_results.append(readable_result)
+                print(readable_result)
                 if args["break"]:
                     print()
 
             case "perfect_times":
                 if args["clear"]:
-                    print(res["time_output"])
+                    readable_result = res["time_output"]
                 else:
-                    print(f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}.")
+                    readable_result = f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}."
 
+                readable_results.append(readable_result)
+                print(readable_result)
                 if args["break"]:
                     print()
 
             case "mod":
-                print(res["message"])
+                readable_result = res["message"]
+                readable_results.append(readable_result)
+                print(readable_result)
 
             case "error":
-                print("An error occured, if your inputs are correct, please contact the creator.")
-                print(res["message"])
+                readable_result = f"An error occured, if your inputs are correct, please contact the creator and provide error message.\n{res['message']}"
+                readable_results.append(readable_result)
+                print(readable_result)
+
+    readable_results = [str(st).replace(COL, "").replace(RES, "") for st in readable_results]
+
+    if args["save"]:
+        save_results_locally(readable_results)
 
     return results
 
@@ -856,6 +918,9 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
             arguments = convert_arguments(arguments)
 
         arguments["args"] = curate_arguments(arguments["args"])
+
+        # Debug print
+        print(OWN_PRINT)
 
         if OWN_PRINT:
             return display_results(calculator_handler(arguments))
