@@ -263,20 +263,17 @@ def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
 
 
 def eval_argv(cli_in: list) -> list | dict:
-    try:
-        cli_in = cli_in[1:]
+    cli_in = cli_in[1:]
 
-        if cli_in[0] == "json":
-            from json import loads
-            cli_out = loads(" ".join(cli_in[1:]))
-        elif cli_in[0] == "str":
-            cli_out = cli_in[1:]
-        else:
-            raise TypeError("Inproper 'type' argument provided. Values have to be either 'str' or 'json'")
+    if cli_in[0] == "json":
+        from json import loads
+        cli_out = loads(" ".join(cli_in[1:]))
+    elif cli_in[0] == "str":
+        cli_out = cli_in[1:]
+    else:
+        raise TypeError("Inproper 'type' argument provided. Values have to be either 'str' or 'json'")
 
-        return cli_out
-    except (IndexError, TypeError) as err:
-        return return_error(err)
+    return cli_out
 
 
 def get_answer_blueprint() -> dict:
@@ -833,7 +830,7 @@ def main_app() -> None:
     from colorama import init, reinit, deinit
 
     os.system("cls")    # Bodge for colorama not working after compile
-    init()
+    init()              # Be aware, if colorama is not present this is outside of error handler
     print(f"Welcome in ZM Round Calculator {YEL}V3 BETA{RES} by Zi0")
     print(f"Source: '{CYA}https://github.com/Zi0MIX/ZM-RoundCalculator{RES}'")
     print(f"Check out web implementation of the calculator under '{CYA}https://zi0mix.github.io{RES}'")
@@ -857,10 +854,6 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
 
         if isinstance(arguments, list):
             arguments = convert_arguments(arguments)
-            # Passing error
-            if "type" in arguments.keys():
-                print(arguments["message"])
-                return arguments
 
         arguments["args"] = curate_arguments(arguments["args"])
 
