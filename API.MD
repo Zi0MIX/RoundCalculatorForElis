@@ -71,7 +71,7 @@ Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-Round
 - `use_in_web`
     * If you want to use provided mechanism for determining which arguments are to be used in UI, but want to use different set than what is defined, head to `get_arguments()` function and modify boolean under the key `use_in_web` for the argument you wish to modify.
 - `special_rounds`
-    * Recommended use is to keep this argument disabled for web ui, and the pass is as `True` to keep the functionality on at all times, then manage it by controlling what is passed as special round (look in `Type json`)
+    * Recommended use is to keep this argument disabled for web ui, and the pass is as `True` to keep the functionality on at all times, then manage it by controlling what is passed as special round (look in `Type json`). Altermatively manage it from UI, will allow for dynamic input windows and such.
 
 ##### Structure of argument dictionary
 ```json
