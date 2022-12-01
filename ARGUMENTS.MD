@@ -20,7 +20,8 @@ The column `TYPE` is meant for API users.
 | `perfect_times` | `-p` | `false` | In-Program | Instead of giving round times, it shows perfect times up to that round. If used with `range`, will print perfect times for all rounds up to the selected one. |
 | `range` | `-r` | `false` | In-Program | Whether to print out times up to provided round. |
 | `remix` | `-x` | `false` | In-Program | If logic from [Remix](https://github.com/5and5/BO1-Remix) mod is used. |
-| `special_rounds` | `-S` | `false` | In-Program | Instead of using best possible special round scenario (average 4.0), apply own set of special rounds.
+| `save` | `-v` | `false` | UI / In-Program | If results are saved to a text file after calculation.
+| `special_rounds` | `-S` | `false` | UI / In-Program | Instead of using best possible special round scenario (average 4.0), apply own set of special rounds.
 | `speedrun_time` | `-s` | `false` | In-Program | Shows time accordingly to split rules as oppose to actual round starts. |
 | `teleport_time` | `-t` | `true` | In-Program | Add time it takes for dogs to appear on the map to mitigate spawncap problem on later dog rounds. |
 
@@ -30,10 +31,9 @@ The column `TYPE` is meant for API users.
 
 #### Custom calculator arguments
 Those arguments are for advanced calculator functions and will cancel optional arguments. They were made specifically for one scenario and usually aren't needed
-| ARGUMENT | CALL | EFFECT |
-| --- | --- | --- |
-| debug | `-db` | Produces richer print meant for debugging the calculation. |
-| debug dogs | `-ddb` | Produces richer print meant for debugging calculation for dog rounds. |
-| post spawnrate | `-ps` | Prints processed spawnrate values after rounding. |
-| raw spawnrate | `-rs` | Prints raw spawnrate values emulating gsc function. |
-| zombie count | `-zc` | Prints zombie counts. |
+- `-db` - Produces richer print meant for debugging the calculation.
+- `-ddb` - Produces richer print meant for debugging calculation for dog rounds.
+- `-ga` - Produces a list of argument shortcodes with definitions.
+- `-ps` - Produces processed spawnrate values after rounding.
+- `-rs` - Produces raw spawnrate values emulating gsc function.
+- `-zc` - Produces zombie count for provided round range.

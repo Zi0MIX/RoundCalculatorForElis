@@ -266,11 +266,11 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
 
     output = "\n".join(to_save)
 
-    if sg is None and not path_override:
-        print(f"{CYA}Enter path to where you want to save the file{RES}")
-        path = str(input("> "))
-    elif sg is None and path_override:
+    if path_override:
         path = path_override
+    elif sg is None:
+        print(f"{CYA}Enter path to where you want to save the file in{RES}")
+        path = str(input("> "))
     else:
         while True:
             save_folder = sg.popup_get_folder("Save as: ", keep_on_top=True)
@@ -506,7 +506,7 @@ def convert_arguments(list_of_args: list) -> dict:
 
 
 def get_mods() -> list:
-    return ["-db", "-ddb", "-ps", "-rs", "-zc"]
+    return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga"]
 
 
 def map_translator(map_code: str) -> str:
@@ -648,6 +648,7 @@ def get_round_times(rnd) -> dict:
 
 def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
     calc_result = []
+    single_iteration = False
     for r in range(1, rnd + 1):
         zm_round = ZombieRound(r, players)
         dog_round = DogRound(r, players, r)
@@ -661,7 +662,12 @@ def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
         a["zombies"] = zm_round.zombies
         a["class_content"] = vars(zm_round)
 
-        if "-rs" in mods:
+        if "-ga" in mods:
+            rgs = get_arguments()
+            a["mod"] = "-ga"
+            a["message"] = "\n".join([f"{rgs[r]['shortcode']}: {rgs[r]['exp']}" for r in rgs.keys()])
+            single_iteration = True
+        elif "-rs" in mods:
             a["mod"] = "-rs"
             a["message"] = str(a["raw_spawnrate"])
         elif "-ps" in mods:
@@ -679,6 +685,9 @@ def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
             a["message"] = str(a["class_content"])
 
         calc_result.append(a)
+
+        if single_iteration:
+            break
 
     return calc_result
 
