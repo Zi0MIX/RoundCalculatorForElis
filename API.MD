@@ -66,21 +66,36 @@ Some of the functions used in main program can succesfully be used in UI to obta
 ## Api Config
 Api config is a file that can be used for changing certain behaviours of the program, as listed below.
 
-| KEY | TYPE | CONTENT |
-| --- | --- | --- |
-| `own_print` | `bool` | Used to toggle `OWN_PRINT` variable. |
-| `color_override` | `str` | Override the color of the programs built in prints. Accepted values are: red, green, blue, yellow, cyan |
-| `arg_overrides` | `json` | Here you can define overrides for default properties of each argument. Inside of this key define json with following structure: Example: <code>json
+<table>
+<tr>
+<td> KEY </td> <td> TYPE </td> <td> CONTENT </td>
+</tr>
+<tr>
+<td> `own_print` </td> <td> `bool` </td> <td> Used to toggle `OWN_PRINT` variable. </td>
+</tr>
+<tr>
+<td> `color_override` </td> <td> `str` </td> <td> Override the color of the programs built in prints. Accepted values are:
+- red
+- green
+- yellow
+- blue
+-cyan </td>
+</tr>
+<tr>
+<td> `arg_overrides` </td> <td> `json` </td> <td> Here you can define overrides for default properties of each argument. Inside of this key define json with following structure: Example: 
+```json
 {
     "break": {
         "use_in_web": false,
         "exp": "It's empty line innit"
     }
 }
-</code>
-
-|
-| `new_rules` | `json` | Define additional rules for argument conflicts. Example: <code>json
+```
+</td>
+</tr>
+<tr>
+<td> `new_rules` </td> <td> `json` </td> <td> Define additional rules for argument conflicts. Example: 
+```json
 {
     "my_new_rule1": {
         "master": "perfect_times",
@@ -88,15 +103,20 @@ Api config is a file that can be used for changing certain behaviours of the pro
         "eval_true": true
     }
 }
-</code>
-Will result in forcing argument `detailed` to become `False` if `perfect_times` is set to `True`. |
-| `custom_translations` | `json` | Apply your own translations to `map_translator()` function. Example: <code>json 
+```
+</td>
+</tr>
+<tr>
+<td> `custom_translations` </td> <td> `json` </td> <td> Apply your own translations to `map_translator()` function. Example:
+```json
 {
     "my_custom_map": "Best map",
     "his_custom_map": "Bad map"
 }
-</code>
-|
+```
+</td>
+</tr>
+</table>
 
 Example config file looking like this:
 ```json
