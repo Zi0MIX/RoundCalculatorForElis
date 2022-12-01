@@ -27,6 +27,8 @@ DOGS_WAIT_TELEPORT = 1.5
 MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
 MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
 
+_apiconfig = None
+
 
 @dataclass
 class ZombieRound:
@@ -340,7 +342,7 @@ def get_answer_blueprint() -> dict:
 
 
 def get_arguments() -> dict:
-    return {
+    default_arguments = {
         "break": {
             "use_in_web": True,
             "require_map": False,
@@ -463,10 +465,24 @@ def get_arguments() -> dict:
         },
     }
 
+    if _apiconfig is not None:
+        overrides = _apiconfig["arg_overrides"]
+        for high_key in overrides.keys():
+            # There is no validation for keys that can be replaced, hopefully there doesn't have to be
+            for low_key in overrides[high_key].keys():
+                default_arguments.update({high_key[low_key]: overrides[high_key[low_key]]})
+
+    return default_arguments
+
 
 def curate_arguments(provided_args: dict) -> dict:
     """Define new rules in the dict below.If argument `master` is different than it's default state, argument `slave` is set to it's default state.\nIf key `eval_true` is set to `True`, function checks if argument `master` is `True`, and if so it sets argument `slave` to `False`"""
-    rules = {
+
+    rules = {}
+    if _apiconfig is not None:
+        rules = _apiconfig["new_rules"]
+
+    rules.update({
         "1": {
             "master": "detailed",
             "slave": "nodecimals",
@@ -477,7 +493,7 @@ def curate_arguments(provided_args: dict) -> dict:
             "slave": "remix",
             "eval_true": True,
         }
-    }
+    })
 
     defaults = get_arguments()
 
@@ -534,6 +550,10 @@ def get_mods() -> list:
 
 
 def map_translator(map_code: str) -> str:
+
+    if _apiconfig is not None and map_code in _apiconfig["custom_translations"].keys():
+        return _apiconfig["custom_translations"][map_code]
+
     if map_code == "zm_prototype":
         return "Nacht Der Untoten"
     if map_code == "zm_asylum":
@@ -568,6 +588,26 @@ def map_translator(map_code: str) -> str:
         return "Origins"
 
     return map_code
+
+
+def match_color() -> None:
+    try:
+        from colorama import Fore
+    except ModuleNotFoundError:
+        return
+
+    if _apiconfig["color_override"].lower() == "yellow":
+        COL = Fore.YELLOW
+    elif _apiconfig["color_override"].lower() == "red":
+        COL = Fore.RED
+    elif _apiconfig["color_override"].lower() == "green":
+        COL = Fore.GREEN
+    elif _apiconfig["color_override"].lower() == "blue":
+        COL = Fore.BLUE
+    elif _apiconfig["color_override"].lower() == "cyan":
+        COL = Fore.CYAN
+
+    return
 
 
 def import_dogrounds() -> tuple:
@@ -943,7 +983,22 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
+    from os.path import dirname, abspath
+    from json import load
+
     try:
+        try:
+            with open(dirname(abspath(__file__)), "config.json", "r", encoding="utf-8") as rawcfg:
+                api_cfg = load(rawcfg)
+        except:
+            pass
+        else:
+            _apiconfig = api_cfg["api"]
+
+        if _apiconfig is not None:
+            OWN_PRINT = _apiconfig["own_print"]
+            match_color()
+
         if argv_trigger:
             arguments = eval_argv(argv)
 

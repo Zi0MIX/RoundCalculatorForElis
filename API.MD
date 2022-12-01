@@ -63,6 +63,80 @@ Some of the functions used in main program can succesfully be used in UI to obta
 | `MAP_LIST` | `tuple`(array) | Controls which maps are accepted if `perfect_times` argument is used. Do not modify unless you're also implementing changes in the calculator itself. |
 | `MAP_DOGS` | `tuple`(array) | Controls which maps are maps with dog rounds. |
 
+## Api Config
+Api config is a file that can be used for changing certain behaviours of the program, as listed below.
+
+| KEY | TYPE | CONTENT |
+| --- | --- | --- |
+| `own_print` | `bool` | Used to toggle `OWN_PRINT` variable. |
+| `color_override` | `str` | Override the color of the programs built in prints. Accepted values are:
+- `red`
+- `green`
+- `blue`
+- `yellow`
+- `cyan` 
+|
+| `arg_overrides` | `json` | Here you can define overrides for default properties of each argument. Inside of this key define json with following structure:
+`key`: json with overrides
+Example:
+```json
+{
+    "break": {
+        "use_in_web": false,
+        "exp": "It's empty line innit"
+    }
+}
+``` 
+|
+| `new_rules` | `json` | Define additional rules for argument conflicts.
+Example:
+```json
+{
+    "my_new_rule1": {
+        "master": "perfect_times",
+        "slave": "detailed",
+        "eval_true": true
+    }
+}
+```
+Will result in forcing argument `detailed` to become `False` if `perfect_times` is set to `True`. |
+| `custom_translations` | `json` | Apply your own translations to `map_translator()` function.
+Example:
+```json
+{
+    "my_custom_map": "Best map",
+    "his_custom_map": "Bad map"
+}
+```
+|
+
+Example config file looking like this:
+```json
+{
+    "api": {
+        "own_print": true,
+        "color_override": "red",
+        "arg_overrides": {
+            "break": {
+                "use_in_web": false,
+                "exp": "It's empty line innit"
+            }
+        },
+        "new_rules": {
+            "my_new_rule1": {
+                "master": "perfect_times",
+                "slave": "detailed",
+                "eval_true": true
+            }
+        },
+        "custom_translations": {
+            "my_custom_map": "Best map",
+            "his_custom_map": "Bad map"
+        }
+    }
+}
+```
+
 ## Arguments
 Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD).
 - Arguments to be handled in UI
