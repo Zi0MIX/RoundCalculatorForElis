@@ -71,21 +71,17 @@ Api config is a file that can be used for changing certain behaviours of the pro
 | `own_print` | `bool` | Used to toggle `OWN_PRINT` variable. |
 | `color_override` | `str` | Override the color of the programs built in prints. Accepted values are: red, green, blue, yellow, cyan |
 | `arg_overrides` | `json` | Here you can define overrides for default properties of each argument. Inside of this key define json with following structure:
-`key`: json with overrides
-Example:
-<pre>
-{
+Example: <pre> {
     "break": {
         "use_in_web": false,
         "exp": "It's empty line innit"
     }
 }
 </pre>
+
 |
 | `new_rules` | `json` | Define additional rules for argument conflicts.
-Example:
-<pre>
-{
+Example: <pre> {
     "my_new_rule1": {
         "master": "perfect_times",
         "slave": "detailed",
@@ -95,9 +91,7 @@ Example:
 </pre>
 Will result in forcing argument `detailed` to become `False` if `perfect_times` is set to `True`. |
 | `custom_translations` | `json` | Apply your own translations to `map_translator()` function.
-Example:
-<pre>
-{
+Example: <pre> {
     "my_custom_map": "Best map",
     "his_custom_map": "Bad map"
 }
