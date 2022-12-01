@@ -20,7 +20,8 @@ Input types have to be specified while using `argv` method. If wrong type specif
 | str | `argv` | All arguments are passed via argv to the program without using {key: value} ralation. Order of inputs must be strictly preserved. Preferred type for `argv` implementation. |
 | json | `main_api()` and `argv` | All arguments are passed via dictionary(json) structure. All required keys must be provided, however they don't all have to be filled unless selected function requires that. Enforced type for `main_api()` implementation. |
 
-##### Type str
+- Type str
+
 `<script_name> <type_of_data> <round_number> <player_number> <map_name> (<arguments> <mods>)`
 | ARGV | DATA RANGE | DESCRIPTION |
 | --- | --- | --- |
@@ -33,7 +34,8 @@ Input types have to be specified while using `argv` method. If wrong type specif
 | `mods` | any | Optional mods to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. The program will only support one mod at a time, however more can be passed, they'll just have no effect. |
 | `spec_rounds` | - | Currently not supported in this mode. |
 
-##### Type json
+- Type json
+
 All of those keys are mandatory.
 | KEY | TYPE | VALUES | DESCRIPTION |
 | --- | --- | --- | --- |
@@ -73,14 +75,15 @@ Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-Round
 - `special_rounds`
     * Recommended use is to keep this argument disabled for web ui, and the pass is as `True` to keep the functionality on at all times, then manage it by controlling what is passed as special round (look in `Type json`). Altermatively manage it from UI, will allow for dynamic input windows and such.
 
-##### Structure of argument dictionary
+### Structure of argument dictionary
+
 ```json
 "argument_key": {
-    "use_in_web": bool,
-    "readable_name": str,
-    "shortcode": str,
-    "default_state": bool,
-    "exp": str
+    "use_in_web": "bool",
+    "readable_name": "str",
+    "shortcode": "str",
+    "default_state": "bool",
+    "exp": "str"
 }
 ```
 - `use_in_web` - Can be used to determine whether the argument shows in your interface.
@@ -94,21 +97,21 @@ Current list of arguments is available [here](https://github.com/Zi0MIX/ZM-Round
 Program outputs data as an array of dictionaries(jsons). Structure:
 ```json
 [{
-    "type": str,
-    "mod": str,
-    "message": str,
-    "round": int,
-    "players": int,
-    "zombies": int,
-    "hordes": float,
-    "time_seconds": float,
-    "time_output": str,
-    "special_average": float,
-    "spawnrate": float,
-    "raw_spawnrate": float,
-    "network_frame": float,
-    "map_name": str,
-    "class_content": dict
+    "type": "str",
+    "mod": "str",
+    "message": "str",
+    "round": "int",
+    "players": "int",
+    "zombies": "int",
+    "hordes": "float",
+    "time_seconds": "float",
+    "time_output": "str",
+    "special_average": "float",
+    "spawnrate": "float",
+    "raw_spawnrate": "float",
+    "network_frame": "float",
+    "map_name": "str",
+    "class_content": "dict"
 }, ...]
 ```
 If not changed by arguments, current format for in-program outputs goes as is:
