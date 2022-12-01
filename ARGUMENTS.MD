@@ -24,6 +24,7 @@ The column `TYPE` is meant for API users.
 | `special_rounds` | `-S` | `false` | UI / In-Program | Instead of using best possible special round scenario (average 4.0), apply own set of special rounds.
 | `speedrun_time` | `-s` | `false` | In-Program | Shows time accordingly to split rules as oppose to actual round starts. |
 | `teleport_time` | `-t` | `true` | In-Program | Add time it takes for dogs to appear on the map to mitigate spawncap problem on later dog rounds. |
+| `waw_spawnrate` | `-w` | `false` | In-Program | Applies higher value of initial spawnrate equal to what is on Nacht, Verruckt and Shi No Numa in WaW versions. |
 
 - `break` is enabled by default as it increases readability.
 - `nodecimals` is enabled by default, as the GSC function responsible for round ends clocks every 1 second on normal rounds, however you can still kill zombies with accuracy up to 50ms.

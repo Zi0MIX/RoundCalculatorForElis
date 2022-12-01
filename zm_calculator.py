@@ -112,6 +112,9 @@ class ZombieRound:
         if args["remix"]:
             self.zombie_spawn_delay = 1.0
             self.raw_spawn_delay = 1.0
+        if args["waw_spawnrate"]:
+            self.zombie_spawn_delay = 3.0
+            self.raw_spawn_delay = 3.0
 
         if self.number > 1:
             for _ in range(1, self.number):
@@ -450,6 +453,14 @@ def get_arguments() -> dict:
             "default_state": True,
             "exp": "Adds dog appearance time to perfect dog rounds accordingly to the pattern: 't * dogs / (2 * players))'"
         },
+        "waw_spawnrate": {
+            "use_in_web": True,
+            "require_map": False,
+            "readable_name": "World at War Spawnrate",
+            "shortcode": "-w",
+            "default_state": False,
+            "exp": "Apply higher initial spawnrate value from WaW's maps Nacht, Verruckt and Shino."
+        },
     }
 
 
@@ -461,6 +472,11 @@ def curate_arguments(provided_args: dict) -> dict:
             "slave": "nodecimals",
             "eval_true": True,
         },
+        "2": {
+            "master": "waw_spawnrate",
+            "slave": "remix",
+            "eval_true": True,
+        }
     }
 
     defaults = get_arguments()
