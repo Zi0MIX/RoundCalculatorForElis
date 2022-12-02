@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 
+global OWN_PRINT, _apiconfig
 OWN_PRINT = True
 COL, RES = "", ""
 DEC = 3
