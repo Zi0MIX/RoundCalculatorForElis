@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 
+OWN_PRINT = True
 COL, RES = "", ""
 DEC = 3
 
@@ -986,6 +987,9 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
     from json import load
 
     try:
+        if not toggle_ownprint:
+            toggle_ownprint(False)
+
         try:
             with open(join(dirname(abspath(__file__)), "config.json"), "r", encoding="utf-8") as rawcfg:
                 api_cfg = load(rawcfg)
@@ -995,7 +999,7 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
             _apiconfig = api_cfg["api"]
 
         if _apiconfig is not None:
-            OWN_PRINT = _apiconfig["own_print"]
+            toggle_ownprint(_apiconfig["own_print"])
             match_color()
 
         if argv_trigger:
@@ -1021,9 +1025,6 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
 # print(__name__)
 if __name__ == "__main__":
     from sys import argv
-
-    global OWN_PRINT
-    OWN_PRINT = True
 
     if len(argv) > 1:
         main_api(argv, argv_trigger=True)
