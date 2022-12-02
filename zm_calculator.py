@@ -292,7 +292,7 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
     return
 
 
-def load_apiconfig(api: dict) -> dict:
+def load_apiconfig(api: dict | None) -> dict:
     """Load a dictionary to global `APICONFIG`"""
     global APICONFIG
     APICONFIG = api
@@ -985,10 +985,10 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
             path = join(dirname(abspath(__file__)), "config.json")
             with open(path, "r", encoding="utf-8") as rawcfg:
                 api_cfg = load(rawcfg)
-            load_apiconfig(api_cfg["api"])    
+            load_apiconfig(api_cfg["api"])
         except:
+            load_apiconfig(None)
             # print("Failed to import")
-            pass
 
         if isinstance(get_apiconfig(), dict):
             own_print = get_apiconfig("own_print")
