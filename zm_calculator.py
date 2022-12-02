@@ -983,12 +983,12 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
-    from os.path import dirname, abspath
+    from os.path import join, dirname, abspath
     from json import load
 
     try:
         try:
-            with open(dirname(abspath(__file__)), "config.json", "r", encoding="utf-8") as rawcfg:
+            with open(join(dirname(abspath(__file__)), "config.json"), "r", encoding="utf-8") as rawcfg:
                 api_cfg = load(rawcfg)
         except:
             pass
