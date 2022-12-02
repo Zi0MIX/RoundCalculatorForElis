@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 
-OWN_PRINT = True
 COL, RES = "", ""
 DEC = 3
 
@@ -1022,6 +1021,9 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
 # print(__name__)
 if __name__ == "__main__":
     from sys import argv
+
+    global OWN_PRINT
+    OWN_PRINT = True
 
     if len(argv) > 1:
         main_api(argv, argv_trigger=True)
