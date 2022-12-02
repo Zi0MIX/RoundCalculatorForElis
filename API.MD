@@ -67,52 +67,37 @@ Some of the functions used in main program can succesfully be used in UI to obta
 Api config is a file that can be used for changing certain behaviours of the program, as listed below.
 
 <table>
-<tr>
-<td> KEY </td>
-<td> TYPE </td>
-<td> CONTENT </td>
-</tr>
-<tr>
-<td> `own_print` </td>
-<td> `bool` </td> 
-<td> Used to toggle `OWN_PRINT` variable. </td>
-</tr>
-<tr>
-<td> `color_override` </td>
-<td> `str` </td>
-<td> 
-Override the color of the programs built in prints. Accepted values are:</br>
-- red </br>
-- green </br>
-- yellow </br>
-- blue </br>
-- cyan
-</td>
-</tr>
-<tr>
-<td> `arg_overrides` </td>
-<td> `json` </td>
-<td> 
-Here you can define overrides for default properties of each argument. Inside of this key define json with following structure: Example: 
-
-```json
+    <tr>
+        <td>KEY</td>
+        <td>TYPE</td>
+        <td>CONTENT</td>
+    </tr>
+    <tr>
+        <td><code>own_print</code></td>
+        <td><code>bool</code></td>
+        <td>Used to toggle <code>OWN_PRINT</code> variable.</td>
+    </tr>
+    <tr>
+        <td><code>arg_overrides</code></td>
+        <td><code>json</code></td>
+        <td>
+            Here you can define overrides for default properties of each argument. Inside of this key define json with following structure: Example:
+<pre lang="json">
 {
     "break": {
         "use_in_web": false,
         "exp": "It's empty line innit"
     }
 }
-```
-
-</td>
-</tr>
-<tr>
-<td> `new_rules` </td>
-<td> `json` </td>
-<td>
-Define additional rules for argument conflicts. Example: 
-
-```json
+</pre>
+        </td>
+    </tr>
+    <tr>
+        <td><code>new_rules</code></td>
+        <td><code>json</code></td>
+        <td>
+            Define additional rules for argument conflicts. Example:
+<pre lang="json">
 {
     "my_new_rule1": {
         "master": "perfect_times",
@@ -120,25 +105,22 @@ Define additional rules for argument conflicts. Example:
         "eval_true": true
     }
 }
-```
-
-</td>
-</tr>
-<tr>
-<td> `custom_translations` </td>
-<td> `json` </td>
-<td> 
-Apply your own translations to `map_translator()` function. Example:
-
-```json
+</pre>
+        </td>
+    </tr>
+    <tr>
+        <td><code>custom_translations</code></td>
+        <td><code>json</code></td>
+        <td>
+            Apply your own translations to <code>map_translator()</code> function. Example:
+<pre lang="json">
 {
     "my_custom_map": "Best map",
     "his_custom_map": "Bad map"
 }
-```
-
-</td>
-</tr>
+</pre>
+        </td>
+    </tr>
 </table>
 
 Example config file looking like this:
@@ -146,7 +128,6 @@ Example config file looking like this:
 {
     "api": {
         "own_print": true,
-        "color_override": "red",
         "arg_overrides": {
             "break": {
                 "use_in_web": false,
