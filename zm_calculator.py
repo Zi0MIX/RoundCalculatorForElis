@@ -990,6 +990,8 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
             load_apiconfig(None)
             # print("Failed to import")
 
+        print(globals())
+
         if isinstance(get_apiconfig(), dict):
             own_print = get_apiconfig("own_print")
 
