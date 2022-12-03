@@ -292,17 +292,33 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
     return
 
 
-def load_apiconfig(api: dict | None) -> dict:
+def load_apiconfig():
     """Load a dictionary to global `APICONFIG`"""
+    from os.path import join, dirname, abspath
+    from json import load
+
     global APICONFIG
-    APICONFIG = api
-    return APICONFIG
+    try:
+        path = join(dirname(abspath(__file__)), "config.json")
+        with open(path, "r", encoding="utf-8") as rawcfg:
+            api_cfg = load(rawcfg)
+        APICONFIG = api_cfg
+    except:
+        APICONFIG = None
+
+    return
 
 
 def get_apiconfig(key: str = "") -> dict:
-    if key:
-        return APICONFIG[key]
-    return APICONFIG
+    try:
+        print(APICONFIG)
+    except (NameError, UnboundLocalError):
+        print("loading apiconfig")
+        load_apiconfig()
+    finally:
+        if key:
+            return APICONFIG["api"][key]
+        return APICONFIG["api"]
 
 
 def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
@@ -897,7 +913,7 @@ def display_results(results: list[dict]) -> list[dict]:
     # If entered from error handler in api, args will not be defined, and they don't need to
     try:
         args
-    except NameError:
+    except (NameError, UnboundLocalError):
         args = {}
         [args.update({key: get_arguments()[key]["default_state"]}) for key in get_arguments().keys()]
 
@@ -973,24 +989,11 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
-    from os.path import join, dirname, abspath
-    from json import load
 
     try:
         own_print = True
         if not argv_trigger:
             own_print = False
-
-        try:
-            path = join(dirname(abspath(__file__)), "config.json")
-            with open(path, "r", encoding="utf-8") as rawcfg:
-                api_cfg = load(rawcfg)
-            load_apiconfig(api_cfg["api"])
-        except:
-            load_apiconfig(None)
-            # print("Failed to import")
-
-        print(globals())
 
         if isinstance(get_apiconfig(), dict):
             own_print = get_apiconfig("own_print")
