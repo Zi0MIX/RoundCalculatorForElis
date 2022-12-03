@@ -309,19 +309,17 @@ def load_apiconfig():
     return
 
 
-def get_apiconfig(key: str = "") -> dict:
+def get_apiconfig(key: str = "") -> dict | None:
     try:
-        print(APICONFIG)
+        APICONFIG
     except (NameError, UnboundLocalError):
         load_apiconfig()
 
-    try:
-        if key:
-            return APICONFIG["api"][key]
+    if isinstance(APICONFIG, dict) and key:
+        return APICONFIG["api"][key]
+    elif isinstance(APICONFIG, dict):
         return APICONFIG["api"]
-    except (KeyError, TypeError):
-        return None
-
+    return APICONFIG
 
 
 def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
