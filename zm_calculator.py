@@ -313,12 +313,15 @@ def get_apiconfig(key: str = "") -> dict:
     try:
         print(APICONFIG)
     except (NameError, UnboundLocalError):
-        print("loading apiconfig")
         load_apiconfig()
-    finally:
+
+    try:
         if key:
             return APICONFIG["api"][key]
         return APICONFIG["api"]
+    except (KeyError, TypeError):
+        return None
+
 
 
 def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
