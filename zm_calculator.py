@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 
-OWN_PRINT = True
 COL, RES = "", ""
 DEC = 3
 
@@ -26,8 +25,6 @@ DOGS_WAIT_TELEPORT = 1.5
 
 MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
 MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
-
-_apiconfig = None
 
 
 @dataclass
@@ -155,9 +152,6 @@ class ZombieRound:
             self.zombies = int(temp * 0.7)
         elif self.number < 6:
             self.zombies = int(temp * 0.9)
-
-        if args["waw_spawnrate"] and self.players == 1 and self.zombies > 24:
-            self.zombies = 24
 
         self.hordes = round(self.zombies / 24, 2)
 
@@ -298,10 +292,34 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
     return
 
 
-def toggle_ownprint(state: bool) -> None:
-    """Toogle state of global `OWN_PRINT`"""
-    OWN_PRINT = state
+def load_apiconfig():
+    """Load a dictionary to global `APICONFIG`"""
+    from os.path import join, dirname, abspath
+    from json import load
+
+    global APICONFIG
+    try:
+        path = join(dirname(abspath(__file__)), "config.json")
+        with open(path, "r", encoding="utf-8") as rawcfg:
+            api_cfg = load(rawcfg)
+        APICONFIG = api_cfg
+    except:
+        APICONFIG = None
+
     return
+
+
+def get_apiconfig(key: str = "") -> dict | None:
+    try:
+        APICONFIG
+    except (NameError, UnboundLocalError):
+        load_apiconfig()
+
+    if isinstance(APICONFIG, dict) and key:
+        return APICONFIG["api"][key]
+    elif isinstance(APICONFIG, dict):
+        return APICONFIG["api"]
+    return APICONFIG
 
 
 def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
@@ -310,8 +328,18 @@ def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
     return [{"type": "error", "message": str(err_code)}]
 
 
-def eval_argv(cli_in: list) -> list:
-    return cli_in[2:]
+def eval_argv(cli_in: list) -> list | dict:
+    cli_in = cli_in[1:]
+
+    if cli_in[0] == "json":
+        from json import loads
+        cli_out = loads(" ".join(cli_in[1:]))
+    elif cli_in[0] == "str":
+        cli_out = cli_in[1:]
+    else:
+        raise TypeError("Inproper 'type' argument provided. Values have to be either 'str' or 'json'")
+
+    return cli_out
 
 
 def get_answer_blueprint() -> dict:
@@ -458,8 +486,8 @@ def get_arguments() -> dict:
         },
     }
 
-    if _apiconfig is not None:
-        overrides = _apiconfig["arg_overrides"]
+    if isinstance(get_apiconfig(), dict):
+        overrides = get_apiconfig("arg_overrides")
         for high_key in overrides.keys():
             # There is no validation for keys that can be replaced, hopefully there doesn't have to be
             for low_key in overrides[high_key].keys():
@@ -472,8 +500,8 @@ def curate_arguments(provided_args: dict) -> dict:
     """Define new rules in the dict below.If argument `master` is different than it's default state, argument `slave` is set to it's default state.\nIf key `eval_true` is set to `True`, function checks if argument `master` is `True`, and if so it sets argument `slave` to `False`"""
 
     rules = {}
-    if _apiconfig is not None:
-        rules = _apiconfig["new_rules"]
+    if isinstance(get_apiconfig(), dict):
+        rules = get_apiconfig("new_rules")
 
     rules.update({
         "1": {
@@ -544,8 +572,8 @@ def get_mods() -> list:
 
 def map_translator(map_code: str) -> str:
 
-    if _apiconfig is not None and map_code in _apiconfig["custom_translations"].keys():
-        return _apiconfig["custom_translations"][map_code]
+    if get_apiconfig() is not None and map_code in get_apiconfig("custom_translations").keys():
+        return get_apiconfig("custom_translations")[map_code]
 
     if map_code == "zm_prototype":
         return "Nacht Der Untoten"
@@ -581,26 +609,6 @@ def map_translator(map_code: str) -> str:
         return "Origins"
 
     return map_code
-
-
-def match_color() -> None:
-    try:
-        from colorama import Fore
-    except ModuleNotFoundError:
-        return
-
-    if _apiconfig["color_override"].lower() == "yellow":
-        COL = Fore.YELLOW
-    elif _apiconfig["color_override"].lower() == "red":
-        COL = Fore.RED
-    elif _apiconfig["color_override"].lower() == "green":
-        COL = Fore.GREEN
-    elif _apiconfig["color_override"].lower() == "blue":
-        COL = Fore.BLUE
-    elif _apiconfig["color_override"].lower() == "cyan":
-        COL = Fore.CYAN
-
-    return
 
 
 def import_dogrounds() -> tuple:
@@ -903,47 +911,53 @@ def calculator_handler(json_input: dict | None = None):
 def display_results(results: list[dict]) -> list[dict]:
     readable_results = []
 
+    # If entered from error handler in api, args will not be defined, and they don't need to
+    try:
+        args
+    except (NameError, UnboundLocalError):
+        args = {}
+        [args.update({key: get_arguments()[key]["default_state"]}) for key in get_arguments().keys()]
+
     for res in results:
 
         # Assemble print
         zm_word = "zombies"
-        match res["type"]:
-            case "round_time":
-                enemies = res["zombies"]
-                if args["hordes"]:
-                    zm_word = "hordes"
-                    enemies = res["hordes"]
+        if res["type"] == "error":
+            readable_result = f"An error occured, if your inputs are correct, please contact the creator and provide error message.\n{res['message']}"
+            readable_results.append(readable_result)
+            print(readable_result)
 
-                if args["clear"]:
-                    readable_result = res["time_output"]
-                else:
-                    readable_result = f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES})."
+        elif res["type"] == "round_time":
+            enemies = res["zombies"]
+            if args["hordes"]:
+                zm_word = "hordes"
+                enemies = res["hordes"]
 
-                readable_results.append(readable_result)
-                print(readable_result)
-                if args["break"]:
-                    print()
+            if args["clear"]:
+                readable_result = res["time_output"]
+            else:
+                readable_result = f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES})."
 
-            case "perfect_times":
-                if args["clear"]:
-                    readable_result = res["time_output"]
-                else:
-                    readable_result = f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}."
+            readable_results.append(readable_result)
+            print(readable_result)
+            if args["break"]:
+                print()
 
-                readable_results.append(readable_result)
-                print(readable_result)
-                if args["break"]:
-                    print()
+        elif res["type"] == "perfect_times":
+            if args["clear"]:
+                readable_result = res["time_output"]
+            else:
+                readable_result = f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}."
 
-            case "mod":
-                readable_result = res["message"]
-                readable_results.append(readable_result)
-                print(readable_result)
+            readable_results.append(readable_result)
+            print(readable_result)
+            if args["break"]:
+                print()
 
-            case "error":
-                readable_result = f"An error occured, if your inputs are correct, please contact the creator and provide error message.\n{res['message']}"
-                readable_results.append(readable_result)
-                print(readable_result)
+        elif res["type"] == "mod":
+            readable_result = res["message"]
+            readable_results.append(readable_result)
+            print(readable_result)
 
     readable_results = [str(st).replace(COL, "").replace(RES, "") for st in readable_results]
 
@@ -976,21 +990,14 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
-    from os.path import join, dirname, abspath
-    from json import load
 
     try:
-        try:
-            with open(join(dirname(abspath(__file__)), "config.json"), "r", encoding="utf-8") as rawcfg:
-                api_cfg = load(rawcfg)
-        except:
-            pass
-        else:
-            _apiconfig = api_cfg["api"]
+        own_print = True
+        if not argv_trigger:
+            own_print = False
 
-        if _apiconfig is not None:
-            OWN_PRINT = _apiconfig["own_print"]
-            match_color()
+        if isinstance(get_apiconfig(), dict):
+            own_print = get_apiconfig("own_print")
 
         if argv_trigger:
             arguments = eval_argv(argv)
@@ -1001,18 +1008,18 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
         arguments["args"] = curate_arguments(arguments["args"])
 
         # Debug print
-        # print(OWN_PRINT)
+        # print(own_print)
 
-        if OWN_PRINT:
+        if own_print:
             return display_results(calculator_handler(arguments))
         return calculator_handler(arguments)
 
     except Exception as err:
-        if OWN_PRINT:
+        if own_print:
             return display_results(return_error(err))
         return return_error(err)
 
-# print(__name__)
+
 if __name__ == "__main__":
     from sys import argv
 

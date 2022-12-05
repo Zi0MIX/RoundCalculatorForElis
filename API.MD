@@ -13,22 +13,39 @@ API has 2 main input methods, `argv` and `main_api()` call
 - `argv` is essentially just passing arguments to the program via command line, simply typing them right after the name of the program.
 - `main_api()` is a function to be called from outside systems (it's also used in argv implementation under the hood).
 
-## Argv input
+## Input types
+Input types have to be specified while using `argv` method. If wrong type specified, program will encounter errors.
+| TYPE | METHODS | DESCRIPTION |
+| --- | --- | --- |
+| str | `argv` | All arguments are passed via argv to the program without using {key: value} ralation. Order of inputs must be strictly preserved. Preferred type for `argv` implementation. |
+| json | `main_api()` and `argv` | All arguments are passed via dictionary(json) structure. All required keys must be provided, however they don't all have to be filled unless selected function requires that. Enforced type for `main_api()` implementation. |
 
-Syntax:
-```<script_name> <round_number> <player_number> <map_name> (<arguments> <mods>)```
-Example:
-```python zm_calculator.py 30 1 zm_buried -r -b```
+- Type str
 
+`<script_name> <type_of_data> <round_number> <player_number> <map_name> (<arguments> <mods>)`
 | ARGV | DATA RANGE | DESCRIPTION |
 | --- | --- | --- |
 | `script_name` | name_of_script.extension | Name of the script on your local computer. Can be a Python file or exe. |
+| `type_of_data` | (`str`, `json`) | Defines what format you passing arguments to the program in. |
 | `round_numer` | 1-255 | Defines round number. There is no in-program valuidation, do it on your end, or not. |
 | `player_number` | 1-4 | Defines number of players. There is no in-program validation, do it on your end, or not. |
 | `map_name` | any | Is is required to pass a map name while using this format. However, unless `perfect_times` argument is used, valid map code is not necessary, therefore you can pass any placeholder instead. |
 | `arguments` | any | Optional arguments to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. Passing the argument will change it's default state. |
 | `mods` | any | Optional mods to be passed accordingly to [ARGUMENTS.MD](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) document. The program will only support one mod at a time, however more can be passed, they'll just have no effect. |
-| `spec_rounds` | - | Currently not supported for CLI calls. |
+| `spec_rounds` | - | Currently not supported in this mode. |
+
+- Type json
+
+All of those keys are mandatory.
+| KEY | TYPE | VALUES | DESCRIPTION |
+| --- | --- | --- | --- |
+| `rounds` | `int` | Number of rounds for the calculator. |
+| `players` | `int` | Number of players for the calculator. |
+| `map_code` | `str` | Can be a placeholder if argument `perfect_times` is not used. Otherwise must match list of supported maps. |
+| `use_arguments` | `bool` | Have to `true` if any of the arguments is changed. It's recommended to have it as `false` if none are changed from default state, however if passed state is always `true`, the calculator will still work. This boolean defines if arguements are analyzed during processing. |
+| `args` | `dict` | Contains calculator arguments `key`: `bool`, all arguments have to be passed, use `get_arguments()` to extract dictrionaries with argument properties. |
+| `mods` | `list[str]` | Contains mods for calculator, pass empty array if none mods are activated. Use `get_mods()` to extract an array of available arguments. |
+| `spec_rounds` | `tuple[int]` | Contains an override for special rounds to replace perfect special rounds with. If unused or unchanged, pass empty array. |
 
 ## Functions
 Some of the functions used in main program can succesfully be used in UI to obtain helpful information. Those functions are:
