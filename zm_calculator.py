@@ -331,18 +331,8 @@ def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
     return [{"type": "error", "message": str(err_code)}]
 
 
-def eval_argv(cli_in: list) -> list | dict:
-    cli_in = cli_in[1:]
-
-    if cli_in[0] == "json":
-        from json import loads
-        cli_out = loads(" ".join(cli_in[1:]))
-    elif cli_in[0] == "str":
-        cli_out = cli_in[1:]
-    else:
-        raise TypeError("Inproper 'type' argument provided. Values have to be either 'str' or 'json'")
-
-    return cli_out
+def eval_argv(cli_in: list) -> list:
+    return cli_in[1:]
 
 
 def get_answer_blueprint() -> dict:
