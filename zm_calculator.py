@@ -976,7 +976,7 @@ def main_app() -> None:
 
     os.system("cls")    # Bodge for colorama not working after compile
     init()              # Be aware, if colorama is not present this is outside of error handler
-    print(f"Welcome in ZM Round Calculator {YEL}V3 BETA{RES} by Zi0")
+    print(f"Welcome in ZM Round Calculator {YEL}V3{RES} by Zi0")
     print(f"Source: '{CYA}https://github.com/Zi0MIX/ZM-RoundCalculator{RES}'")
     print(f"Check out web implementation of the calculator under '{CYA}https://zi0mix.github.io{RES}'")
     print("Enter round number and amount of players separated by spacebar, then optional arguments")
