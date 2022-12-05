@@ -155,6 +155,9 @@ class ZombieRound:
 
         self.hordes = round(self.zombies / 24, 2)
 
+        if args["waw_spawnrate"] and self.players == 1 and self.zombies > 24:
+            self.zombies = 24
+
         return
 
 
