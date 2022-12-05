@@ -156,6 +156,9 @@ class ZombieRound:
         elif self.number < 6:
             self.zombies = int(temp * 0.9)
 
+        if args["waw_spawnrate"] and self.players == 1 and self.zombies > 24:
+            self.zombies = 24
+
         self.hordes = round(self.zombies / 24, 2)
 
         return
