@@ -108,10 +108,10 @@ class ZombieRound:
         self.zombie_spawn_delay = 2.0
         self.raw_spawn_delay = 2.0
 
-        if args["remix"]:
+        if get_args("remix"):
             self.zombie_spawn_delay = 1.0
             self.raw_spawn_delay = 1.0
-        if args["waw_spawnrate"]:
+        if get_args("waw_spawnrate"):
             self.zombie_spawn_delay = 3.0
             self.raw_spawn_delay = 3.0
 
@@ -155,7 +155,7 @@ class ZombieRound:
 
         self.hordes = round(self.zombies / 24, 2)
 
-        if args["waw_spawnrate"] and self.players == 1 and self.zombies > 24:
+        if get_args("waw_spawnrate") and self.players == 1 and self.zombies > 24:
             self.zombies = 24
 
         return
@@ -323,6 +323,29 @@ def get_apiconfig(key: str = "") -> dict | None:
     elif isinstance(APICONFIG, dict):
         return APICONFIG["api"]
     return APICONFIG
+
+
+def load_args():
+    """Load a dictionary to global `ARGS`"""
+    all_arguments = get_arguments()
+    global ARGS
+    ARGS = {}
+    [ARGS.update({key: all_arguments[key]["default_state"]}) for key in all_arguments.keys()]
+    return
+
+
+def get_args(key: str = "") -> bool | None:
+    if not key:
+        return ARGS
+    return ARGS[key]
+
+
+def update_args(key: str, state: bool | None = None) -> None:
+    if state is None:
+        ARGS[key] = not ARGS[key]
+    else:
+        ARGS[key] = state
+    return
 
 
 def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
@@ -537,7 +560,10 @@ def convert_arguments(list_of_args: list) -> dict:
     converted = {}
     converted.update({"rounds": int(list_of_args[0])})
     converted.update({"players": int(list_of_args[1])})
-    converted.update({"map_code": str(list_of_args[2])})
+    try:
+        converted.update({"map_code": str(list_of_args[2])})
+    except IndexError:
+        converted.update({"map_code": "unspecified"})
     # We set arguments to true, easier handling and CLI entry point can be processed fully, doesn't hurt
     converted.update({"arguments": True})
     # Currently not supported from CLI call
@@ -624,14 +650,14 @@ def get_readable_time(round_time: float) -> str:
         m += 1
         s -= 60
     # Do not reduce minutes to hours if even_time is on
-    if not args["even_time"]:
+    if not get_args("even_time"):
         while m > 59:
             h += 1
             m -= 60
 
     dec = f".{str(ms).zfill(3)}"
     # Clear decimals and append a second, this way it's always rounding up
-    if args["nodecimal"] and not args["lower_time"]:
+    if get_args("nodecimal") and not get_args("lower_time"):
         dec = ""
         s += 1
         if s > 59:
@@ -641,7 +667,7 @@ def get_readable_time(round_time: float) -> str:
                 h += 1
                 m -= 60
     # Otherwise just clear decimals, it then rounds down
-    elif args["nodecimal"]:
+    elif get_args("nodecimal"):
         dec = ""
 
     if not h and not m:
@@ -651,7 +677,7 @@ def get_readable_time(round_time: float) -> str:
     else:
         new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
 
-    if args["even_time"]:
+    if get_args("even_time"):
         new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}"
 
     return new_time
@@ -666,10 +692,10 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str) -> dict:
     a["map_name"] = map_translator(map_code)
 
     split_adj = 0.0
-    if args["speedrun_time"]:
+    if get_args("speedrun_time"):
         split_adj = RND_BETWEEN_NUMBER_FLAG
 
-    if args["detailed"]:
+    if get_args("detailed"):
         a["time_output"] = str(round(time_total * 1000)) + " ms"
     else:
         a["time_output"] = get_readable_time(time_total - split_adj)
@@ -693,10 +719,10 @@ def get_round_times(rnd) -> dict:
     a["class_content"] = vars(rnd)
 
     split_adj = 0
-    if args["speedrun_time"]:
+    if get_args("speedrun_time"):
         split_adj = RND_BETWEEN_NUMBER_FLAG
 
-    if args["detailed"]:
+    if get_args("detailed"):
         a["time_output"] = str(round(rnd.round_time * 1000)) + " ms"
     else:
         a["time_output"] = get_readable_time(rnd.round_time - split_adj)
@@ -772,11 +798,7 @@ def calculator_handler(json_input: dict | None = None):
             use_arguments = json_input["use_arguments"] or len(json_input["mods"])
 
     all_arguments = get_arguments()
-    global args
-    args = {}
-
-    # Assemble arguments list
-    [args.update({key: all_arguments[key]["default_state"]}) for key in all_arguments.keys()]
+    load_args()
 
     # We do not process all the argument logic if arguments are not defined
     result = ZombieRound(rnd, players)
@@ -786,13 +808,13 @@ def calculator_handler(json_input: dict | None = None):
     # Define state of arguments
     if json_input is None:
         selected_arguments = raw_input[2:]
-        for key in args.keys():
+        for key in get_args().keys():
             if all_arguments[key]["shortcode"] in selected_arguments:
-                args.update({key: not all_arguments[key]["default_state"]})
+                update_args(key)
     else:
-        for key in args.keys():
+        for key in get_args().keys():
             try:
-                args.update({key: json_input["args"][key]})
+                update_args(key, json_input["args"][key])
             # The default state of the argument is already established, the error can be ignored
             except KeyError:
                 continue
@@ -811,7 +833,7 @@ def calculator_handler(json_input: dict | None = None):
     all_results = []
 
     # Process perfect splits
-    if args["perfect_times"]:
+    if get_args("perfect_times"):
 
         if json_input is None:
             print("Enter map code (eg. zm_theater)")
@@ -829,7 +851,7 @@ def calculator_handler(json_input: dict | None = None):
             if map_code not in MAP_DOGS:
                 set_dog_rounds = tuple()
             # Not specified special_rounds or is remix
-            elif not args["special_rounds"] or args["remix"]:
+            elif not get_args("special_rounds") or get_args("remix"):
                 set_dog_rounds = DOGS_PERFECT
             # Not api mode or empty api entry provided -> take input
             elif not json_input or not len(json_input["spec_rounds"]):
@@ -853,7 +875,7 @@ def calculator_handler(json_input: dict | None = None):
             dog_round = DogRound(r, players, dog_rounds)
 
             # Handle arguments here
-            if args["teleport_time"]:
+            if get_args("teleport_time"):
                 dog_round.add_teleport_time()
 
             is_dog_round = r in set_dog_rounds
@@ -866,7 +888,7 @@ def calculator_handler(json_input: dict | None = None):
                 round_duration = zm_round.round_time + RND_WAIT_END
                 time_total += round_duration
 
-            if args["range"]:
+            if get_args("range"):
                 remembered_dog_average = 0.0
 
                 res = get_perfect_times(time_total, r + 1, map_code)
@@ -883,7 +905,7 @@ def calculator_handler(json_input: dict | None = None):
 
                 all_results.append(res)
 
-        if not args["range"]:
+        if not get_args("range"):
             res = get_perfect_times(time_total, rnd, map_code)
             res["players"] = players
             res["class_content"] = vars(zm_round)
@@ -894,7 +916,7 @@ def calculator_handler(json_input: dict | None = None):
 
         return all_results
 
-    if args["range"]:
+    if get_args("range"):
         all_results = [get_round_times(ZombieRound(r, players)) for r in range (1, rnd)]
         return all_results
 
@@ -906,10 +928,9 @@ def display_results(results: list[dict]) -> list[dict]:
 
     # If entered from error handler in api, args will not be defined, and they don't need to
     try:
-        args
+        get_args()
     except (NameError, UnboundLocalError):
-        args = {}
-        [args.update({key: get_arguments()[key]["default_state"]}) for key in get_arguments().keys()]
+        load_args()
 
     for res in results:
 
@@ -922,29 +943,29 @@ def display_results(results: list[dict]) -> list[dict]:
 
         elif res["type"] == "round_time":
             enemies = res["zombies"]
-            if args["hordes"]:
+            if get_args("hordes"):
                 zm_word = "hordes"
                 enemies = res["hordes"]
 
-            if args["clear"]:
+            if get_args("clear"):
                 readable_result = res["time_output"]
             else:
                 readable_result = f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES})."
 
             readable_results.append(readable_result)
             print(readable_result)
-            if args["break"]:
+            if get_args("break"):
                 print()
 
         elif res["type"] == "perfect_times":
-            if args["clear"]:
+            if get_args("clear"):
                 readable_result = res["time_output"]
             else:
                 readable_result = f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}."
 
             readable_results.append(readable_result)
             print(readable_result)
-            if args["break"]:
+            if get_args("break"):
                 print()
 
         elif res["type"] == "mod":
@@ -954,7 +975,7 @@ def display_results(results: list[dict]) -> list[dict]:
 
     readable_results = [str(st).replace(COL, "").replace(RES, "") for st in readable_results]
 
-    if args["save"]:
+    if get_args("save"):
         save_results_locally(readable_results)
 
     return results
