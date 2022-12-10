@@ -38,6 +38,7 @@ class ZombieRound:
         self.get_zombies()
         self.get_spawn_delay()
         self.get_round_time()
+        self.get_zombie_health()
 
 
     def get_network_frame(self):
@@ -180,6 +181,32 @@ class ZombieRound:
         self.round_time = round(self.raw_time, 2)
 
         # self.extract_decimals()
+
+        return
+
+
+    def get_zombie_health(self):
+        self.is_insta_round = True
+        int_max, int_min = 2**31 - 1, -2**31
+        self.health = 150
+        
+        for r in range(2, self.number + 1):
+            self.is_insta_round = True
+
+            if r < 10:
+                self.health += 100
+            else:
+                # self.health = int(self.health * 1.1)
+                # self.health += self.health // 10
+                self.health += int(self.health * 0.1)
+
+            if self.health > int_max:
+                self.health = int_min + (self.health % int_max)
+            elif self.health < int_min:
+                self.health = int_max + (self.health % int_min)
+
+            if self.health >= 150:
+                self.is_insta_round = False
 
         return
 
@@ -420,6 +447,14 @@ def get_arguments() -> dict:
             "default_state": False,
             "exp": "Show the amount of hordes instead of the amount of zombies in the output."
         },
+        "insta_rounds": {
+            "use_in_web": True,
+            "require_map": True,
+            "readable_name": "Insta Rounds",
+            "shortcode": "-i",
+            "default_state": False,
+            "exp": "Add information about instakill rounds to the output."
+        },
         "lower_time": {
             "use_in_web": True,
             "require_map": False,
@@ -586,7 +621,7 @@ def convert_arguments(list_of_args: list) -> dict:
 
 
 def get_mods() -> list:
-    return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga"]
+    return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir"]
 
 
 def map_translator(map_code: str) -> str:
@@ -744,13 +779,21 @@ def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
         a["raw_spawnrate"] = zm_round.raw_spawn_delay
         a["spawnrate"] = zm_round.zombie_spawn_delay
         a["zombies"] = zm_round.zombies
+        a["health"] = zm_round.health
         a["class_content"] = vars(zm_round)
+        a["message"] = ""
 
         if "-ga" in mods:
             rgs = get_arguments()
             a["mod"] = "-ga"
             a["message"] = "\n".join([f"{rgs[r]['shortcode']}: {rgs[r]['exp']}" for r in rgs.keys()])
             single_iteration = True
+        elif "-ir" in mods:
+            a["mod"] = "-ir"
+            if zm_round.is_insta_round:
+                a["message"] = f"Round {zm_round.number} is an insta-kill round. Zombie health: {zm_round.health}"
+            else:
+                continue
         elif "-rs" in mods:
             a["mod"] = "-rs"
             a["message"] = str(a["raw_spawnrate"])
@@ -760,6 +803,9 @@ def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
         elif "-zc" in mods:
             a["mod"] = "-zc"
             a["message"] = str(a["zombies"])
+        elif "-zh" in mods:
+            a["mod"] = "-zh"
+            a["message"] = str(a["health"])
         elif "-db" in mods:
             a["mod"] = "-db"
             a["message"] = str(a["class_content"])
