@@ -34,11 +34,14 @@ class ZombieRound:
 
 
     def __post_init__(self):
+        from random import randrange
+
         self.get_network_frame()
         self.get_zombies()
         self.get_spawn_delay()
         self.get_round_time()
         self.get_zombie_health()
+        self.explosives_handler(radius_override=110.0, randdamage_override=100)
 
 
     def get_network_frame(self):
@@ -49,8 +52,11 @@ class ZombieRound:
         return
 
 
-    def get_round_spawn_delay(self, raw_delay: float) -> float:
-        self.raw_spawn_delay = raw_delay
+    def get_round_spawn_delay(self, raw_delay):
+        """Function uses Numpy to emulate Game Engine behavior
+Takes float32 `raw_delay` arugment and returns float32 value"""
+
+        self.raw_spawn_delay = np.format_float_positional(raw_delay, min_digits=16)
 
         if raw_delay < 0.01:
             raw_delay = 0.01
@@ -102,12 +108,13 @@ class ZombieRound:
         inside[1] = "".join(real_decimals)
         # print(f"{inside} / original: {str(self.raw_spawn_delay).split('.')}")
 
-        return float(".".join(inside))
+        return np.float32(".".join(inside))
 
 
     def get_spawn_delay(self):
-        self.zombie_spawn_delay = 2.0
-        self.raw_spawn_delay = 2.0
+        """Function uses Numpy to emulate Game Engine behavior"""
+        self.zombie_spawn_delay = np.float32(2.0)
+        self.raw_spawn_delay = np.float32(2.0)
 
         if get_args("remix"):
             self.zombie_spawn_delay = 1.0
@@ -118,14 +125,14 @@ class ZombieRound:
 
         if self.number > 1:
             for _ in range(1, self.number):
-                self.zombie_spawn_delay *= 0.95
+                self.zombie_spawn_delay *= np.float32(0.95)
 
             self.zombie_spawn_delay = self.get_round_spawn_delay(self.zombie_spawn_delay)
 
             if self.zombie_spawn_delay < 0.1:
-                self.zombie_spawn_delay = 0.1
+                self.zombie_spawn_delay = np.float32(0.1)
 
-        self.zombie_spawn_delay = round(self.zombie_spawn_delay, 2)
+        self.zombie_spawn_delay = round(float(self.zombie_spawn_delay), 2)
 
         return
 
@@ -186,9 +193,10 @@ class ZombieRound:
 
 
     def get_zombie_health(self):
+        """Function uses Numpy to emulate Game Engine behavior"""
         self.is_insta_round = True
-        int_max, int_min = 2**31 - 1, -2**31
-        self.health = 150
+        # int_max, int_min = 2**31 - 1, -2**31
+        self.health = np.int32(150)
         
         for r in range(2, self.number + 1):
             self.is_insta_round = True
@@ -196,19 +204,55 @@ class ZombieRound:
             if r < 10:
                 self.health += 100
             else:
-                # self.health = int(self.health * 1.1)
                 # self.health += self.health // 10
-                self.health += int(self.health * 0.1)
+                self.health += np.int32(np.float32(self.health) * np.float32(0.1))
 
-            if self.health > int_max:
-                self.health = int_min + (self.health % int_max)
-            elif self.health < int_min:
-                self.health = int_max + (self.health % int_min)
+            # if self.health > int_max:
+            #     self.health = int_min + (self.health % int_max)
+            # elif self.health < int_min:
+            #     self.health = int_max + (self.health % int_min)
 
             if self.health >= 150:
                 self.is_insta_round = False
 
+            # print(f"DEV: Round: {r} / Health: {self.health}")
+
         return
+
+
+    def explosives_handler(self, radius_override: float = None, randdamage_override: int = None):
+        """Function uses Numpy to emulate Game Engine behavior"""
+
+        _max_radius, _min_radius = np.float32(256.0), np.float32(0.0)
+        _max_damage, _min_damage = np.int32(300), np.int32(75)
+
+        radius = _min_radius
+        if isinstance(radius_override, float):
+            radius = radius_override
+
+        bmx_damage = np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300))
+
+        extra_damage = np.int32(200)
+        if isinstance(randdamage_override, int):
+            extra_damage = np.int32(randdamage_override)
+
+        self.nade_damage = np.int32(bmx_damage + extra_damage)
+
+        current_health = np.int32(self.health)
+
+        nades = 0
+
+        print(f"nade_damage = {self.nade_damage} / current_health = {current_health}")
+        while self.nade_damage / current_health * np.int32(100) < np.int32(10) and current_health > np.int32(150):
+            # print(f"DEV: percent: {self.nade_damage / current_health * 100}%")
+            nades += 1
+            current_health -= self.nade_damage
+
+        self.prenades = nades
+
+        print(f"DEV: Bmx damage: {bmx_damage}")
+        print(f"DEV: Nade damage: {self.nade_damage}")
+        print(f"DEV: Prenades on {self.number}: {nades}")
 
 
 @dataclass
@@ -1081,7 +1125,12 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
 
 
 if __name__ == "__main__":
+    import numpy as np
     from sys import argv
+
+    # Avoid warning while calculating insta rounds
+    np.seterr(over="ignore")
+    # np.set_printoptions(precision=16, floatmode="fixed")
 
     if len(argv) > 1:
         main_api(argv, argv_trigger=True)
