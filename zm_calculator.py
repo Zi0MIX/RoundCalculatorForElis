@@ -242,17 +242,26 @@ Takes float32 `raw_delay` arugment and returns float32 value"""
 
         nades = 0
 
-        print(f"nade_damage = {self.nade_damage} / current_health = {current_health}")
+        # Deal with bigger numbers for high rounds
+        # 400_000 and 450_000 are the fastest for computation
+        number_of_nades = np.int32(400_000) // self.nade_damage
+        damage = number_of_nades * self.nade_damage
+        while current_health > np.int32(450_000):
+            current_health -= damage
+            nades += number_of_nades
+            # print(f"DEV: nades: {nades} / number_of_nades: {number_of_nades} / current_health: {current_health}")
+
+        # Get exact number when number is already low
         while self.nade_damage / current_health * np.int32(100) < np.int32(10) and current_health > np.int32(150):
-            # print(f"DEV: percent: {self.nade_damage / current_health * 100}%")
+            # print(f"DEV: percent: {self.nade_damage / current_health * 100}% / current_health: {current_health}")
             nades += 1
             current_health -= self.nade_damage
 
         self.prenades = nades
 
-        print(f"DEV: Bmx damage: {bmx_damage}")
-        print(f"DEV: Nade damage: {self.nade_damage}")
-        print(f"DEV: Prenades on {self.number}: {nades}")
+        # print(f"DEV: Bmx damage: {bmx_damage}")
+        # print(f"DEV: Nade damage: {self.nade_damage}")
+        # print(f"DEV: Prenades on {self.number}: {nades}")
 
 
 @dataclass
