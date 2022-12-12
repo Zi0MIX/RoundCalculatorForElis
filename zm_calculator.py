@@ -34,14 +34,12 @@ class ZombieRound:
 
 
     def __post_init__(self):
-        from random import randrange
-
         self.get_network_frame()
         self.get_zombies()
         self.get_spawn_delay()
         self.get_round_time()
         self.get_zombie_health()
-        self.explosives_handler(radius_override=110.0, randdamage_override=100)
+        self.explosives_handler(nade_type="german", radius_override=110.0, randdamage_override=150)
 
 
     def get_network_frame(self):
@@ -220,19 +218,29 @@ Takes float32 `raw_delay` arugment and returns float32 value"""
         return
 
 
-    def explosives_handler(self, radius_override: float = None, randdamage_override: int = None):
-        """Function uses Numpy to emulate Game Engine behavior"""
+    def explosives_handler(self, nade_type: str = "german", radius_override: float = None, randdamage_override: int = None):
+        """Function uses Numpy to emulate Game Engine behavior.\nAvailable nade types are `frag`, `german`"""
+        from random import randrange
 
+        # Move to if statements if differs for next types
         _max_radius, _min_radius = np.float32(256.0), np.float32(0.0)
-        _max_damage, _min_damage = np.int32(300), np.int32(75)
+        _max_extra, _min_extra = np.int32(200), np.int32(100)
 
-        radius = _min_radius
+        # Get average radius or else pickup override value. Important to pass float to the function call
+        radius = np.float32((_max_radius + _min_radius) / 2)
         if isinstance(radius_override, float):
-            radius = radius_override
+            radius = np.float32(radius_override)
 
-        bmx_damage = np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300))
+        # Get damages using bmxs values and also define damage ranges for reference
+        if nade_type == "frag":
+            _max_damage, _min_damage = np.int32(300), np.int32(75)
+            bmx_damage = np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300))
+        elif nade_type == "german":
+            _max_damage, _min_damage = np.int32(200), np.int32(50)
+            bmx_damage = np.int32(np.float32(-0.585) * np.float32(radius) + np.int32(200))
 
-        extra_damage = np.int32(200)
+        # Get average extra damage or else pickup override value
+        extra_damage = np.int32((_max_extra + _min_extra) / 2) + np.int32(self.number)
         if isinstance(randdamage_override, int):
             extra_damage = np.int32(randdamage_override)
 
@@ -259,9 +267,9 @@ Takes float32 `raw_delay` arugment and returns float32 value"""
 
         self.prenades = nades
 
-        # print(f"DEV: Bmx damage: {bmx_damage}")
-        # print(f"DEV: Nade damage: {self.nade_damage}")
-        # print(f"DEV: Prenades on {self.number}: {nades}")
+        print(f"DEV: Bmx damage: {bmx_damage}")
+        print(f"DEV: Nade damage: {self.nade_damage}")
+        print(f"DEV: Prenades on {self.number}: {nades}")
 
 
 @dataclass
