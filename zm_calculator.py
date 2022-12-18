@@ -222,6 +222,9 @@ Takes float32 `raw_delay` arugment and returns float32 value"""
         """Function uses Numpy to emulate Game Engine behavior.\nAvailable nade types are `frag`, `german`"""
         from random import randrange
 
+        if isinstance(radius_override, int):
+            raise Exception("An int was passed to 'radius_override' argument in explosives_handler() function. Please pass the float.")
+
         # Move to if statements if differs for next types
         _max_radius, _min_radius = np.float32(256.0), np.float32(0.0)
         _max_extra, _min_extra = np.int32(200), np.int32(100)
