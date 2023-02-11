@@ -3,7 +3,6 @@ ZM Round Calculator is a little tool, initially meant to just provide perfect ro
 - Values tested against real life scenarios in Black Ops and Black Ops 2. 
     * For BO2 Plutonium it assumes you're running a correct Spawn Fix (yes it's still neeeded, no the ones that were made originally are not fixing the issue), you can use [First Room Fix](https://github.com/Zi0MIX/T6-FIRST-ROOM-FIX).
 - Check [ARGUMENTS](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) file for more info on arguments.
-- You can see some useful data obtained via this program on [this spreadsheet](https://docs.google.com/spreadsheets/d/1Uqs-PKVD_CKicYV1kncH9591prKiomFae2t4cb-qAEI/edit?usp=sharing).
 - Check out [web version](https://zi0mix.github.io/) of this program.
 
 ### Perfect times calculations
