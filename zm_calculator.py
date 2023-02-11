@@ -18,7 +18,8 @@ ZOMBIE_AI_PER_PLAYER = 6
 
 # Perfect dog rounds, r5 then all 4 rounders
 DOGS_PERFECT = [int(x) for x in range(256) if x % 4 == 1 and x > 4]
-DOGS_WAIT_START = 7.05      # 0.05 from ingame timing, code says 7 dot
+# 0.05 from ingame timing, code says 7 dot
+DOGS_WAIT_START = 7.05      
 DOGS_WAIT_END = 8
 # Time between dog spawning to dog appearing on the map
 DOGS_WAIT_TELEPORT = 1.5
@@ -50,9 +51,9 @@ class ZombieRound:
         return
 
 
-    def get_round_spawn_delay(self, raw_delay):
-        """Function uses Numpy to emulate Game Engine behavior
-Takes float32 `raw_delay` arugment and returns float32 value"""
+    def get_round_spawn_delay(self, raw_delay: np.float32) -> np.float32:
+        """Function uses Numpy to emulate Game Engine behavior\n
+        Takes float32 `raw_delay` arugment and returns float32 value"""
 
         self.raw_spawn_delay = np.format_float_positional(raw_delay, min_digits=16)
 
@@ -219,39 +220,48 @@ Takes float32 `raw_delay` arugment and returns float32 value"""
 
 
     def explosives_handler(self, nade_type: str = "german", radius_override: float = None, randdamage_override: int = None):
-        """Function uses Numpy to emulate Game Engine behavior.\nAvailable nade types are `frag`, `german`"""
-        from random import randrange
+        """Function uses Numpy to emulate Game Engine behavior.\n
+        Available nade types are `frag`, `german`, `semtex`"""
 
-        if isinstance(radius_override, int):
-            raise Exception("An int was passed to 'radius_override' argument in explosives_handler() function. Please pass the float.")
+        if not isinstance(radius_override, float):
+            raise Exception(f"Wrong argument type passed to 'radius_override'. Expected '{type(float())}', received '{type(radius_override)}'")
 
-        # Move to if statements if differs for next types
-        _max_radius, _min_radius = np.float32(256.0), np.float32(0.0)
-        _max_extra, _min_extra = np.int32(200), np.int32(100)
+        # Create if statements for radius if necessary in the future
+        # Default values are for frags
+        nadecfg: dict[str, np.float32 | np.int32] = {
+            "max_radius": np.float32(256.0),
+            "min_radius": np.float32(0.0),
+            "max_damage": np.int32(300),
+            "min_damage": np.int32(75),
+            "damage_extra_max": np.int32(200),
+            "damage_extra_min": np.int32(100),
+            "bmx_damage": np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300)),
+        }
+        nadecfg["damage_extra_max"], nadecfg["damage_extra_min"] = np.int32(200), np.int32(100)
 
         # Get average radius or else pickup override value. Important to pass float to the function call
-        radius = np.float32((_max_radius + _min_radius) / 2)
+        radius = np.float32((nadecfg["max_Radius"] + nadecfg["min_radius"]) / 2)
         if isinstance(radius_override, float):
             radius = np.float32(radius_override)
 
         # Get damages using bmxs values and also define damage ranges for reference
-        if nade_type == "frag":
-            _max_damage, _min_damage = np.int32(300), np.int32(75)
-            bmx_damage = np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300))
-        elif nade_type == "german":
-            _max_damage, _min_damage = np.int32(200), np.int32(50)
-            bmx_damage = np.int32(np.float32(-0.585) * np.float32(radius) + np.int32(200))
+        if nade_type == "german":
+            nadecfg["max_damage"], nadecfg["min_damage"] = np.int32(200), np.int32(50)
+            nadecfg["bmx_damage"] = np.int32(np.float32(-0.585) * np.float32(radius) + np.int32(200))
+        elif nade_type == "semtex":
+            nadecfg["max_damage"], nadecfg["min_damage"] = np.int32(300), np.int32(55)
+            nadecfg["bmx_damage"] = None
 
         # Get average extra damage or else pickup override value
-        extra_damage = np.int32((_max_extra + _min_extra) / 2) + np.int32(self.number)
+        extra_damage = np.int32((nadecfg["damage_extra_max"] + nadecfg["damage_extra_min"]) / 2) + np.int32(self.number)
         if isinstance(randdamage_override, int):
             extra_damage = np.int32(randdamage_override)
 
-        self.nade_damage = np.int32(bmx_damage + extra_damage)
+        self.nade_damage = np.int32(nadecfg["bmx_damage"] + extra_damage)
 
         current_health = np.int32(self.health)
 
-        nades = 0
+        nades = np.int32(0)
 
         # Deal with bigger numbers for high rounds
         # 400_000 and 450_000 are the fastest for computation
@@ -270,7 +280,7 @@ Takes float32 `raw_delay` arugment and returns float32 value"""
 
         self.prenades = nades
 
-        print(f"DEV: Bmx damage: {bmx_damage}")
+        print(f"DEV: Bmx damage: {nadecfg['bmx_damage']}")
         print(f"DEV: Nade damage: {self.nade_damage}")
         print(f"DEV: Prenades on {self.number}: {nades}")
 
@@ -431,7 +441,7 @@ def get_args(key: str = "") -> bool | None:
     return ARGS[key]
 
 
-def update_args(key: str, state: bool | None = None) -> None:
+def update_args(key: str, state: bool = None) -> None:
     if state is None:
         ARGS[key] = not ARGS[key]
     else:
@@ -445,7 +455,7 @@ def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
     return [{"type": "error", "message": str(err_code)}]
 
 
-def eval_argv(cli_in: list) -> list:
+def eval_argv(cli_in: list[str]) -> list:
     return cli_in[1:]
 
 
@@ -655,7 +665,7 @@ def curate_arguments(provided_args: dict) -> dict:
     return provided_args
 
 
-def convert_arguments(list_of_args: list) -> dict:
+def convert_arguments(list_of_args: list[str]) -> dict:
     converted = {}
     converted.update({"rounds": int(list_of_args[0])})
     converted.update({"players": int(list_of_args[1])})
@@ -802,8 +812,7 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str) -> dict:
     return a
 
 
-def get_round_times(rnd) -> dict:
-    """Rnd: ZombieRound | DogRound"""
+def get_round_times(rnd: ZombieRound | DogRound) -> dict:
 
     a = get_answer_blueprint()
     a["type"] = "round_time"
@@ -829,7 +838,7 @@ def get_round_times(rnd) -> dict:
     return a
 
 
-def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
+def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
     calc_result = []
     single_iteration = False
     for r in range(1, rnd + 1):
@@ -886,7 +895,7 @@ def calculator_custom(rnd: int, players: int, mods: list) -> list[dict]:
     return calc_result
 
 
-def calculator_handler(json_input: dict | None = None):
+def calculator_handler(json_input: dict = None):
 
     # Take input if standalone app
     if json_input is None:
@@ -1144,8 +1153,8 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
         return return_error(err)
 
 
+import numpy as np
 if __name__ == "__main__":
-    import numpy as np
     from sys import argv
 
     # Avoid warning while calculating insta rounds
