@@ -400,36 +400,6 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
     return
 
 
-def load_apiconfig():
-    """Load a dictionary to global `APICONFIG`"""
-    from os.path import join, dirname, abspath
-    from json import load
-
-    global APICONFIG
-    try:
-        path = join(dirname(abspath(__file__)), "config.json")
-        with open(path, "r", encoding="utf-8") as rawcfg:
-            api_cfg = load(rawcfg)
-        APICONFIG = api_cfg
-    except:
-        APICONFIG = None
-
-    return
-
-
-def get_apiconfig(key: str = "") -> dict | None:
-    try:
-        APICONFIG
-    except (NameError, UnboundLocalError):
-        load_apiconfig()
-
-    if isinstance(APICONFIG, dict) and key:
-        return APICONFIG["api"][key]
-    elif isinstance(APICONFIG, dict):
-        return APICONFIG["api"]
-    return APICONFIG
-
-
 def load_args():
     """Load a dictionary to global `ARGS`"""
     all_arguments = get_arguments()
@@ -461,10 +431,6 @@ def return_error(nolist: bool = False) -> dict | list[dict]:
     return [{"type": "error", "message": str(format_exc())}]
 
 
-def eval_argv(cli_in: list[str]) -> list:
-    return cli_in[1:]
-
-
 def get_answer_blueprint() -> dict:
     """Check outputs.MD for reference"""
     return {
@@ -486,146 +452,11 @@ def get_answer_blueprint() -> dict:
 
 
 def get_arguments() -> dict:
-    default_arguments = {
-        "break": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Break",
-            "shortcode": "-b",
-            "default_state": True,
-            "exp": "Display an empty line between results."
-        },
-        "clear": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Clear output",
-            "shortcode": "-c",
-            "default_state": False,
-            "exp": "Show only numeric output as oppose to complete sentences. Use for datasets."
-        },
-        "detailed": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Detailed",
-            "shortcode": "-d",
-            "default_state": False,
-            "exp": "Show time in miliseconds instead of formatted string."
-        },
-        "even_time": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Even time",
-            "shortcode": "-e",
-            "default_state": False,
-            "exp": "Time output always has 5 symbols."
-        },
-        "hordes": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Hordes",
-            "shortcode": "-h",
-            "default_state": False,
-            "exp": "Show the amount of hordes instead of the amount of zombies in the output."
-        },
-        "insta_rounds": {
-            "use_in_web": True,
-            "require_map": True,
-            "readable_name": "Insta Rounds",
-            "shortcode": "-i",
-            "default_state": True,
-            "exp": "Add information about instakill rounds to the output."
-        },
-        "lower_time": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Lower Time",
-            "shortcode": "-l",
-            "default_state": False,
-            "exp": "Change seconds rounding to go down instead of up."
-        },
-        "nodecimal": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Nodecimal",
-            "shortcode": "-n",
-            "default_state": True,
-            "exp": "Show time without decimals."
-        },
-        "perfect_times": {
-            "use_in_web": True,
-            "require_map": True,
-            "readable_name": "Perfect times",
-            "shortcode": "-p",
-            "default_state": False,
-            "exp": "Instead of perfect round times, display perfect split times for choosen map."
-        },
-        "prenades": {
-            "use_in_web": False,    # Arg is not yet usable
-            "require_map": True,
-            "readable_name": "Prenades",
-            "shortcode": "-P",
-            "default_state": False,
-            "exp": "Instead of perfect round times, display amount of prenades."
-        },
-        "range": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Range",
-            "shortcode": "-r",
-            "default_state": False,
-            "exp": "Show results for all rounds leading to selected number."
-        },
-        "remix": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Remix",
-            "shortcode": "-x",
-            "default_state": False,
-            "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
-        },
-        "save": {
-            "use_in_web": False,
-            "require_map": False,
-            "readable_name": "Save",
-            "shortcode": "-v",
-            "default_state": False,
-            "exp": "Save output to text file."
-        },
-        "special_rounds": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Special rounds",
-            "shortcode": "-S",
-            "default_state": False,
-            "exp": "Add own set of special rounds to perfect times predictor to maps that support it."
-        },
-        "speedrun_time": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Speedrun time",
-            "shortcode": "-s",
-            "default_state": False,
-            "exp": "Show times accordingly to speedrun rules, round end is on number transition instead of when zombies start spawning."
-        },
-        "teleport_time": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "Teleport time",
-            "shortcode": "-t",
-            "default_state": True,
-            "exp": "Adds dog appearance time to perfect dog rounds accordingly to the pattern: 't * dogs / (2 * players))'"
-        },
-        "waw_spawnrate": {
-            "use_in_web": True,
-            "require_map": False,
-            "readable_name": "World at War Spawnrate",
-            "shortcode": "-w",
-            "default_state": False,
-            "exp": "Apply higher initial spawnrate value from WaW's maps Nacht, Verruckt and Shino."
-        },
-    }
+    from pycore.api_handler import apiconfing_defined, get_apiconfig
 
-    if isinstance(get_apiconfig(), dict):
+    default_arguments = cfg.DEFAULT_ARGUMENTS
+
+    if apiconfing_defined():
         overrides = get_apiconfig("arg_overrides")
         for high_key in overrides.keys():
             # There is no validation for keys that can be replaced, hopefully there doesn't have to be
@@ -636,10 +467,12 @@ def get_arguments() -> dict:
 
 
 def curate_arguments(provided_args: dict) -> dict:
-    """Define new rules in the dict below.If argument `master` is different than it's default state, argument `slave` is set to it's default state.\nIf key `eval_true` is set to `True`, function checks if argument `master` is `True`, and if so it sets argument `slave` to `False`"""
+    """Define new rules in the dict below.If argument `master` is different than it's default state, argument `slave` is set to it's default state.\n
+    If key `eval_true` is set to `True`, function checks if argument `master` is `True`, and if so it sets argument `slave` to `False`"""
+    from pycore.api_handler import apiconfing_defined, get_apiconfig
 
     rules = {}
-    if isinstance(get_apiconfig(), dict):
+    if apiconfing_defined():
         rules = get_apiconfig("new_rules")
 
     rules.update({
@@ -679,43 +512,18 @@ def curate_arguments(provided_args: dict) -> dict:
     return provided_args
 
 
-def convert_arguments(list_of_args: list[str]) -> dict:
-    converted = {}
-    converted.update({"rounds": int(list_of_args[0])})
-    converted.update({"players": int(list_of_args[1])})
-    try:
-        converted.update({"map_code": str(list_of_args[2])})
-    except IndexError:
-        converted.update({"map_code": "unspecified"})
-    # We set arguments to true, easier handling and CLI entry point can be processed fully, doesn't hurt
-    converted.update({"arguments": True})
-    # Currently not supported from CLI call
-    converted.update({"spec_rounds": tuple()})
-
-    default_arguments, arguments = get_arguments(), {}
-    # Fill up dict with default values
-    [arguments.update({a: default_arguments[a]["default_state"]}) for a in default_arguments.keys()]
-    # Override arguments with opposite bool if argument is detected in input
-    if len(list_of_args) > 3:
-        [arguments.update({x: not default_arguments[x]["default_state"]}) for x in default_arguments.keys() if default_arguments[x]["shortcode"] in list_of_args[3:]]
-    converted.update({"args": arguments})
-
-    converted.update({"mods": []})
-    if len(list_of_args) > 3:
-        default_mods = get_mods()
-        converted.update({"mods": [m for m in list_of_args[3:] if m in default_mods]})
-
-    return converted
-
-
 def get_mods() -> list:
     return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir", "-exc"]
 
 
 def map_translator(map_code: str) -> str:
+    from pycore.api_handler import apiconfing_defined, get_apiconfig
 
-    if get_apiconfig() is not None and map_code in get_apiconfig("custom_translations").keys():
-        return get_apiconfig("custom_translations")[map_code]
+    if apiconfing_defined():
+        api_translations = get_apiconfig("custom_translations")
+
+        if map_code in api_translations.keys():
+            return api_translations[map_code]
 
     if map_code == "zm_prototype":
         return "Nacht Der Untoten"
@@ -1141,20 +949,20 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
+    import pycore.api_handler as api
 
     try:
-        own_print = True
-        if not argv_trigger:
-            own_print = False
+        api.init_apiconfig()
 
-        if isinstance(get_apiconfig(), dict):
-            own_print = get_apiconfig("own_print")
+        own_print = False
+        if api.apiconfing_defined():
+            own_print = api.get_apiconfig("own_print")
 
         if argv_trigger:
-            arguments = eval_argv(argv)
+            arguments = api.eval_argv(argv)
 
         if isinstance(arguments, list):
-            arguments = convert_arguments(arguments)
+            arguments = api.convert_arguments(arguments, get_arguments(), get_mods())
 
         arguments["args"] = curate_arguments(arguments["args"])
 

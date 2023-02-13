@@ -23,3 +23,142 @@ DOGS_WAIT_TELEPORT = 1.5
 
 MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
 MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
+
+DEFAULT_ARGUMENTS = {
+    "break": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Break",
+        "shortcode": "-b",
+        "default_state": True,
+        "exp": "Display an empty line between results."
+    },
+    "clear": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Clear output",
+        "shortcode": "-c",
+        "default_state": False,
+        "exp": "Show only numeric output as oppose to complete sentences. Use for datasets."
+    },
+    "detailed": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Detailed",
+        "shortcode": "-d",
+        "default_state": False,
+        "exp": "Show time in miliseconds instead of formatted string."
+    },
+    "even_time": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Even time",
+        "shortcode": "-e",
+        "default_state": False,
+        "exp": "Time output always has 5 symbols."
+    },
+    "hordes": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Hordes",
+        "shortcode": "-h",
+        "default_state": False,
+        "exp": "Show the amount of hordes instead of the amount of zombies in the output."
+    },
+    "insta_rounds": {
+        "use_in_web": True,
+        "require_map": True,
+        "readable_name": "Insta Rounds",
+        "shortcode": "-i",
+        "default_state": True,
+        "exp": "Add information about instakill rounds to the output."
+    },
+    "lower_time": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Lower Time",
+        "shortcode": "-l",
+        "default_state": False,
+        "exp": "Change seconds rounding to go down instead of up."
+    },
+    "nodecimal": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Nodecimal",
+        "shortcode": "-n",
+        "default_state": True,
+        "exp": "Show time without decimals."
+    },
+    "perfect_times": {
+        "use_in_web": True,
+        "require_map": True,
+        "readable_name": "Perfect times",
+        "shortcode": "-p",
+        "default_state": False,
+        "exp": "Instead of perfect round times, display perfect split times for choosen map."
+    },
+    "prenades": {
+        "use_in_web": False,    # Arg is not yet usable
+        "require_map": True,
+        "readable_name": "Prenades",
+        "shortcode": "-P",
+        "default_state": False,
+        "exp": "Instead of perfect round times, display amount of prenades."
+    },
+    "range": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Range",
+        "shortcode": "-r",
+        "default_state": False,
+        "exp": "Show results for all rounds leading to selected number."
+    },
+    "remix": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Remix",
+        "shortcode": "-x",
+        "default_state": False,
+        "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
+    },
+    "save": {
+        "use_in_web": False,
+        "require_map": False,
+        "readable_name": "Save",
+        "shortcode": "-v",
+        "default_state": False,
+        "exp": "Save output to text file."
+    },
+    "special_rounds": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Special rounds",
+        "shortcode": "-S",
+        "default_state": False,
+        "exp": "Add own set of special rounds to perfect times predictor to maps that support it."
+    },
+    "speedrun_time": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Speedrun time",
+        "shortcode": "-s",
+        "default_state": False,
+        "exp": "Show times accordingly to speedrun rules, round end is on number transition instead of when zombies start spawning."
+    },
+    "teleport_time": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "Teleport time",
+        "shortcode": "-t",
+        "default_state": True,
+        "exp": "Adds dog appearance time to perfect dog rounds accordingly to the pattern: 't * dogs / (2 * players))'"
+    },
+    "waw_spawnrate": {
+        "use_in_web": True,
+        "require_map": False,
+        "readable_name": "World at War Spawnrate",
+        "shortcode": "-w",
+        "default_state": False,
+        "exp": "Apply higher initial spawnrate value from WaW's maps Nacht, Verruckt and Shino."
+    }
+}
