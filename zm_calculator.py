@@ -41,7 +41,6 @@ class ZombieRound:
         self.get_spawn_delay()
         self.get_round_time()
         self.get_zombie_health()
-        self.explosives_handler(nade_type="german", radius_override=110.0, randdamage_override=150)
 
 
     def get_network_frame(self):
@@ -220,74 +219,6 @@ class ZombieRound:
         return
 
 
-    def explosives_handler(self, nade_type: str = "german", radius_override: float = None, randdamage_override: int = None):
-        """Function uses Numpy to emulate Game Engine behavior.\n
-        Available nade types are `frag`, `german`, `semtex`"""
-
-        if not isinstance(radius_override, float):
-            raise Exception(f"Wrong argument type passed to 'radius_override'. Expected '{type(float())}', received '{type(radius_override)}'")
-
-        # Create if statements for radius if necessary in the future
-        # Default values are for frags
-        nadecfg: dict[str, np.float32 | np.int32] = {
-            "max_radius": np.float32(256.0),
-            "min_radius": np.float32(0.0),
-            "max_damage": np.int32(300),
-            "min_damage": np.int32(75),
-            "damage_extra_max": np.int32(200),
-            "damage_extra_min": np.int32(100),
-        }
-        nadecfg["damage_extra_max"], nadecfg["damage_extra_min"] = np.int32(200), np.int32(100)
-
-        # Get average radius or else pickup override value. Important to pass float to the function call
-        radius = np.float32((nadecfg["max_radius"] + nadecfg["min_radius"]) / 2)
-        if isinstance(radius_override, float):
-            radius = np.float32(radius_override)
-
-        # It has to wait until radius is defined
-        nadecfg.update({"bmx_damage": np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300))})
-
-        # Get damages using bmxs values and also define damage ranges for reference
-        if nade_type == "german":
-            nadecfg["max_damage"], nadecfg["min_damage"] = np.int32(200), np.int32(50)
-            nadecfg["bmx_damage"] = np.int32(np.float32(-0.585) * np.float32(radius) + np.int32(200))
-        elif nade_type == "semtex":
-            nadecfg["max_damage"], nadecfg["min_damage"] = np.int32(300), np.int32(55)
-            nadecfg["bmx_damage"] = None
-
-        # Get average extra damage or else pickup override value
-        extra_damage = np.int32((nadecfg["damage_extra_max"] + nadecfg["damage_extra_min"]) / 2) + np.int32(self.number)
-        if isinstance(randdamage_override, int):
-            extra_damage = np.int32(randdamage_override)
-
-        self.nade_damage = np.int32(nadecfg["bmx_damage"] + extra_damage)
-
-        current_health = np.int32(self.health)
-
-        nades = np.int32(0)
-
-        # Deal with bigger numbers for high rounds
-        # 400_000 and 450_000 are the fastest for computation
-        number_of_nades = np.int32(400_000) // self.nade_damage
-        damage = number_of_nades * self.nade_damage
-        while current_health > np.int32(450_000):
-            current_health -= damage
-            nades += number_of_nades
-            # print(f"DEV: nades: {nades} / number_of_nades: {number_of_nades} / current_health: {current_health}")
-
-        # Get exact number when number is already low
-        while self.nade_damage / current_health * np.int32(100) < np.int32(10) and current_health > np.int32(150):
-            # print(f"DEV: percent: {self.nade_damage / current_health * 100}% / current_health: {current_health}")
-            nades += 1
-            current_health -= self.nade_damage
-
-        self.prenades = nades
-
-        print(f"DEV: Bmx damage: {nadecfg['bmx_damage']}")
-        print(f"DEV: Nade damage: {self.nade_damage}")
-        print(f"DEV: Prenades on {self.number}: {nades}")
-
-
 @dataclass
 class DogRound(ZombieRound):
     special_rounds: int
@@ -357,6 +288,111 @@ class DogRound(ZombieRound):
 
         self.round_time = ((time_in_ms - (time_in_ms % 500)) + 500) / 1000
         return
+    
+
+@dataclass
+class PrenadesRound(ZombieRound):
+    nade_type: str
+    radius: float = None
+    extra_damage: int = None
+
+
+    def __post_init__(self):
+        self.explosives_handler()
+
+
+    def get_nadeconfig(self) -> dict:
+        nadeconfigs = {
+            "frag": {
+                "max_radius": np.float32(256.0),
+                "min_radius": np.float32(0.0),
+                "max_damage": np.int32(300),
+                "min_damage": np.int32(75),
+                "damage_extra_max": np.int32(200),
+                "damage_extra_min": np.int32(100),
+            },
+            "german": {
+                "max_radius": np.float32(256.0),
+                "min_radius": np.float32(0.0),
+                "max_damage": np.int32(200),
+                "min_damage": np.int32(50),
+                "damage_extra_max": np.int32(200),
+                "damage_extra_min": np.int32(100),
+            },
+            "semtex": {
+                "max_radius": np.float32(256.0),
+                "min_radius": np.float32(0.0),
+                "max_damage": np.int32(300),
+                "min_damage": np.int32(55),
+                "damage_extra_max": np.int32(200),
+                "damage_extra_min": np.int32(100),
+            },
+        }
+
+        return nadeconfigs[self.nade_type]
+    
+
+    def get_bmx_damage(self) -> np.int32:
+        if self.nade_type == "frag":
+            return np.int32(np.float32(-0.880) * np.float32(self.radius) + np.int32(300))
+        elif self.nade_type == "german":
+            return np.int32(np.float32(-0.585) * np.float32(self.radius) + np.int32(200))
+        elif self.nade_type == "semtex":
+            return np.int32(np.float32(-0.958) * np.float32(self.radius) + np.int32(300))
+        else:
+            raise Exception(f"Could not set BMX damage value for nade type {self.nade_type}")
+
+
+    def explosives_handler(self):
+        """Function uses Numpy to emulate Game Engine behavior.\n
+        Available nade types are `frag`, `german`, `semtex`"""
+
+        if not isinstance(self.radius, float):
+            raise Exception(f"Wrong argument type passed to 'radius_override'. Expected '{type(float())}', received '{type(self.radius)}'")
+
+        nadecfg = self.get_nadeconfig()
+
+        # Get average radius or else pickup override value. Important to pass float to the function call
+        if self.radius is None:
+            self.radius = np.float32((nadecfg["max_radius"] + nadecfg["min_radius"]) / 2)
+        else:
+            self.radius = np.float32(self.radius)
+
+        # It has to wait until radius is defined
+        bmx_damage = self.get_bmx_damage()
+
+        # Get average extra damage or else pickup override value
+        if self.extra_damage is None:
+            self.extra_damage = np.int32((nadecfg["damage_extra_max"] + nadecfg["damage_extra_min"]) / 2) + np.int32(self.number)
+        else:
+            self.extra_damage = np.int32(self.extra_damage) + np.int32(self.number)
+
+        self.nade_damage = np.int32(nadecfg["bmx_damage"] + self.extra_damage)
+
+        current_health = np.int32(self.health)
+
+        nades = np.int32(0)
+
+        # Deal with bigger numbers for high rounds
+        # 400_000 and 450_000 are the fastest for computation
+        number_of_nades = np.int32(400_000) // self.nade_damage
+        damage = number_of_nades * self.nade_damage
+        while current_health > np.int32(450_000):
+            current_health -= damage
+            nades += number_of_nades
+            # print(f"DEV: nades: {nades} / number_of_nades: {number_of_nades} / current_health: {current_health}")
+
+        # Get exact number when number is already low
+        while self.nade_damage / current_health * np.int32(100) < np.int32(10) and current_health > np.int32(150):
+            # print(f"DEV: percent: {self.nade_damage / current_health * 100}% / current_health: {current_health}")
+            nades += 1
+            current_health -= self.nade_damage
+
+        self.prenades = nades
+
+        # print(f"DEV: Bmx damage: {bmx_damage}")
+        # print(f"DEV: Nade damage: {self.nade_damage}")
+        # print(f"DEV: Prenades on {self.number}: {self.prenades}")
 
 
 def save_results_locally(to_save: list, path_override: str = "") -> None:
@@ -557,6 +593,14 @@ def get_arguments() -> dict:
             "shortcode": "-p",
             "default_state": False,
             "exp": "Instead of perfect round times, display perfect split times for choosen map."
+        },
+        "prenades": {
+            "use_in_web": False,    # Arg is not yet usable
+            "require_map": True,
+            "readable_name": "Prenades",
+            "shortcode": "-P",
+            "default_state": False,
+            "exp": "Instead of perfect round times, display amount of prenades."
         },
         "range": {
             "use_in_web": True,
