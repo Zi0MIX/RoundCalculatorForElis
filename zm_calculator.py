@@ -364,57 +364,6 @@ class PrenadesRound(ZombieRound):
         # print(f"DEV: Prenades on {self.number}: {self.prenades}")
 
 
-def save_results_locally(to_save: list, path_override: str = "") -> None:
-    from os.path import join
-    from time import localtime, time
-    try:
-        import PySimpleGUI as sg
-    except ModuleNotFoundError:
-        sg = None
-
-    output = "\n".join(to_save)
-
-    if path_override:
-        path = path_override
-    elif sg is None:
-        print(f"{cfg.CYA}Enter path to where you want to save the file in{cfg.RES}")
-        path = str(input("> "))
-    else:
-        while True:
-            save_folder = sg.popup_get_folder("Save as: ", keep_on_top=True)
-
-            if save_folder is None:
-                print("Cancelled saving results.")
-                return
-
-            path = save_folder
-            break
-
-    t = localtime(time())
-    a_filename = f"zm_round_calculator_{str(t[0]).zfill(4)}-{str(t[1]).zfill(2)}-{str(t[2]).zfill(2)}_{str(t[3]).zfill(2)}-{str(t[4]).zfill(2)}-{str(t[5]).zfill(2)}.txt"
-    with open(join(path, a_filename), "w", encoding="utf-8") as newfile:
-        newfile.write(output)
-
-    return
-
-
-def return_error(nolist: bool = False) -> dict | list[dict]:
-    from traceback import format_exc
-
-    if nolist:
-        return {"type": "error", "message": str(format_exc())}
-    return [{"type": "error", "message": str(format_exc())}]
-
-
-def get_answer_blueprint() -> dict:
-    """Check outputs.MD for reference"""
-    return cfg.ANSWER_BLUEPRINT
-
-
-def get_mods() -> list:
-    return cfg.CALCULATOR_MODS
-
-
 def import_dogrounds() -> tuple:
     print(f"{cfg.CYA}Enter special rounds separated with space.{cfg.RES}")
     raw_special = str(input("> "))
@@ -427,7 +376,7 @@ def import_dogrounds() -> tuple:
 
 def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool) -> dict:
     from pycore.arg_controller import get_args
-    from pycore.output_controller import map_translator, get_readable_time
+    from pycore.output_controller import map_translator, get_readable_time, get_answer_blueprint
 
     a = get_answer_blueprint()
     a["type"] = "perfect_times"
@@ -450,7 +399,7 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: b
 
 def get_round_times(rnd: ZombieRound | DogRound) -> dict:
     from pycore.arg_controller import get_args
-    from pycore.output_controller import get_readable_time
+    from pycore.output_controller import get_readable_time, get_answer_blueprint
 
     a = get_answer_blueprint()
     a["type"] = "round_time"
@@ -479,6 +428,7 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
 
 def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
     from pycore.arg_controller import get_arguments
+    from pycore.output_controller import get_answer_blueprint
 
     calc_result = []
     single_iteration = False
@@ -540,6 +490,7 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
 
 def calculator_handler(json_input: dict = None):
     from pycore.arg_controller import get_args, get_arguments, load_args, update_args
+    from pycore.mods_controller import get_mods
     from pycore.output_controller import map_translator
 
     # Avoid warning while calculating insta rounds
@@ -690,68 +641,9 @@ def calculator_handler(json_input: dict = None):
     return [get_round_times(ZombieRound(rnd, players))]
 
 
-def display_results(results: list[dict]):
-    from pycore.arg_controller import get_args, load_args
-
-    readable_results = []
-
-    # If entered from error handler in api, args will not be defined, and they don't need to
-    try:
-        get_args()
-    except (NameError, UnboundLocalError):
-        load_args()
-
-    for res in results:
-
-        # Assemble print
-        zm_word = "zombies"
-        if res["type"] == "error":
-            readable_result = f"An error occured, if your inputs are correct, please contact the creator and provide error message.\n{res['message']}"
-            readable_results.append(readable_result)
-            print(readable_result)
-
-        elif res["type"] == "round_time":
-            enemies = res["zombies"]
-            if get_args("hordes"):
-                zm_word = "hordes"
-                enemies = res["hordes"]
-
-            if get_args("clear"):
-                readable_result = res["time_output"]
-            else:
-                readable_result = f"Round {cfg.COL}{res['round']}{cfg.RES} will spawn in {cfg.COL}{res['time_output']}{cfg.RES} and has {cfg.COL}{enemies}{cfg.RES} {zm_word}. (Spawnrate: {cfg.COL}{res['spawnrate']}{cfg.RES} / Network frame: {cfg.COL}{res['network_frame']}{cfg.RES})."
-
-            readable_results.append(readable_result)
-            print(readable_result)
-            if get_args("break"):
-                print()
-
-        elif res["type"] == "perfect_times":
-            if get_args("clear"):
-                readable_result = res["time_output"]
-            else:
-                readable_result = f"Perfect time to round {cfg.COL}{res['round']}{cfg.RES} is {cfg.COL}{res['time_output']}{cfg.RES} on {cfg.COL}{res['map_name']}{cfg.RES}."
-
-            readable_results.append(readable_result)
-            print(readable_result)
-            if get_args("break"):
-                print()
-
-        elif res["type"] == "mod":
-            readable_result = res["message"]
-            readable_results.append(readable_result)
-            print(readable_result)
-
-    readable_results = [str(st).replace(cfg.COL, "").replace(cfg.RES, "") for st in readable_results]
-
-    if get_args("save"):
-        save_results_locally(readable_results)
-
-    return
-
-
 def main_app() -> None:
     import os
+    from pycore.output_controller import display_results, return_error
     from colorama import init, reinit, deinit
 
     os.system("cls")    # Bodge for colorama not working after compile
@@ -774,6 +666,7 @@ def main_app() -> None:
 
 def main_api(arguments: dict | list) -> dict:
     from pycore.arg_controller import curate_arguments
+    from pycore.output_controller import display_results, return_error
     import pycore.api_handler as api
 
     try:
