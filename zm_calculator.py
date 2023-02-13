@@ -559,7 +559,7 @@ def get_arguments() -> dict:
             "require_map": True,
             "readable_name": "Insta Rounds",
             "shortcode": "-i",
-            "default_state": False,
+            "default_state": True,
             "exp": "Add information about instakill rounds to the output."
         },
         "lower_time": {
