@@ -368,18 +368,12 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
     except ModuleNotFoundError:
         sg = None
 
-    # Avoid the rare situation where this is called from API and 'CYA' is undefined
-    try:
-        CYA
-    except NameError:
-        CYA = ""
-
     output = "\n".join(to_save)
 
     if path_override:
         path = path_override
     elif sg is None:
-        print(f"{CYA}Enter path to where you want to save the file in{RES}")
+        print(f"{cfg.CYA}Enter path to where you want to save the file in{cfg.RES}")
         path = str(input("> "))
     else:
         while True:
@@ -562,7 +556,7 @@ def map_translator(map_code: str) -> str:
 
 
 def import_dogrounds() -> tuple:
-    print(f"{CYA}Enter special rounds separated with space.{RES}")
+    print(f"{cfg.CYA}Enter special rounds separated with space.{cfg.RES}")
     raw_special = str(input("> "))
 
     list_special = [int(x) for x in raw_special.split(" ") if x.isdigit()]
@@ -789,7 +783,7 @@ def calculator_handler(json_input: dict = None):
 
         if map_code not in cfg.MAP_LIST:
             if json_input is None:
-                print(f"Map {COL}{map_translator(map_code)}{RES} is not supported.")
+                print(f"Map {cfg.COL}{map_translator(map_code)}{cfg.RES} is not supported.")
             raise ValueError(f"{map_translator(map_code)} is not supported")
 
         time_total = cfg.RND_WAIT_INITIAL
@@ -871,7 +865,7 @@ def calculator_handler(json_input: dict = None):
     return [get_round_times(ZombieRound(rnd, players))]
 
 
-def display_results(results: list[dict]) -> list[dict]:
+def display_results(results: list[dict]):
     readable_results = []
 
     # If entered from error handler in api, args will not be defined, and they don't need to
@@ -898,7 +892,7 @@ def display_results(results: list[dict]) -> list[dict]:
             if get_args("clear"):
                 readable_result = res["time_output"]
             else:
-                readable_result = f"Round {COL}{res['round']}{RES} will spawn in {COL}{res['time_output']}{RES} and has {COL}{enemies}{RES} {zm_word}. (Spawnrate: {COL}{res['spawnrate']}{RES} / Network frame: {COL}{res['network_frame']}{RES})."
+                readable_result = f"Round {cfg.COL}{res['round']}{cfg.RES} will spawn in {cfg.COL}{res['time_output']}{cfg.RES} and has {cfg.COL}{enemies}{cfg.RES} {zm_word}. (Spawnrate: {cfg.COL}{res['spawnrate']}{cfg.RES} / Network frame: {cfg.COL}{res['network_frame']}{cfg.RES})."
 
             readable_results.append(readable_result)
             print(readable_result)
@@ -909,7 +903,7 @@ def display_results(results: list[dict]) -> list[dict]:
             if get_args("clear"):
                 readable_result = res["time_output"]
             else:
-                readable_result = f"Perfect time to round {COL}{res['round']}{RES} is {COL}{res['time_output']}{RES} on {COL}{res['map_name']}{RES}."
+                readable_result = f"Perfect time to round {cfg.COL}{res['round']}{cfg.RES} is {cfg.COL}{res['time_output']}{cfg.RES} on {cfg.COL}{res['map_name']}{cfg.RES}."
 
             readable_results.append(readable_result)
             print(readable_result)
@@ -921,12 +915,12 @@ def display_results(results: list[dict]) -> list[dict]:
             readable_results.append(readable_result)
             print(readable_result)
 
-    readable_results = [str(st).replace(COL, "").replace(RES, "") for st in readable_results]
+    readable_results = [str(st).replace(cfg.COL, "").replace(cfg.RES, "") for st in readable_results]
 
     if get_args("save"):
         save_results_locally(readable_results)
 
-    return results
+    return
 
 
 def main_app() -> None:
@@ -935,9 +929,9 @@ def main_app() -> None:
 
     os.system("cls")    # Bodge for colorama not working after compile
     init()              # Be aware, if colorama is not present this is outside of error handler
-    print(f"Welcome in ZM Round Calculator {YEL}V3{RES} by Zi0")
-    print(f"Source: '{CYA}https://github.com/Zi0MIX/ZM-RoundCalculator{RES}'")
-    print(f"Check out web implementation of the calculator under '{CYA}https://zi0mix.github.io{RES}'")
+    print(f"Welcome in ZM Round Calculator {cfg.YEL}V3{cfg.RES} by Zi0")
+    print(f"Source: '{cfg.CYA}https://github.com/Zi0MIX/ZM-RoundCalculator{cfg.RES}'")
+    print(f"Check out web implementation of the calculator under '{cfg.CYA}https://zi0mix.github.io{cfg.RES}'")
     print("Enter round number and amount of players separated by spacebar, then optional arguments")
     print("Round and Players arguments are mandatory, others are optional. Check ARGUMENTS.MD on GitHub for info.")
 
@@ -951,7 +945,7 @@ def main_app() -> None:
             display_results(return_error())
 
 
-def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
+def main_api(arguments: dict | list) -> dict:
     import pycore.api_handler as api
 
     try:
@@ -961,37 +955,24 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
         if api.apiconfing_defined():
             own_print = api.get_apiconfig("own_print")
 
-        if argv_trigger:
-            arguments = api.eval_argv(argv)
-
-        if isinstance(arguments, list):
-            arguments = api.convert_arguments(arguments, get_arguments(), get_mods())
-
         arguments["args"] = curate_arguments(arguments["args"])
 
-        # Debug print
-        # print(own_print)
-
         if own_print:
-            return display_results(calculator_handler(arguments))
+            display_results(calculator_handler(arguments))
         return calculator_handler(arguments)
 
     except Exception:
         if own_print:
-            return display_results(return_error())
+            display_results(return_error())
         return return_error()
 
 
 if __name__ == "__main__":
-    from sys import argv
-
-    if len(argv) > 1:
-        main_api(argv, argv_trigger=True)
-    else:
+    try:
         from colorama import Fore
-        # For output syntax highlighting use COL variable
-        COL, RES = Fore.YELLOW, Fore.RESET
-        YEL, GRE, RED, CYA = Fore.YELLOW, Fore.GREEN, Fore.RED, Fore.CYAN
+        cfg.COL, cfg.RES = Fore.YELLOW, Fore.RESET
+        cfg.YEL, cfg.GRE, cfg.RED, cfg.CYA = Fore.YELLOW, Fore.GREEN, Fore.RED, Fore.CYAN
+    except Exception:
+        pass
 
-        # Standalone app
-        main_app()
+    main_app()
