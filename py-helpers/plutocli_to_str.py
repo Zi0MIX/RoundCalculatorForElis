@@ -4,9 +4,14 @@ with open("C:\\Users\\Zi0\\GitHub\\ZM-RoundCalculator\\analysis\\semtex_dmg.txt"
 dmg_vals, distance_vals = [], []
 for line in txt_content:
     dmg, dist = line.replace("[script]: ", "").replace("\n", "").split(" @ ")
-    dmg_vals.append(dmg)
-    distance_vals.append(dist)
+    dmg_vals.append(int(dmg))
+    distance_vals.append(float(dist))
 
-print(f'"{" ".join(distance_vals)}"')
+print(f'"{" ".join([str(x) for x in distance_vals])}"')
 print()
-print(f'"{" ".join(dmg_vals)}"')
+print(f'"{" ".join([str(x) for x in dmg_vals])}"')
+print()
+
+avg_dist = sum(distance_vals) / len(distance_vals)
+avg_dmg = sum(dmg_vals) / len(dmg_vals)
+print(f"avg distance: {avg_dist} | avg damage: {avg_dmg}")
