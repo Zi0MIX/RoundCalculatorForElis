@@ -236,7 +236,6 @@ class ZombieRound:
             "min_damage": np.int32(75),
             "damage_extra_max": np.int32(200),
             "damage_extra_min": np.int32(100),
-            "bmx_damage": np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300)),
         }
         nadecfg["damage_extra_max"], nadecfg["damage_extra_min"] = np.int32(200), np.int32(100)
 
@@ -244,6 +243,9 @@ class ZombieRound:
         radius = np.float32((nadecfg["max_Radius"] + nadecfg["min_radius"]) / 2)
         if isinstance(radius_override, float):
             radius = np.float32(radius_override)
+
+        # It has to wait until radius is defined
+        nadecfg.update({"bmx_damage": np.int32(np.float32(-0.880) * np.float32(radius) + np.int32(300))})
 
         # Get damages using bmxs values and also define damage ranges for reference
         if nade_type == "german":
