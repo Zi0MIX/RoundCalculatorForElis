@@ -1,33 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
-
-
-COL, RES = "", ""
-DEC = 3
-
-# Time from "initial_blackscreen_passed" to "start_of_round" triggers
-RND_WAIT_INITIAL = 8.25
-# Time from "end_of_round" to "start_of_round"
-RND_WAIT_END = 12.50
-# Time from "end_of_round" to "between_round_over"
-RND_WAIT_BETWEEN = RND_WAIT_END - 2.5
-# Time difference between "start_of_round" trigger and new round number appearing
-RND_BETWEEN_NUMBER_FLAG = 4.0
-
-ZOMBIE_MAX_AI = 24
-ZOMBIE_AI_PER_PLAYER = 6
-
-# Perfect dog rounds, r5 then all 4 rounders
-DOGS_PERFECT = [int(x) for x in range(256) if x % 4 == 1 and x > 4]
-# 0.05 from ingame timing, code says 7 dot
-DOGS_WAIT_START = 7.05      
-DOGS_WAIT_END = 8
-# Time between dog spawning to dog appearing on the map
-DOGS_WAIT_TELEPORT = 1.5
-
-MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
-MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
-
+import config as cfg
 
 @dataclass
 class ZombieRound:
@@ -144,9 +117,9 @@ class ZombieRound:
             multiplier *= (self.number * 0.15)
 
         if self.players == 1:
-            temp = int(ZOMBIE_MAX_AI + (0.5 * ZOMBIE_AI_PER_PLAYER * multiplier))
+            temp = int(cfg.ZOMBIE_MAX_AI + (0.5 * cfg.ZOMBIE_AI_PER_PLAYER * multiplier))
         else:
-            temp = int(ZOMBIE_MAX_AI + ((self.players - 1) * ZOMBIE_AI_PER_PLAYER * multiplier))
+            temp = int(cfg.ZOMBIE_MAX_AI + ((self.players - 1) * cfg.ZOMBIE_AI_PER_PLAYER * multiplier))
 
         self.zombies = temp
         if self.number < 2:
@@ -174,7 +147,7 @@ class ZombieRound:
         if int(str(self.raw_time).split(".")[1]) >= 1:
             dec = str(self.raw_time).split(".")[1][:3]
 
-        while len(dec) < DEC:
+        while len(dec) < cfg.DEC:
             dec += "0"
         self.decimals = dec
 
@@ -236,7 +209,7 @@ class DogRound(ZombieRound):
 
     def get_teleport_time(self):
         # Seems to be the best indication of representing spawncap accurately, at least in case of solo when comparing to actual gameplay
-        self.teleport_time = DOGS_WAIT_TELEPORT * (self.dogs / (2 * self.players))
+        self.teleport_time = cfg.DOGS_WAIT_TELEPORT * (self.dogs / (2 * self.players))
         return
 
 
@@ -787,7 +760,7 @@ def import_dogrounds() -> tuple:
     list_special = [int(x) for x in raw_special.split(" ") if x.isdigit()]
     if len(list_special):
         return tuple(list_special)
-    return DOGS_PERFECT
+    return cfg.DOGS_PERFECT
 
 
 def get_readable_time(round_time: float) -> str:
@@ -844,7 +817,7 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: b
 
     split_adj = 0.0
     if get_args("speedrun_time"):
-        split_adj = RND_BETWEEN_NUMBER_FLAG
+        split_adj = cfg.RND_BETWEEN_NUMBER_FLAG
 
     if get_args("detailed"):
         a["time_output"] = str(round(time_total * 1000)) + " ms"
@@ -871,7 +844,7 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
 
     split_adj = 0
     if get_args("speedrun_time"):
-        split_adj = RND_BETWEEN_NUMBER_FLAG
+        split_adj = cfg.RND_BETWEEN_NUMBER_FLAG
 
     if get_args("detailed"):
         a["time_output"] = str(round(rnd.round_time * 1000)) + " ms"
@@ -1003,20 +976,20 @@ def calculator_handler(json_input: dict = None):
             print("Enter map code (eg. zm_theater)")
             map_code = input("> ").lower()
 
-        if map_code not in MAP_LIST:
+        if map_code not in cfg.MAP_LIST:
             if json_input is None:
                 print(f"Map {COL}{map_translator(map_code)}{RES} is not supported.")
             raise ValueError(f"{map_translator(map_code)} is not supported")
 
-        time_total = RND_WAIT_INITIAL
+        time_total = cfg.RND_WAIT_INITIAL
 
         try:
             # Not map with dogs
-            if map_code not in MAP_DOGS:
+            if map_code not in cfg.MAP_DOGS:
                 set_dog_rounds = tuple()
             # Not specified special_rounds or is remix
             elif not get_args("special_rounds") or get_args("remix"):
-                set_dog_rounds = DOGS_PERFECT
+                set_dog_rounds = cfg.DOGS_PERFECT
             # Not api mode or empty api entry provided -> take input
             elif not json_input or not len(json_input["spec_rounds"]):
                 set_dog_rounds = import_dogrounds()
@@ -1026,7 +999,7 @@ def calculator_handler(json_input: dict = None):
         except KeyError:
             if not json_input:
                 print("Warning: Key error dog rounds")
-            set_dog_rounds = DOGS_PERFECT
+            set_dog_rounds = cfg.DOGS_PERFECT
 
         dog_rounds_average = 0.0
         if len(set_dog_rounds):
@@ -1046,10 +1019,10 @@ def calculator_handler(json_input: dict = None):
 
             if is_dog_round:
                 dog_rounds += 1
-                round_duration = DOGS_WAIT_START + DOGS_WAIT_TELEPORT + dog_round.round_time + DOGS_WAIT_END + RND_WAIT_END
+                round_duration = cfg.DOGS_WAIT_START + cfg.DOGS_WAIT_TELEPORT + dog_round.round_time + cfg.DOGS_WAIT_END + cfg.RND_WAIT_END
                 time_total += round_duration
             else:
-                round_duration = zm_round.round_time + RND_WAIT_END
+                round_duration = zm_round.round_time + cfg.RND_WAIT_END
                 time_total += round_duration
 
             if get_args("range"):
