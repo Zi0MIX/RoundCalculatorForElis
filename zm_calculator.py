@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import numpy as np
 
 
 COL, RES = "", ""
@@ -697,7 +698,7 @@ def convert_arguments(list_of_args: list[str]) -> dict:
 
 
 def get_mods() -> list:
-    return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir"]
+    return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir", "-exc"]
 
 
 def map_translator(map_code: str) -> str:
@@ -858,7 +859,9 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
         a["class_content"] = vars(zm_round)
         a["message"] = ""
 
-        if "-ga" in mods:
+        if "-exc" in mods:
+            raise Exception("This is a test exception")
+        elif "-ga" in mods:
             rgs = get_arguments()
             a["mod"] = "-ga"
             a["message"] = "\n".join([f"{rgs[r]['shortcode']}: {rgs[r]['exp']}" for r in rgs.keys()])
@@ -1155,7 +1158,6 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
         return return_error()
 
 
-import numpy as np
 if __name__ == "__main__":
     from sys import argv
 

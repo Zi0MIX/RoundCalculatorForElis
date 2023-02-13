@@ -38,3 +38,4 @@ Those arguments are for advanced calculator functions and will cancel optional a
 - `-ps` - Produces processed spawnrate values after rounding.
 - `-rs` - Produces raw spawnrate values emulating gsc function.
 - `-zc` - Produces zombie count for provided round range.
+- `-exc` - For debugging, raises an exception in Python
