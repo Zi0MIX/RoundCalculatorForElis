@@ -555,7 +555,7 @@ def get_arguments() -> dict:
             "exp": "Show the amount of hordes instead of the amount of zombies in the output."
         },
         "insta_rounds": {
-            "use_in_web": False,        # Temp, waiting for web implementation
+            "use_in_web": True,
             "require_map": True,
             "readable_name": "Insta Rounds",
             "shortcode": "-i",
