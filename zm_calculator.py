@@ -176,8 +176,8 @@ class ZombieRound:
             else:
                 self.health += np.int32(np.float32(self.health) * np.float32(0.1))
 
-            if self.health <= 150 and self.number > 1:
-                self.is_insta_round = True
+        if (self.health <= np.int32(150)) and (self.number > 1):
+            self.is_insta_round = True
 
             # print(f"DEV: Round: {r} / Health: {self.health}")
 
