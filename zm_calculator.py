@@ -449,10 +449,12 @@ def update_args(key: str, state: bool = None) -> None:
     return
 
 
-def return_error(err_code: Exception | str, nolist: bool = False) -> list[dict]:
+def return_error(nolist: bool = False) -> dict | list[dict]:
+    from traceback import format_exc
+
     if nolist:
-        return {"type": "error", "message": str(err_code)}
-    return [{"type": "error", "message": str(err_code)}]
+        return {"type": "error", "message": str(format_exc())}
+    return [{"type": "error", "message": str(format_exc())}]
 
 
 def eval_argv(cli_in: list[str]) -> list:
@@ -1118,8 +1120,8 @@ def main_app() -> None:
             result = calculator_handler(None)
             display_results(result)
             deinit()
-        except Exception as err:
-            display_results(return_error(err))
+        except Exception:
+            display_results(return_error())
 
 
 def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
@@ -1147,10 +1149,10 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
             return display_results(calculator_handler(arguments))
         return calculator_handler(arguments)
 
-    except Exception as err:
+    except Exception:
         if own_print:
-            return display_results(return_error(err))
-        return return_error(err)
+            return display_results(return_error())
+        return return_error()
 
 
 import numpy as np
