@@ -723,6 +723,9 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
 
 def calculator_handler(json_input: dict = None):
 
+    # Avoid warning while calculating insta rounds
+    np.seterr(over="ignore")
+
     # Take input if standalone app
     if json_input is None:
         raw_input = input("> ").lower()
@@ -981,10 +984,6 @@ def main_api(arguments: dict | list, argv_trigger: bool = False) -> dict:
 
 if __name__ == "__main__":
     from sys import argv
-
-    # Avoid warning while calculating insta rounds
-    np.seterr(over="ignore")
-    # np.set_printoptions(precision=16, floatmode="fixed")
 
     if len(argv) > 1:
         main_api(argv, argv_trigger=True)
