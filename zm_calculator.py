@@ -240,7 +240,7 @@ class ZombieRound:
         nadecfg["damage_extra_max"], nadecfg["damage_extra_min"] = np.int32(200), np.int32(100)
 
         # Get average radius or else pickup override value. Important to pass float to the function call
-        radius = np.float32((nadecfg["max_Radius"] + nadecfg["min_radius"]) / 2)
+        radius = np.float32((nadecfg["max_radius"] + nadecfg["min_radius"]) / 2)
         if isinstance(radius_override, float):
             radius = np.float32(radius_override)
 
