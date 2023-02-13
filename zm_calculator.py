@@ -332,7 +332,7 @@ class PrenadesRound(ZombieRound):
         else:
             self.extra_damage = np.int32(self.extra_damage) + np.int32(self.number)
 
-        self.nade_damage = np.int32(nadecfg["bmx_damage"] + self.extra_damage)
+        self.nade_damage = np.int32(bmx_damage + self.extra_damage)
 
         current_health = np.int32(self.health)
 
