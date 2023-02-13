@@ -25,21 +25,7 @@ main()
     replaceFunc(maps\mp\zombies\_zm::actor_damage_override, ::actor_damage_override_notifier);
 }
 
-init()
-{
-    level thread listen_to_damage();
-}
-
-listen_to_damage()
-{
-	while (true)
-	{
-		level waittill("dmg_stats", damage, ent, inflictor);
-		print("DMG: " + damage + " / DISTANCE: " +  distance(ent, inflictor));
-	}
-}
-
-actor_damage_override( inflictor, attacker, damage, flags, meansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime, boneindex )
+actor_damage_override_notifier( inflictor, attacker, damage, flags, meansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime, boneindex )
 {
     if ( !isdefined( self ) || !isdefined( attacker ) )
         return damage;
@@ -106,7 +92,10 @@ actor_damage_override( inflictor, attacker, damage, flags, meansofdeath, weapon,
             return 0;
     }
 
-	if (meansofdeath == "MOD_GRENADE" || meansofdeath == "MOD_GRENADE_SPLASH")
-        level notify("dmg_stats", final_damage, self.origin, inflictor.origin);
+    dist = distance(self.origin, inflictor.origin);
+	if ((meansofdeath == "MOD_GRENADE" || meansofdeath == "MOD_GRENADE_SPLASH") && dist > 0)
+    {
+        print(int(final_damage) + " @ " + dist);
+    }
     return int( final_damage );
 }
