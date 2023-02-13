@@ -403,7 +403,7 @@ def load_args():
     return
 
 
-def get_args(key: str = "") -> bool | None:
+def get_args(key: str = "") -> bool | dict:
     if not key:
         return ARGS
     return ARGS[key]
@@ -427,22 +427,7 @@ def return_error(nolist: bool = False) -> dict | list[dict]:
 
 def get_answer_blueprint() -> dict:
     """Check outputs.MD for reference"""
-    return {
-        "type": "blueprint",
-        "mod": "",
-        "message": "",
-        "round": 0,
-        "players": 0,
-        "zombies": 0,
-        "hordes": 0.0,
-        "time_output": "00:00",
-        "special_average": 0.0,
-        "spawnrate": 0.0,
-        "raw_spawnrate": 0.0,
-        "network_frame": 0.0,
-        "map_name": "",
-        "class_content": {},
-    }
+    return cfg.ANSWER_BLUEPRINT
 
 
 def get_arguments() -> dict:
@@ -507,52 +492,7 @@ def curate_arguments(provided_args: dict) -> dict:
 
 
 def get_mods() -> list:
-    return ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir", "-exc"]
-
-
-def map_translator(map_code: str) -> str:
-    from pycore.api_handler import apiconfing_defined, get_apiconfig
-
-    if apiconfing_defined():
-        api_translations = get_apiconfig("custom_translations")
-
-        if map_code in api_translations.keys():
-            return api_translations[map_code]
-
-    if map_code == "zm_prototype":
-        return "Nacht Der Untoten"
-    if map_code == "zm_asylum":
-        return "Verruckt"
-    if map_code == "zm_sumpf":
-        return "Shi No Numa"
-    if map_code == "zm_factory":
-        return "Der Riese"
-    if map_code == "zm_theater":
-        return "Kino Der Toten"
-    if map_code == "zm_pentagon":
-        return "FIVE"
-    if map_code == "zm_cosmodrome":
-        return "Ascension"
-    if map_code == "zm_coast":
-        return "Call of the Dead"
-    if map_code == "zm_temple":
-        return "Shangri-La"
-    if map_code == "zm_moon":
-        return "Moon"
-    if map_code == "zm_transit":
-        return "Tranzit"
-    if map_code == "zm_nuked":
-        return "Nuketown"
-    if map_code == "zm_highrise":
-        return "Die Rise"
-    if map_code == "zm_prison":
-        return "Mob of the Dead"
-    if map_code == "zm_buried":
-        return "Buried"
-    if map_code == "zm_tomb":
-        return "Origins"
-
-    return map_code
+    return cfg.CALCULATOR_MODS
 
 
 def import_dogrounds() -> tuple:
@@ -565,50 +505,8 @@ def import_dogrounds() -> tuple:
     return cfg.DOGS_PERFECT
 
 
-def get_readable_time(round_time: float) -> str:
-    h, m, s, ms = 0, 0, 0, int(round_time * 1000)
-
-    while ms > 999:
-        s += 1
-        ms -= 1000
-    while s > 59:
-        m += 1
-        s -= 60
-    # Do not reduce minutes to hours if even_time is on
-    if not get_args("even_time"):
-        while m > 59:
-            h += 1
-            m -= 60
-
-    dec = f".{str(ms).zfill(3)}"
-    # Clear decimals and append a second, this way it's always rounding up
-    if get_args("nodecimal") and not get_args("lower_time"):
-        dec = ""
-        s += 1
-        if s > 59:
-            m += 1
-            s -= 60
-            if m > 59:
-                h += 1
-                m -= 60
-    # Otherwise just clear decimals, it then rounds down
-    elif get_args("nodecimal"):
-        dec = ""
-
-    if not h and not m:
-        new_time = f"{s}{dec} seconds"
-    elif not h:
-        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
-    else:
-        new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
-
-    if get_args("even_time"):
-        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}"
-
-    return new_time
-
-
 def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool) -> dict:
+    from pycore.text import map_translator, get_readable_time
 
     a = get_answer_blueprint()
     a["type"] = "perfect_times"
@@ -624,12 +522,13 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: b
     if get_args("detailed"):
         a["time_output"] = str(round(time_total * 1000)) + " ms"
     else:
-        a["time_output"] = get_readable_time(time_total - split_adj)
+        a["time_output"] = get_readable_time(time_total - split_adj, get_args())
 
     return a
 
 
 def get_round_times(rnd: ZombieRound | DogRound) -> dict:
+    from pycore.text import get_readable_time
 
     a = get_answer_blueprint()
     a["type"] = "round_time"
@@ -651,7 +550,7 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
     if get_args("detailed"):
         a["time_output"] = str(round(rnd.round_time * 1000)) + " ms"
     else:
-        a["time_output"] = get_readable_time(rnd.round_time - split_adj)
+        a["time_output"] = get_readable_time(rnd.round_time - split_adj, get_args())
 
     return a
 
@@ -716,6 +615,7 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
 
 
 def calculator_handler(json_input: dict = None):
+    from pycore.text import map_translator
 
     # Avoid warning while calculating insta rounds
     np.seterr(over="ignore")

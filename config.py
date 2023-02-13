@@ -1,4 +1,4 @@
-COL, RES = "", ""
+COL, RES, YEL, GRE, RED, CYA = "", "", "", "", "", ""
 DEC = 3
 
 # Time from "initial_blackscreen_passed" to "start_of_round" triggers
@@ -161,4 +161,43 @@ DEFAULT_ARGUMENTS = {
         "default_state": False,
         "exp": "Apply higher initial spawnrate value from WaW's maps Nacht, Verruckt and Shino."
     }
+}
+
+CALCULATOR_MODS = ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir", "-exc"]
+
+ANSWER_BLUEPRINT = {
+    "type": "blueprint",
+    "mod": "",
+    "message": "",
+    "round": 0,
+    "players": 0,
+    "zombies": 0,
+    "hordes": 0.0,
+    "time_output": "00:00",
+    "special_average": 0.0,
+    "spawnrate": 0.0,
+    "raw_spawnrate": 0.0,
+    "network_frame": 0.0,
+    "is_insta_round": False,
+    "map_name": "",
+    "class_content": {},
+}
+
+DEFAULT_MAP_TRANSLATIONS = {
+    "zm_prototype": "Nacht Der Untoten",
+    "zm_asylum": "Verruckt",
+    "zm_sumpf": "Shi No Numa",
+    "zm_factory": "Der Riese",
+    "zm_theater": "Kino Der Toten",
+    "zm_pentagon": "FIVE",
+    "zm_cosmodrome": "Ascension",
+    "zm_coast": "Call of the Dead",
+    "zm_temple": "Shangri-La",
+    "zm_moon": "Moon",
+    "zm_transit": "Tranzit",
+    "zm_nuked": "Nuketown",
+    "zm_highrise": "Die Rise",
+    "zm_prison": "Mob of the Dead",
+    "zm_buried": "Buried",
+    "zm_tomb": "Origins",
 }
