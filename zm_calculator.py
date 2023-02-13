@@ -85,6 +85,8 @@ class ZombieRound:
 
     def get_spawn_delay(self):
         """Function uses Numpy to emulate Game Engine behavior"""
+        from pycore.arg_controller import get_args
+
         self.zombie_spawn_delay = np.float32(2.0)
         self.raw_spawn_delay = np.float32(2.0)
 
@@ -110,6 +112,8 @@ class ZombieRound:
 
 
     def get_zombies(self):
+        from pycore.arg_controller import get_args
+
         multiplier = self.number / 5
         if multiplier < 1:
             multiplier = 1.0
@@ -394,29 +398,6 @@ def save_results_locally(to_save: list, path_override: str = "") -> None:
     return
 
 
-def load_args():
-    """Load a dictionary to global `ARGS`"""
-    all_arguments = get_arguments()
-    global ARGS
-    ARGS = {}
-    [ARGS.update({key: all_arguments[key]["default_state"]}) for key in all_arguments.keys()]
-    return
-
-
-def get_args(key: str = "") -> bool | dict:
-    if not key:
-        return ARGS
-    return ARGS[key]
-
-
-def update_args(key: str, state: bool = None) -> None:
-    if state is None:
-        ARGS[key] = not ARGS[key]
-    else:
-        ARGS[key] = state
-    return
-
-
 def return_error(nolist: bool = False) -> dict | list[dict]:
     from traceback import format_exc
 
@@ -428,67 +409,6 @@ def return_error(nolist: bool = False) -> dict | list[dict]:
 def get_answer_blueprint() -> dict:
     """Check outputs.MD for reference"""
     return cfg.ANSWER_BLUEPRINT
-
-
-def get_arguments() -> dict:
-    from pycore.api_handler import apiconfing_defined, get_apiconfig
-
-    default_arguments = cfg.DEFAULT_ARGUMENTS
-
-    if apiconfing_defined():
-        overrides = get_apiconfig("arg_overrides")
-        for high_key in overrides.keys():
-            # There is no validation for keys that can be replaced, hopefully there doesn't have to be
-            for low_key in overrides[high_key].keys():
-                default_arguments.update({high_key[low_key]: overrides[high_key[low_key]]})
-
-    return default_arguments
-
-
-def curate_arguments(provided_args: dict) -> dict:
-    """Define new rules in the dict below.If argument `master` is different than it's default state, argument `slave` is set to it's default state.\n
-    If key `eval_true` is set to `True`, function checks if argument `master` is `True`, and if so it sets argument `slave` to `False`"""
-    from pycore.api_handler import apiconfing_defined, get_apiconfig
-
-    rules = {}
-    if apiconfing_defined():
-        rules = get_apiconfig("new_rules")
-
-    rules.update({
-        "1": {
-            "master": "detailed",
-            "slave": "nodecimals",
-            "eval_true": True,
-        },
-        "2": {
-            "master": "waw_spawnrate",
-            "slave": "remix",
-            "eval_true": True,
-        }
-    })
-
-    defaults = get_arguments()
-
-    registered_pairs = []
-
-    for rule in rules.keys():
-        master = rules[rule]["master"]
-        slave = rules[rule]["slave"]
-
-        # Ignore rules that repeat or contradict with already applied ones
-        if [master, slave] in registered_pairs or [slave, master] in registered_pairs:
-            continue
-
-        registered_pairs.append([master, slave])
-
-        if rules[rule]["eval_true"]:
-            if provided_args[master]:
-                provided_args[slave] = False
-        else:
-            if provided_args[master] != defaults[master]["default_state"]:
-                provided_args[slave] = defaults[slave]["default_state"]
-
-    return provided_args
 
 
 def get_mods() -> list:
@@ -506,7 +426,8 @@ def import_dogrounds() -> tuple:
 
 
 def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool) -> dict:
-    from pycore.text import map_translator, get_readable_time
+    from pycore.arg_controller import get_args
+    from pycore.output_controller import map_translator, get_readable_time
 
     a = get_answer_blueprint()
     a["type"] = "perfect_times"
@@ -528,7 +449,8 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: b
 
 
 def get_round_times(rnd: ZombieRound | DogRound) -> dict:
-    from pycore.text import get_readable_time
+    from pycore.arg_controller import get_args
+    from pycore.output_controller import get_readable_time
 
     a = get_answer_blueprint()
     a["type"] = "round_time"
@@ -556,6 +478,8 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
 
 
 def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
+    from pycore.arg_controller import get_arguments
+
     calc_result = []
     single_iteration = False
     for r in range(1, rnd + 1):
@@ -615,7 +539,8 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
 
 
 def calculator_handler(json_input: dict = None):
-    from pycore.text import map_translator
+    from pycore.arg_controller import get_args, get_arguments, load_args, update_args
+    from pycore.output_controller import map_translator
 
     # Avoid warning while calculating insta rounds
     np.seterr(over="ignore")
@@ -766,6 +691,8 @@ def calculator_handler(json_input: dict = None):
 
 
 def display_results(results: list[dict]):
+    from pycore.arg_controller import get_args, load_args
+
     readable_results = []
 
     # If entered from error handler in api, args will not be defined, and they don't need to
@@ -846,6 +773,7 @@ def main_app() -> None:
 
 
 def main_api(arguments: dict | list) -> dict:
+    from pycore.arg_controller import curate_arguments
     import pycore.api_handler as api
 
     try:
