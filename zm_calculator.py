@@ -193,26 +193,18 @@ class ZombieRound:
 
     def get_zombie_health(self):
         """Function uses Numpy to emulate Game Engine behavior"""
-        self.is_insta_round = True
-        # int_max, int_min = 2**31 - 1, -2**31
-        self.health = np.int32(150)
-        
-        for r in range(2, self.number + 1):
-            self.is_insta_round = True
 
+        self.is_insta_round = False
+        self.health = np.int32(150)
+
+        for r in range(2, self.number + 1):
             if r < 10:
                 self.health += 100
             else:
-                # self.health += self.health // 10
                 self.health += np.int32(np.float32(self.health) * np.float32(0.1))
 
-            # if self.health > int_max:
-            #     self.health = int_min + (self.health % int_max)
-            # elif self.health < int_min:
-            #     self.health = int_max + (self.health % int_min)
-
-            if self.health >= 150:
-                self.is_insta_round = False
+            if self.health <= 150 and self.number > 1:
+                self.is_insta_round = True
 
             # print(f"DEV: Round: {r} / Health: {self.health}")
 
@@ -841,13 +833,14 @@ def get_readable_time(round_time: float) -> str:
     return new_time
 
 
-def get_perfect_times(time_total: float, rnd: int, map_code: str) -> dict:
+def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool) -> dict:
 
     a = get_answer_blueprint()
     a["type"] = "perfect_times"
     a["round"] = rnd
     a["raw_time"] = time_total
     a["map_name"] = map_translator(map_code)
+    a["is_insta_round"] = insta_round
 
     split_adj = 0.0
     if get_args("speedrun_time"):
@@ -873,6 +866,7 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
     a["spawnrate"] = rnd.zombie_spawn_delay
     a["raw_spawnrate"] = rnd.raw_spawn_delay
     a["network_frame"] = rnd.network_frame
+    a["is_insta_round"] = rnd.is_insta_round
     a["class_content"] = vars(rnd)
 
     split_adj = 0
@@ -1061,7 +1055,7 @@ def calculator_handler(json_input: dict = None):
             if get_args("range"):
                 remembered_dog_average = 0.0
 
-                res = get_perfect_times(time_total, r + 1, map_code)
+                res = get_perfect_times(time_total, r + 1, map_code, zm_round.is_insta_round)
                 res["players"] = players
                 res["class_content"] = vars(zm_round)
                 res["special_average"] = remembered_dog_average
@@ -1076,7 +1070,7 @@ def calculator_handler(json_input: dict = None):
                 all_results.append(res)
 
         if not get_args("range"):
-            res = get_perfect_times(time_total, rnd, map_code)
+            res = get_perfect_times(time_total, rnd, map_code, zm_round.is_insta_round)
             res["players"] = players
             res["class_content"] = vars(zm_round)
             res["special_average"] = dog_rounds_average

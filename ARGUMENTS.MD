@@ -14,6 +14,7 @@ The column `TYPE` is meant for API users.
 | `clear` | `-c` | `false` | UI | Enable printing raw time. |
 | `detailed` | `-d` | `false` | In-Program | Enable printing time values in ms. |
 | `even_time` | `-e` | `false` | In-Program | Time under key `time_output` will always have the same format `MM:SS`. |
+| `insta_rounds` | `-i` | `true` | UI | Attach information about instakill round to the output. |
 | `hordes` | `-h-` | `false` | UI | Prints the amount of hordes instead of number of zombies. |
 | `lower_time` | `-l` | `false` | In-Program | In case `nodecimals` is used, the time will be rounded down instead of up. |
 | `nodecimal` | `-n` | `true` | In-Program | Disable decimals in time output, seconds will be round up. Has no effect if used with `detailed`. |

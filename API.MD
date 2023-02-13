@@ -180,6 +180,7 @@ Program outputs data as an array of dictionaries(jsons). Structure:
     "spawnrate": "float",
     "raw_spawnrate": "float",
     "network_frame": "float",
+    "is_insta_round": "bool",
     "map_name": "str",
     "class_content": "dict"
 }, ...]
@@ -206,5 +207,6 @@ You can preserve this format or come up with your own.
 | `spawnrate` | `float` | any | Spawnrate in seconds. |
 | `raw_spawnrate` | `float` | any | Raw spawnrate in seconds. |
 | `network_frame` | `float` | `0.05` / `0.10` | Network frame value. |
+| `is_insta_round` | `bool` | | Information if round is an insta kill round. |
 | `map_name` | `str` | func `map_translator()` | Returns name of the map. |
 | `class_content` | `dict` | all class vars | Dump of all variables of the class used in the calculation (for debugging). |
