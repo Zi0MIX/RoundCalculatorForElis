@@ -270,25 +270,68 @@ def calculator_handler(json_input: dict = None):
     return [get_round_times(ZombieRound(rnd, players))]
 
 
-def main_app() -> None:
-    import os
-    from pycore.output_controller import display_results, return_error
-    from colorama import init, reinit, deinit
+def get_colorama() -> dict:
+    
+    def stub() -> str:
+        return ""
+    
+    keys = ["reset", "f_black", "f_white", "f_red", "f_blue", "f_yellow", "f_green", "f_cyan", "b_black", "b_white", "b_red", "b_blue", "b_yellow", "b_green", "b_cyan"]
 
-    os.system("cls")    # Bodge for colorama not working after compile
-    init()              # Be aware, if colorama is not present this is outside of error handler
-    print(f"Welcome in ZM Round Calculator {cfg.YEL}V3{cfg.RES} by Zi0")
-    print(f"Source: '{cfg.CYA}https://github.com/Zi0MIX/ZM-RoundCalculator{cfg.RES}'")
-    print(f"Check out web implementation of the calculator under '{cfg.CYA}https://zi0mix.github.io{cfg.RES}'")
+    try:
+        from colorama import init, reinit, deinit, just_fix_windows_console, Fore, Back, Style
+
+        just_fix_windows_console()
+        init(autoreset=True)
+        c = {
+            "reinit": reinit,
+            "deinit": deinit,
+            "reset": Style.RESET_ALL,
+            "f_black": Fore.BLACK,
+            "f_white": Fore.WHITE,
+            "f_red": Fore.RED,
+            "f_blue": Fore.BLUE,
+            "f_yellow": Fore.YELLOW,
+            "f_green": Fore.GREEN,
+            "f_cyan": Fore.CYAN,
+            "b_black": Back.BLACK,
+            "b_white": Back.WHITE,
+            "b_red": Back.RED,
+            "b_blue": Back.BLUE,
+            "b_yellow": Back.YELLOW,
+            "b_green": Back.GREEN,
+            "b_cyan": Back.CYAN,
+        }
+
+    except ModuleNotFoundError:
+        print("Could not load dependency: colorama\n")
+
+        c = {
+            "reinit": stub,
+            "deinit": stub,
+        }
+
+        for key in keys:
+            c.update({key: ""})
+
+    return c
+
+
+def main() -> None:
+    from pycore.output_controller import display_results, return_error
+
+    c = get_colorama()
+    print(f"Welcome in ZM Round Calculator {c['f_yellow']}V3{c['reset']} by Zi0")
+    print(f"Source: '{c['f_cyan']}https://github.com/Zi0MIX/ZM-RoundCalculator{c['reset']}'")
+    print(f"Check out web implementation of the calculator under '{c['f_cyan']}https://zi0mix.github.io{c['reset']}'")
     print("Enter round number and amount of players separated by spacebar, then optional arguments")
     print("Round and Players arguments are mandatory, others are optional. Check ARGUMENTS.MD on GitHub for info.")
 
     while True:
         try:
-            reinit()
+            c["reinit"]()
             result = calculator_handler(None)
             display_results(result)
-            deinit()
+            c["deinit"]()
         except Exception:
             display_results(return_error())
 
@@ -318,11 +361,4 @@ def main_api(arguments: dict | list) -> dict:
 
 
 if __name__ == "__main__":
-    try:
-        from colorama import Fore
-        cfg.COL, cfg.RES = Fore.YELLOW, Fore.RESET
-        cfg.YEL, cfg.GRE, cfg.RED, cfg.CYA = Fore.YELLOW, Fore.GREEN, Fore.RED, Fore.CYAN
-    except Exception:
-        pass
-
-    main_app()
+    main()
