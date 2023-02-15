@@ -1,8 +1,7 @@
 {
     "api": {
-        "own_print": true,
+        "arg_conflict_method": "ignore",
         "arg_overrides": {},
-        "new_rules": {},
         "custom_translations": {}
     }
 }

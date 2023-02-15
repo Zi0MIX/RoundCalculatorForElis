@@ -37,47 +37,35 @@ def get_arguments() -> dict:
     return default_arguments
 
 
-def curate_arguments(provided_args: dict) -> dict:
-    """Define new rules in the dict below.If argument `master` is different than it's default state, argument `slave` is set to it's default state.\n
-    If key `eval_true` is set to `True`, function checks if argument `master` is `True`, and if so it sets argument `slave` to `False`"""
-    from pycore.api_handler import apiconfing_defined, get_apiconfig
+def resolve_argument_conflict(dict_of_args: dict, method: str = "error") -> dict:
+    """Function checks if there are any conflicting argument settings, and applies selected method\n
+    Avalilable methods:\n
+    `ignore` - Conflicts are ignored\n
+    `override` - Conflicted arguments are overridden with default values\n
+    `error` - Raise an exception, that's the default method"""
 
-    rules = {}
-    if apiconfing_defined():
-        rules = get_apiconfig("new_rules")
 
-    rules.update({
-        "1": {
-            "master": "detailed",
-            "slave": "nodecimals",
-            "eval_true": True,
-        },
-        "2": {
-            "master": "waw_spawnrate",
-            "slave": "remix",
-            "eval_true": True,
-        }
-    })
+    def conflict_found(conflicting_keys: list):
+        if method == "ignore":
+            return
+        elif method == "error":
+            raise Exception(f"Following keys are in conflict {', '.join(conflicting_keys)}")
+        elif method == "override":
+            default_args = get_arguments()
 
-    defaults = get_arguments()
+            for key in conflicting_keys:
+                dict_of_args[key] = default_args[key]["default_state"]
 
-    registered_pairs = []
 
-    for rule in rules.keys():
-        master = rules[rule]["master"]
-        slave = rules[rule]["slave"]
+    from config import CONFLICTING_ARGUMENTS
 
-        # Ignore rules that repeat or contradict with already applied ones
-        if [master, slave] in registered_pairs or [slave, master] in registered_pairs:
-            continue
+    for conflict in CONFLICTING_ARGUMENTS:
+        conflicting_states = 0
+        keys_in_conflict = conflict.keys()
+        for key in keys_in_conflict:
+            if dict_of_args[key] == conflict[key]:
+                conflicting_states += 1
+        if conflicting_states > 1:
+            conflict_found(keys_in_conflict)
 
-        registered_pairs.append([master, slave])
-
-        if rules[rule]["eval_true"]:
-            if provided_args[master]:
-                provided_args[slave] = False
-        else:
-            if provided_args[master] != defaults[master]["default_state"]:
-                provided_args[slave] = defaults[slave]["default_state"]
-
-    return provided_args
+    return dict_of_args

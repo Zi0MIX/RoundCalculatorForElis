@@ -336,22 +336,18 @@ def main() -> None:
             display_results(return_error())
 
 
-def main_api(arguments: dict | list) -> dict:
-    from pycore.arg_controller import curate_arguments
+def api(msg_to_api: dict | str) -> dict:
     from pycore.output_controller import display_results, return_error
     import pycore.api_handler as api
 
     try:
         api.init_apiconfig()
 
-        own_print = False
-        if api.apiconfing_defined():
-            own_print = api.get_apiconfig("own_print")
+        if isinstance(msg_to_api, str):
+            msg_to_api = api.load_api_message_from_file(msg_to_api)
+        msg_to_api = api.verify_api_message(msg_to_api)
 
-        arguments["args"] = curate_arguments(arguments["args"])
-
-        if own_print:
-            display_results(calculator_handler(arguments))
+        display_results(calculator_handler(arguments))
         return calculator_handler(arguments)
 
     except Exception:

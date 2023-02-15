@@ -201,3 +201,14 @@ DEFAULT_MAP_TRANSLATIONS = {
     "zm_buried": "Buried",
     "zm_tomb": "Origins",
 }
+
+DEFAULT_APICONFIG = {
+    "own_print": True,
+    "arg_overrides": {},
+    "new_rules": {},
+    "custom_translations": {}
+}
+
+CONFLICTING_ARGUMENTS: list[dict] = [{
+
+}]
