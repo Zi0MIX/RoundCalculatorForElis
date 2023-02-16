@@ -13,6 +13,12 @@ Below is an example for API call
 
 ```json
 {
+    "mode": "api",
+    "data": {
+        "round": "255",
+        "players": "1",
+        "map_code": "zm_prototype"
+    },
     "output_types": {
         "round_times": {
             "pattern": "Round {{ROUND_NUMBER}} will spawn in {{TIME_OF_SPAWN}} and has {{ZOMBIES}}. Spawnrate: {{SPAWNRATE}} Network frame: {{NETWORK_FRAME}}",
@@ -25,7 +31,8 @@ Below is an example for API call
     },
     "arguments": {
         "range": true
-    }
+    },
+    "modifier": null
 }
 ```
 
@@ -33,8 +40,19 @@ Below is an example for API call
 
 | Key | Mandatory | Type | Explanation |
 | --- | --- | --- | --- |
+| "mode" | YES | string | Pass string 'api'. |
+| "data" | YES | JSON | Dataset for the calculator to work with. |
 | "output_types" | YES | JSON | This definition is used to assemble output from the program. |
-| "arguments| | NO | JSON | Pass arguments to the program that change the behaviour and/or output. |
+| "arguments" | YES | JSON | Pass arguments to the program that change the behaviour and/or output. |
+| "modifier" | NO | string or null | Pass flag with a modifier, if there isn't one, pass `null`. |
+
+## Keys - "data"
+
+| Key | Mandatory | Type | Default | Explanation |
+| --- | --- | --- | --- |
+| "round" | YES | string or int | - | Number representing which round is suppose to be processed. |
+| "players" | YES | string or int | - | Number of players the calculator should use for calculation |
+| "map_code" | NO | string or null | - | Code of map needed for certain types of calculations. It is recommended to always pass it on, in case it's not selected, pass `null`. |
 
 ## Keys - "output_types"
 

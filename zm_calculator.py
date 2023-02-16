@@ -116,66 +116,51 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
     return calc_result
 
 
-def calculator_handler(json_input: dict = None):
+def calculator_handler(calc_message: dict):
     from pycore.arg_controller import get_args, get_arguments, load_args, update_args
     from pycore.class_controller import import_dogrounds
     from pycore.mods_controller import get_mods
     from pycore.output_controller import map_translator
 
+    def verify_optional_input(data: dict, key: str) -> any:
+        if key in data.keys() and data[key] is not None and data[key]:
+            return data[key]
+        return None
+
+    def parse_calculator_data(data: dict) -> tuple[int, int, str, str]:
+        rnd, players = int(data["round"]), int(data["players"])
+        map_code = verify_optional_input(data, "map_code")
+
+        return (rnd, players, map_code)
+
     # Avoid warning while calculating insta rounds
     np.seterr(over="ignore")
 
-    # Take input if standalone app
-    if json_input is None:
-        raw_input = input("> ").lower()
-        raw_input = raw_input.split(" ")
-
-        if not isinstance(raw_input, list) or len(raw_input) < 2:
-            raise ValueError("Wrong data input")
-        rnd, players = int(raw_input[0]), int(raw_input[1])
-
-        use_arguments = len(raw_input) > 2
-    # Assign variables from json otherwise
-    else:
-        rnd, players, map_code = int(json_input["rounds"]), int(json_input["players"]), str(json_input["map_code"])
-        # try/except clause supports transition between keys, remove later
-        try:
-            use_arguments = json_input["arguments"] or len(json_input["mods"])
-        except KeyError:
-            use_arguments = json_input["use_arguments"] or len(json_input["mods"])
-
+    # Load default argument settings and assign to global variable
     all_arguments = get_arguments()
     load_args()
 
-    # We do not process all the argument logic if arguments are not defined
-    result = ZombieRound(rnd, players)
-    if not use_arguments:
-        return [get_round_times(result)]
+    # Extract data from calc_message
+    is_api: bool = calc_message["mode"] == "api"
+    calc_data: dict = calc_message["data"]
+    calc_arguments: dict = calc_message["arguments"]
 
-    # Define state of arguments
-    if json_input is None:
-        selected_arguments = raw_input[2:]
-        for key in get_args().keys():
-            if all_arguments[key]["shortcode"] in selected_arguments:
-                update_args(key)
-    else:
-        for key in get_args().keys():
-            try:
-                update_args(key, json_input["args"][key])
-            # The default state of the argument is already established, the error can be ignored
-            except KeyError:
-                continue
+    # Extract data from calc_data
+    rnd, players, map_code, modifier = parse_calculator_data(calc_data)
 
-    # Define state of mods
-    if json_input is None:
-        selected_mods = raw_input[2:]
-    else:
-        selected_mods = json_input["mods"]
-    mods = [mod for mod in get_mods() if mod in selected_mods]
+    # Set args from calc_arguments
+    for key in get_args().keys():
+        try:
+            update_args(key, calc_arguments[key])
+        # The default state of the argument is already established, the error can be ignored
+        except KeyError:
+            continue
 
-    # If mods are selected, custom calculator function entered instead
-    if len(mods):
-        return calculator_custom(rnd, players, mods)
+    # Extract modifier from calc_message
+    # Remember to add modifier handling somewhere, there is already a relation defined in config.py between modifier and output pattern
+    calc_modifier = verify_optional_input(calc_message, "modifier")
+
+    ### ENDMARK ###
 
     all_results = []
 
@@ -347,14 +332,12 @@ def api(msg_to_api: dict | str) -> dict:
             msg_to_api = api.load_api_message_from_file(msg_to_api)
         msg_to_api = api.verify_api_message(msg_to_api)
 
-        display_results(calculator_handler(arguments))
-        return calculator_handler(arguments)
+        calculator_handler(msg_to_api)
+        # display_results(calculator_handler(arguments))
+        # return calculator_handler(arguments)
 
     except Exception:
-        if own_print:
-            display_results(return_error())
-        return return_error()
-
+        pass
 
 if __name__ == "__main__":
     main()

@@ -212,3 +212,7 @@ DEFAULT_APICONFIG = {
 CONFLICTING_ARGUMENTS: list[dict] = [{
 
 }]
+
+MODIFIER_DEFINITIONS: dict = {
+    
+}
