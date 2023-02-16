@@ -160,9 +160,22 @@ def calculator_handler(calc_message: dict):
     # Remember to add modifier handling somewhere, there is already a relation defined in config.py between modifier and output pattern
     calc_modifier = verify_optional_input(calc_message, "modifier")
 
-    ### ENDMARK ###
+    # Verify map code presence
+    for arg, settings in cfg.DEFAULT_ARGUMENTS.items():
+        if calc_arguments[arg] and settings["require_map"]:
+            if map_code is None:
+                raise(f"Argument {settings['readable_name']} requires a map to be selected")
+            elif map_code not in cfg.MAP_LIST:
+                raise(f"Map {map_translator(map_code)} is not supported")
+
 
     all_results = []
+
+    game_time = cfg.RND_WAIT_INITIAL
+    for r in range(1, r + 1):
+        pass
+
+    ### ENDMARK ###
 
     # Process perfect splits
     if get_args("perfect_times"):
@@ -175,8 +188,6 @@ def calculator_handler(calc_message: dict):
             if json_input is None:
                 print(f"Map {cfg.COL}{map_translator(map_code)}{cfg.RES} is not supported.")
             raise ValueError(f"{map_translator(map_code)} is not supported")
-
-        time_total = cfg.RND_WAIT_INITIAL
 
         try:
             # Not map with dogs
