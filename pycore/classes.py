@@ -177,7 +177,7 @@ class ZombieRound:
 
         for r in range(2, self.number + 1):
             if r < 10:
-                self.health += 100
+                self.health += np.int32(100)
             else:
                 self.health += np.int32(np.float32(self.health) * np.float32(0.1))
 
