@@ -14,6 +14,7 @@ Below is an example for API call
 ```json
 {
     "mode": "api",
+    "rich_answer": true,
     "data": {
         "round": "255",
         "players": "1",
@@ -32,7 +33,13 @@ Below is an example for API call
     "arguments": {
         "range": true
     },
-    "modifier": null
+    "modifier": null,
+    "special_rounds": [5, 10, 15],
+    "grenade_data": {
+        "type": "german",
+        "radius": 128.0,
+        "extra_damage": 150
+    }
 }
 ```
 

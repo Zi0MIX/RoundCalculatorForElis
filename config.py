@@ -16,18 +16,23 @@ ZOMBIE_AI_PER_PLAYER = 6
 # Perfect dog rounds, r5 then all 4 rounders
 DOGS_PERFECT = [int(x) for x in range(256) if x % 4 == 1 and x > 4]
 # 0.05 from ingame timing, code says 7 dot
-DOGS_WAIT_START = 7.05      
+DOGS_WAIT_START = 7.05
+# Time from last dog killed to RND_WAIT_END
 DOGS_WAIT_END = 8
 # Time between dog spawning to dog appearing on the map
 DOGS_WAIT_TELEPORT = 1.5
 
-MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
-MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
+MAP_LIST = tuple("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
+MAP_DOGS = tuple("zm_sumpf", "zm_factory", "zm_theater")
+MAP_DOCTOR = tuple("zm_pentagon")
+MAP_MONKEYS = tuple("zm_cosmodrome")
+MAP_LEAPERS = tuple("zm_highrise")
 
 DEFAULT_ARGUMENTS = {
     "break": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Break",
         "shortcode": "-b",
         "default_state": True,
@@ -36,6 +41,7 @@ DEFAULT_ARGUMENTS = {
     "clear": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Clear output",
         "shortcode": "-c",
         "default_state": False,
@@ -44,6 +50,7 @@ DEFAULT_ARGUMENTS = {
     "detailed": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Detailed",
         "shortcode": "-d",
         "default_state": False,
@@ -52,6 +59,7 @@ DEFAULT_ARGUMENTS = {
     "even_time": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Even time",
         "shortcode": "-e",
         "default_state": False,
@@ -60,6 +68,7 @@ DEFAULT_ARGUMENTS = {
     "hordes": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Hordes",
         "shortcode": "-h",
         "default_state": False,
@@ -68,6 +77,7 @@ DEFAULT_ARGUMENTS = {
     "insta_rounds": {
         "use_in_web": True,
         "require_map": True,
+        "require_special_round": False,
         "readable_name": "Insta Rounds",
         "shortcode": "-i",
         "default_state": True,
@@ -76,6 +86,7 @@ DEFAULT_ARGUMENTS = {
     "lower_time": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Lower Time",
         "shortcode": "-l",
         "default_state": False,
@@ -84,6 +95,7 @@ DEFAULT_ARGUMENTS = {
     "nodecimal": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Nodecimal",
         "shortcode": "-n",
         "default_state": True,
@@ -92,6 +104,7 @@ DEFAULT_ARGUMENTS = {
     "perfect_times": {
         "use_in_web": True,
         "require_map": True,
+        "require_special_round": False,
         "readable_name": "Perfect times",
         "shortcode": "-p",
         "default_state": False,
@@ -100,6 +113,7 @@ DEFAULT_ARGUMENTS = {
     "prenades": {
         "use_in_web": False,    # Arg is not yet usable
         "require_map": True,
+        "require_special_round": False,
         "readable_name": "Prenades",
         "shortcode": "-P",
         "default_state": False,
@@ -108,6 +122,7 @@ DEFAULT_ARGUMENTS = {
     "range": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Range",
         "shortcode": "-r",
         "default_state": False,
@@ -116,6 +131,7 @@ DEFAULT_ARGUMENTS = {
     "remix": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Remix",
         "shortcode": "-x",
         "default_state": False,
@@ -124,6 +140,7 @@ DEFAULT_ARGUMENTS = {
     "save": {
         "use_in_web": False,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Save",
         "shortcode": "-v",
         "default_state": False,
@@ -132,6 +149,7 @@ DEFAULT_ARGUMENTS = {
     "special_rounds": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Special rounds",
         "shortcode": "-S",
         "default_state": False,
@@ -140,6 +158,7 @@ DEFAULT_ARGUMENTS = {
     "speedrun_time": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Speedrun time",
         "shortcode": "-s",
         "default_state": False,
@@ -148,6 +167,7 @@ DEFAULT_ARGUMENTS = {
     "teleport_time": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "Teleport time",
         "shortcode": "-t",
         "default_state": True,
@@ -156,14 +176,13 @@ DEFAULT_ARGUMENTS = {
     "waw_spawnrate": {
         "use_in_web": True,
         "require_map": False,
+        "require_special_round": False,
         "readable_name": "World at War Spawnrate",
         "shortcode": "-w",
         "default_state": False,
         "exp": "Apply higher initial spawnrate value from WaW's maps Nacht, Verruckt and Shino."
     }
 }
-
-CALCULATOR_MODS = ["-db", "-ddb", "-ps", "-rs", "-zc", "-ga", "-zh", "-ir", "-exc"]
 
 ANSWER_BLUEPRINT = {
     "type": "blueprint",
@@ -214,5 +233,23 @@ CONFLICTING_ARGUMENTS: list[dict] = [{
 }]
 
 MODIFIER_DEFINITIONS: dict = {
-    
+    "-db": "debugclasses",
+    "-sp": "spawnrates",
+    "-zc": "zombiecount",
+    "-zh": "zombiehealth",
+    "-ir": "instarounds",
+    "-ex": "exception",
+    "-pr": "prenades",
+}
+
+# Wildcard is a text enclosed in double curly braces inside of patters, value is a key in calculated_data or calculator_data dictionary in assemble_output()
+WILDCARDS_TRANSLATION = {
+    "ROUND_NUMBER": "round",
+    "TIME_OF_SPAWN": "round_time",
+    "ZOMBIES": "",
+    "SPAWNRATE": "",
+    "NETWORK_FRAME": "",
+    "PERFECT_ROUND_TIME": "",
+    "MAP_NAME": "",
+
 }

@@ -1,4 +1,4 @@
-from pycore.classes import ZombieRound, DogRound, PrenadesRound
+from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
 import numpy as np
 import config as cfg
 
@@ -118,8 +118,7 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
 
 def calculator_handler(calc_message: dict):
     from pycore.arg_controller import get_args, get_arguments, load_args, update_args
-    from pycore.class_controller import import_dogrounds
-    from pycore.mods_controller import get_mods
+    from pycore.core_controller import import_dogrounds, evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, assemble_rich_output, evaluate_special_round
     from pycore.output_controller import map_translator
 
     def verify_optional_input(data: dict, key: str) -> any:
@@ -132,6 +131,35 @@ def calculator_handler(calc_message: dict):
         map_code = verify_optional_input(data, "map_code")
 
         return (rnd, players, map_code)
+    
+    def parse_grenade_data(data: dict) -> dict:
+        grenade_data = data["grenade_data"]
+        grenades = {}
+        grenades.update({"type": grenade_data["type"]})
+        grenades.update({"radius": verify_optional_input(grenade_data, "radius")})
+        grenades.update({"extra_damage": verify_optional_input(grenade_data, "extra_damage")})
+
+        return grenades
+    
+    def evaluate_calculator_type(modifier: str) -> str:
+        """Function defines the calculator type based on conditions in following order:\n
+        1. Built-in mods - If built-in mod is used, that'll be prioritised\n
+        2. Apiconfig mods - Then if api-defined mod is used, that'll be evaluated\n
+        3. Arguments - Lastly, if argument is used that changes calc type, that'll be applied"""
+        from pycore.api_handler import apiconfing_defined, get_apiconfig
+        from config import MODIFIER_DEFINITIONS
+
+        if modifier in MODIFIER_DEFINITIONS.keys():
+            return MODIFIER_DEFINITIONS[modifier]
+        if apiconfing_defined():
+            apiconfig_mods = get_apiconfig("custom_modifiers")
+            if isinstance(apiconfig_mods, dict) and modifier in apiconfig_mods.keys():
+                return apiconfig_mods[modifier]
+        if get_args("perfect_times"):
+            return "perfect_times"
+        
+        return "round_times"
+
 
     # Avoid warning while calculating insta rounds
     np.seterr(over="ignore")
@@ -141,12 +169,12 @@ def calculator_handler(calc_message: dict):
     load_args()
 
     # Extract data from calc_message
-    is_api: bool = calc_message["mode"] == "api"
     calc_data: dict = calc_message["data"]
     calc_arguments: dict = calc_message["arguments"]
+    is_rich_answer = calc_message["rich_answer"]
 
     # Extract data from calc_data
-    rnd, players, map_code, modifier = parse_calculator_data(calc_data)
+    rnd, players, map_code = parse_calculator_data(calc_data)
 
     # Set args from calc_arguments
     for key in get_args().keys():
@@ -160,110 +188,99 @@ def calculator_handler(calc_message: dict):
     # Remember to add modifier handling somewhere, there is already a relation defined in config.py between modifier and output pattern
     calc_modifier = verify_optional_input(calc_message, "modifier")
 
-    # Verify map code presence
+    # Extract special rounds from calc message
+    spec_rounds = verify_optional_input(calc_message, "special_rounds")
+    # Special rounds array hasn't been provided or we calculating remix
+    if spec_rounds is None or get_args("remix"):
+        # We default to dog rounds. In the future lock others behind if statements based on map_code
+        spec_rounds = cfg.DOGS_PERFECT
+    # Else make sure everything is an integer
+    else:
+        spec_rounds = [int(d) for d in spec_rounds]
+
+    # Extract nades setup from calc message
+    grenade_setup = parse_grenade_data(calc_message)
+
+    # Extract output types from calc message
+    output_types = calc_message["output_types"]
+
+    # Evaluate presence of required arguments
     for arg, settings in cfg.DEFAULT_ARGUMENTS.items():
+        # Verify map code presence
         if calc_arguments[arg] and settings["require_map"]:
             if map_code is None:
-                raise(f"Argument {settings['readable_name']} requires a map to be selected")
+                raise Exception(f"Argument {settings['readable_name']} requires a map to be selected")
             elif map_code not in cfg.MAP_LIST:
-                raise(f"Map {map_translator(map_code)} is not supported")
+                raise Exception(f"Map {map_translator(map_code)} is not supported")
+        # Verify special rounds presence
+        if calc_arguments[arg] and settings["require_special_round"]:
+            if spec_rounds is None:
+                raise Exception(f"Argument {settings['readable_name']} requires special rounds be specified")
 
+    calculator_type = evaluate_calculator_type(calc_modifier)
 
-    all_results = []
+    has_special_rounds = map_code is not None and (map_code in cfg.MAP_DOGS or map_code in cfg.MAP_DOCTOR or map_code in cfg.MAP_MONKEYS or map_code in cfg.MAP_LEAPERS)
 
+    all_results = {}
     game_time = cfg.RND_WAIT_INITIAL
-    for r in range(1, r + 1):
-        pass
 
-    ### ENDMARK ###
+    # Initialize variables for for loop
+    special_average, num_of_special_rounds = 0.0, 0
 
-    # Process perfect splits
-    if get_args("perfect_times"):
+    for r in range(1, rnd + 1):
+        zombie_round = ZombieRound(r, players)
+        if has_special_rounds:
+            dog_round = DogRound(r, players, spec_rounds)
+            doc_round = DoctorRound()
+            monkey_round = MonkeyRound()
+            leaper_round = LeaperRound()
+        else:
+            dog_round = None
+            doc_round = None
+            monkey_round = None
+            leaper_round = None
+        prenades_round = PrenadesRound(r, players, grenade_setup["type"], grenade_setup["radius"], grenade_setup["extra_damage"])
 
-        if json_input is None:
-            print("Enter map code (eg. zm_theater)")
-            map_code = input("> ").lower()
+        class_of_round = evaluate_class_of_round(r, spec_rounds, map_code, zombie_round, dog_round, doc_round, monkey_round, leaper_round, prenades_round)
 
-        if map_code not in cfg.MAP_LIST:
-            if json_input is None:
-                print(f"Map {cfg.COL}{map_translator(map_code)}{cfg.RES} is not supported.")
-            raise ValueError(f"{map_translator(map_code)} is not supported")
+        is_special_round = False
+        if has_special_rounds:
+            special_average, num_of_special_rounds, is_special_round = evaluate_special_round(special_average, num_of_special_rounds, r, class_of_round)
 
-        try:
-            # Not map with dogs
-            if map_code not in cfg.MAP_DOGS:
-                set_dog_rounds = tuple()
-            # Not specified special_rounds or is remix
-            elif not get_args("special_rounds") or get_args("remix"):
-                set_dog_rounds = cfg.DOGS_PERFECT
-            # Not api mode or empty api entry provided -> take input
-            elif not json_input or not len(json_input["spec_rounds"]):
-                set_dog_rounds = import_dogrounds()
-            # Take entry from api call
-            else:
-                set_dog_rounds = tuple(json_input["spec_rounds"])
-        except KeyError:
-            if not json_input:
-                print("Warning: Key error dog rounds")
-            set_dog_rounds = cfg.DOGS_PERFECT
+        round_time = evaluate_round_time(class_of_round)
 
-        dog_rounds_average = 0.0
-        if len(set_dog_rounds):
-            from statistics import mean
-            dog_rounds_average = round(mean(set_dog_rounds), 1)
+        all_results.update({
+            str(r): {
+                "round": r,
+                "players": players,
+                "is_special_round": is_special_round,
+                "spec_round_average": special_average,
+                "num_of_spec_rounds": num_of_special_rounds,
+                "round_time": round_time,
+                "game_time": game_time,
+                "class_of_round": class_of_round,
+                "zombie_round": zombie_round,
+                "dog_round": dog_round,
+                "doctor_round": doc_round,
+                "monkey_round": monkey_round,
+                "leaper_round": leaper_round,
+                "prenades_round": prenades_round,
+            }
+        })
 
-        dog_rounds = 1
-        for r in range(1, rnd):
-            zm_round = ZombieRound(r, players)
-            dog_round = DogRound(r, players, dog_rounds)
+        # Calculate it after updating results, the reason for it is that'll be the actual representation of gametime till specified round, eg time to round 1 will always equal to `cfg.RND_WAIT_INITIAL`. It makes the calcultion redundant for last iteration, but it's fine
+        game_time = evaluate_game_time(game_time, round_time)
 
-            # Handle arguments here
-            if get_args("teleport_time"):
-                dog_round.add_teleport_time()
-
-            is_dog_round = r in set_dog_rounds
-
-            if is_dog_round:
-                dog_rounds += 1
-                round_duration = cfg.DOGS_WAIT_START + cfg.DOGS_WAIT_TELEPORT + dog_round.round_time + cfg.DOGS_WAIT_END + cfg.RND_WAIT_END
-                time_total += round_duration
-            else:
-                round_duration = zm_round.round_time + cfg.RND_WAIT_END
-                time_total += round_duration
-
-            if get_args("range"):
-                remembered_dog_average = 0.0
-
-                res = get_perfect_times(time_total, r + 1, map_code, zm_round.is_insta_round)
-                res["players"] = players
-                res["class_content"] = vars(zm_round)
-                res["special_average"] = remembered_dog_average
-                if is_dog_round:
-                    res["class_content"] = vars(dog_round)
-
-                    # Get new average on each dog round
-                    temp_dog_rounds = [d for d in set_dog_rounds if d <= r]
-                    res["special_average"] = round(sum(temp_dog_rounds) / len(temp_dog_rounds), 1)
-                    remembered_dog_average = res["special_average"]
-
-                all_results.append(res)
-
-        if not get_args("range"):
-            res = get_perfect_times(time_total, rnd, map_code, zm_round.is_insta_round)
-            res["players"] = players
-            res["class_content"] = vars(zm_round)
-            res["special_average"] = dog_rounds_average
-            if is_dog_round:
-                res["class_content"] = vars(dog_round)
-            all_results.append(res)
-
-        return all_results
-
-    if get_args("range"):
-        all_results = [get_round_times(ZombieRound(r, players)) for r in range (1, rnd)]
-        return all_results
-
-    return [get_round_times(ZombieRound(rnd, players))]
+    assemble_data = {
+        "calculator_type": calculator_type,
+        "spec_rounds": spec_rounds,
+        "calc_modifier": calc_modifier,
+        "output_types": output_types,
+    }
+    if is_rich_answer:
+        assemble_output(True, all_results, assemble_data)
+    else:
+        assemble_output(False, all_results, assemble_data)
 
 
 def get_colorama() -> dict:

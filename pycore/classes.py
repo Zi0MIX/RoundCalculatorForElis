@@ -88,26 +88,26 @@ class ZombieRound:
         """Function uses Numpy to emulate Game Engine behavior"""
         from pycore.arg_controller import get_args
 
-        self.zombie_spawn_delay = np.float32(2.0)
+        self.spawn_delay = np.float32(2.0)
         self.raw_spawn_delay = np.float32(2.0)
 
         if get_args("remix"):
-            self.zombie_spawn_delay = 1.0
+            self.spawn_delay = 1.0
             self.raw_spawn_delay = 1.0
         if get_args("waw_spawnrate"):
-            self.zombie_spawn_delay = 3.0
+            self.spawn_delay = 3.0
             self.raw_spawn_delay = 3.0
 
         if self.number > 1:
             for _ in range(1, self.number):
-                self.zombie_spawn_delay *= np.float32(0.95)
+                self.spawn_delay *= np.float32(0.95)
 
-            self.zombie_spawn_delay = self.get_round_spawn_delay(self.zombie_spawn_delay)
+            self.spawn_delay = self.get_round_spawn_delay(self.spawn_delay)
 
-            if self.zombie_spawn_delay < 0.1:
-                self.zombie_spawn_delay = np.float32(0.1)
+            if self.spawn_delay < 0.1:
+                self.spawn_delay = np.float32(0.1)
 
-        self.zombie_spawn_delay = round(float(self.zombie_spawn_delay), 2)
+        self.spawn_delay = round(float(self.spawn_delay), 2)
 
         return
 
@@ -126,22 +126,22 @@ class ZombieRound:
         else:
             temp = int(cfg.ZOMBIE_MAX_AI + ((self.players - 1) * cfg.ZOMBIE_AI_PER_PLAYER * multiplier))
 
-        self.zombies = temp
+        self.enemies = temp
         if self.number < 2:
-            self.zombies = int(temp * 0.25)
+            self.enemies = int(temp * 0.25)
         elif self.number < 3:
-            self.zombies = int(temp * 0.3)
+            self.enemies = int(temp * 0.3)
         elif self.number < 4:
-            self.zombies = int(temp * 0.5)
+            self.enemies = int(temp * 0.5)
         elif self.number < 5:
-            self.zombies = int(temp * 0.7)
+            self.enemies = int(temp * 0.7)
         elif self.number < 6:
-            self.zombies = int(temp * 0.9)
+            self.enemies = int(temp * 0.9)
 
-        self.hordes = round(self.zombies / 24, 2)
+        self.hordes = round(self.enemies / 24, 2)
 
-        if get_args("waw_spawnrate") and self.players == 1 and self.zombies > 24:
-            self.zombies = 24
+        if get_args("waw_spawnrate") and self.players == 1 and self.enemies > 24:
+            self.enemies = 24
 
         return
 
@@ -160,8 +160,8 @@ class ZombieRound:
 
 
     def get_round_time(self):
-        delay = self.zombie_spawn_delay + self.network_frame
-        self.raw_time = (self.zombies * delay) - delay
+        delay = self.spawn_delay + self.network_frame
+        self.raw_time = (self.enemies * delay) - delay
         self.round_time = round(self.raw_time, 2)
 
         # self.extract_decimals()
@@ -204,29 +204,29 @@ class DogRound(ZombieRound):
 
 
     def get_dogs(self):
-        self.dogs = self.players * 8
+        self.enemies = self.players * 8
 
         if self.special_rounds < 3:
-            self.dogs = self.players * 6
+            self.enemies = self.players * 6
 
         return
 
 
     def get_teleport_time(self):
         # Seems to be the best indication of representing spawncap accurately, at least in case of solo when comparing to actual gameplay
-        self.teleport_time = cfg.DOGS_WAIT_TELEPORT * (self.dogs / (2 * self.players))
+        self.teleport_time = cfg.DOGS_WAIT_TELEPORT * (self.enemies / (2 * self.players))
         return
 
 
     def get_dog_spawn_delay(self):
-        self.dog_spawn_delay = 1.50
+        self.spawn_delay = 1.50
 
         if self.special_rounds == 1:
-            self.dog_spawn_delay = 3.00
+            self.spawn_delay = 3.00
         elif self.special_rounds == 2:
-            self.dog_spawn_delay = 2.50
+            self.spawn_delay = 2.50
         elif self.special_rounds == 3:
-            self.dog_spawn_delay = 2.00
+            self.spawn_delay = 2.00
 
         return
 
@@ -234,19 +234,13 @@ class DogRound(ZombieRound):
     def get_total_delay(self):
         self.raw_time = 0
         self.delays = []
-        for i in range(1, self.dogs):
-            delay = self.get_round_spawn_delay(self.dog_spawn_delay - (i / self.dogs))
+        for i in range(1, self.enemies):
+            delay = self.get_round_spawn_delay(self.spawn_delay - (i / self.enemies))
 
             self.raw_time += delay
             self.delays.append(delay)
 
         self.raw_time = round(self.raw_time, 2)
-
-
-    def add_teleport_time(self):
-        # Call if dog teleport time should be added for each dog on class level
-        self.raw_time += self.teleport_time
-        return
 
 
     def round_up(self):
@@ -259,6 +253,30 @@ class DogRound(ZombieRound):
         self.round_time = ((time_in_ms - (time_in_ms % 500)) + 500) / 1000
         return
     
+
+    def add_teleport_time(self):
+        # Call if dog teleport time should be added for each dog on class level
+        self.round_time += self.teleport_time
+        return
+    
+
+@dataclass
+class DoctorRound(ZombieRound):
+    # FIVE
+    pass
+
+
+@dataclass
+class MonkeyRound(ZombieRound):
+    # Ascension
+    pass
+
+
+@dataclass
+class LeaperRound(ZombieRound):
+    # Die Rise
+    pass
+
 
 @dataclass
 class PrenadesRound(ZombieRound):

@@ -71,7 +71,6 @@ def get_answer_blueprint() -> dict:
     return ANSWER_BLUEPRINT
 
 
-
 def display_results(results: list[dict], save_only: bool = False):
     from config import COL, RES
     from pycore.arg_controller import get_args, load_args
