@@ -65,15 +65,9 @@ def return_error(nolist: bool = False) -> dict | list[dict]:
     return [{"type": "error", "message": str(format_exc())}]
 
 
-def get_answer_blueprint() -> dict:
-    """Check outputs.MD for reference"""
-    from config import ANSWER_BLUEPRINT
-    return ANSWER_BLUEPRINT
-
-
 def display_results(results: list[dict], save_only: bool = False):
     from config import COL, RES
-    from pycore.arg_controller import get_args, load_args
+    from pycore.arg_controller import get_args, init_args
 
     def save_results_locally(to_save: list, path_override: str = "") -> None:
         import os.path
@@ -126,7 +120,7 @@ def display_results(results: list[dict], save_only: bool = False):
     try:
         get_args()
     except (NameError, UnboundLocalError):
-        load_args()
+        init_args()
 
     for res in results:
 

@@ -1,19 +1,4 @@
-def init_apiconfig():
-    """Load a dictionary to global `APICONFIG`, if file is not defined, load defaults"""
-    import os.path
-    from config import DEFAULT_APICONFIG
-    from json import load
-
-    global APICONFIG
-
-    try:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "apiconfig.json")
-        with open(path, "r", encoding="utf-8") as rawcfg:
-            api_cfg = load(rawcfg)
-        APICONFIG = api_cfg
-
-    except Exception as exc:
-        APICONFIG = DEFAULT_APICONFIG
+from . import APICONFIG, init_apiconfig
 
 
 def apiconfing_defined() -> bool:

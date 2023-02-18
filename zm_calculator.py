@@ -1,137 +1,28 @@
-from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
 import numpy as np
 import config as cfg
-
-def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool) -> dict:
-    from pycore.arg_controller import get_args
-    from pycore.output_controller import map_translator, get_readable_time, get_answer_blueprint
-
-    a = get_answer_blueprint()
-    a["type"] = "perfect_times"
-    a["round"] = rnd
-    a["raw_time"] = time_total
-    a["map_name"] = map_translator(map_code)
-    a["is_insta_round"] = insta_round
-
-    split_adj = 0.0
-    if get_args("speedrun_time"):
-        split_adj = cfg.RND_BETWEEN_NUMBER_FLAG
-
-    if get_args("detailed"):
-        a["time_output"] = str(round(time_total * 1000)) + " ms"
-    else:
-        a["time_output"] = get_readable_time(time_total - split_adj, get_args())
-
-    return a
+from pycore import verify_optional_input
+from pycore.api_handler import apiconfing_defined, get_apiconfig
+from pycore.arg_controller import get_args, update_args
+from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
+from pycore.core_controller import import_dogrounds, evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round
+from pycore.output_controller import map_translator, get_readable_time, display_results, return_error
 
 
-def get_round_times(rnd: ZombieRound | DogRound) -> dict:
-    from pycore.arg_controller import get_args
-    from pycore.output_controller import get_readable_time, get_answer_blueprint
-
-    a = get_answer_blueprint()
-    a["type"] = "round_time"
-    a["round"] = rnd.number
-    a["players"] = rnd.players
-    a["zombies"] = rnd.zombies
-    a["hordes"] = rnd.hordes
-    a["raw_time"] = rnd.raw_time
-    a["spawnrate"] = rnd.zombie_spawn_delay
-    a["raw_spawnrate"] = rnd.raw_spawn_delay
-    a["network_frame"] = rnd.network_frame
-    a["is_insta_round"] = rnd.is_insta_round
-    a["class_content"] = vars(rnd)
-
-    split_adj = 0
-    if get_args("speedrun_time"):
-        split_adj = cfg.RND_BETWEEN_NUMBER_FLAG
-
-    if get_args("detailed"):
-        a["time_output"] = str(round(rnd.round_time * 1000)) + " ms"
-    else:
-        a["time_output"] = get_readable_time(rnd.round_time - split_adj, get_args())
-
-    return a
-
-
-def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
-    from pycore.arg_controller import get_arguments
-    from pycore.output_controller import get_answer_blueprint
-
-    calc_result = []
-    single_iteration = False
-    for r in range(1, rnd + 1):
-        zm_round = ZombieRound(r, players)
-        dog_round = DogRound(r, players, r)
-
-        a = get_answer_blueprint()
-        a["type"] = "mod"
-        a["round"] = r
-        a["players"] = players
-        a["raw_spawnrate"] = zm_round.raw_spawn_delay
-        a["spawnrate"] = zm_round.zombie_spawn_delay
-        a["zombies"] = zm_round.zombies
-        a["health"] = zm_round.health
-        a["class_content"] = vars(zm_round)
-        a["message"] = ""
-
-        if "-exc" in mods:
-            raise Exception("This is a test exception")
-        elif "-ga" in mods:
-            rgs = get_arguments()
-            a["mod"] = "-ga"
-            a["message"] = "\n".join([f"{rgs[r]['shortcode']}: {rgs[r]['exp']}" for r in rgs.keys()])
-            single_iteration = True
-        elif "-ir" in mods:
-            a["mod"] = "-ir"
-            if zm_round.is_insta_round:
-                a["message"] = f"Round {zm_round.number} is an insta-kill round. Zombie health: {zm_round.health}"
-            else:
-                continue
-        elif "-rs" in mods:
-            a["mod"] = "-rs"
-            a["message"] = str(a["raw_spawnrate"])
-        elif "-ps" in mods:
-            a["mod"] = "-ps"
-            a["message"] = str(a["spawnrate"])
-        elif "-zc" in mods:
-            a["mod"] = "-zc"
-            a["message"] = str(a["zombies"])
-        elif "-zh" in mods:
-            a["mod"] = "-zh"
-            a["message"] = str(a["health"])
-        elif "-db" in mods:
-            a["mod"] = "-db"
-            a["message"] = str(a["class_content"])
-        elif "-ddb" in mods:
-            a["mod"] = "-ddb"
-            a["class_content"] = vars(dog_round)
-            a["message"] = str(a["class_content"])
-
-        calc_result.append(a)
-
-        if single_iteration:
-            break
-
-    return calc_result
+def mod_preprocessor(mod: str) -> any:
+    if mod == "-ex":
+        raise Exception(f"This is a test exception raised by mod {mod}")
+    return
 
 
 def calculator_handler(calc_message: dict):
-    from pycore.arg_controller import get_args, get_arguments, load_args, update_args
-    from pycore.core_controller import import_dogrounds, evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, assemble_rich_output, evaluate_special_round
-    from pycore.output_controller import map_translator
-
-    def verify_optional_input(data: dict, key: str) -> any:
-        if key in data.keys() and data[key] is not None and data[key]:
-            return data[key]
-        return None
 
     def parse_calculator_data(data: dict) -> tuple[int, int, str, str]:
         rnd, players = int(data["round"]), int(data["players"])
         map_code = verify_optional_input(data, "map_code")
 
         return (rnd, players, map_code)
-    
+
+
     def parse_grenade_data(data: dict) -> dict:
         grenade_data = data["grenade_data"]
         grenades = {}
@@ -140,17 +31,36 @@ def calculator_handler(calc_message: dict):
         grenades.update({"extra_damage": verify_optional_input(grenade_data, "extra_damage")})
 
         return grenades
-    
-    def evaluate_calculator_type(modifier: str) -> str:
+
+
+    def parse_output_types(output_types: dict | None) -> dict:
+        """Function assembles a dictionary of patterns\n
+        1. cfg.DEFAULT_PATTERNS\n
+        2. cfg.CLEAR_PATTERNS are used to override if argument `clear` is set\n
+        3. Apiconfig key `custom_patterns` is used to override / add\n
+        4. Calculator message from key `output_types` is used to override / add"""
+
+        patterns = cfg.DEFAULT_PATTERNS
+        if get_args("clear"):
+            patterns.update(cfg.CLEAR_PATTERNS)
+
+        if apiconfing_defined():
+            patterns.update(get_apiconfig("custom_patterns"))
+
+        if output_types is not None:
+            patterns.update(output_types)
+
+        return patterns
+
+
+    def parse_calculator_types(modifier: str) -> str:
         """Function defines the calculator type based on conditions in following order:\n
         1. Built-in mods - If built-in mod is used, that'll be prioritised\n
         2. Apiconfig mods - Then if api-defined mod is used, that'll be evaluated\n
         3. Arguments - Lastly, if argument is used that changes calc type, that'll be applied"""
-        from pycore.api_handler import apiconfing_defined, get_apiconfig
-        from config import MODIFIER_DEFINITIONS
 
-        if modifier in MODIFIER_DEFINITIONS.keys():
-            return MODIFIER_DEFINITIONS[modifier]
+        if modifier in cfg.MODIFIER_DEFINITIONS.keys():
+            return cfg.MODIFIER_DEFINITIONS[modifier]
         if apiconfing_defined():
             apiconfig_mods = get_apiconfig("custom_modifiers")
             if isinstance(apiconfig_mods, dict) and modifier in apiconfig_mods.keys():
@@ -163,10 +73,6 @@ def calculator_handler(calc_message: dict):
 
     # Avoid warning while calculating insta rounds
     np.seterr(over="ignore")
-
-    # Load default argument settings and assign to global variable
-    all_arguments = get_arguments()
-    load_args()
 
     # Extract data from calc_message
     calc_data: dict = calc_message["data"]
@@ -202,7 +108,7 @@ def calculator_handler(calc_message: dict):
     grenade_setup = parse_grenade_data(calc_message)
 
     # Extract output types from calc message
-    output_types = calc_message["output_types"]
+    output_types = parse_output_types(calc_message["output_types"])
 
     # Evaluate presence of required arguments
     for arg, settings in cfg.DEFAULT_ARGUMENTS.items():
@@ -217,7 +123,7 @@ def calculator_handler(calc_message: dict):
             if spec_rounds is None:
                 raise Exception(f"Argument {settings['readable_name']} requires special rounds be specified")
 
-    calculator_type = evaluate_calculator_type(calc_modifier)
+    calculator_type = parse_calculator_types(calc_modifier)
 
     has_special_rounds = map_code is not None and (map_code in cfg.MAP_DOGS or map_code in cfg.MAP_DOCTOR or map_code in cfg.MAP_MONKEYS or map_code in cfg.MAP_LEAPERS)
 
@@ -227,13 +133,15 @@ def calculator_handler(calc_message: dict):
     # Initialize variables for for loop
     special_average, num_of_special_rounds = 0.0, 0
 
+    mod_preprocessor(calc_modifier)
+
     for r in range(1, rnd + 1):
         zombie_round = ZombieRound(r, players)
         if has_special_rounds:
             dog_round = DogRound(r, players, spec_rounds)
-            doc_round = DoctorRound()
-            monkey_round = MonkeyRound()
-            leaper_round = LeaperRound()
+            doc_round = DoctorRound(r, players, spec_rounds)
+            monkey_round = MonkeyRound(r, players, spec_rounds)
+            leaper_round = LeaperRound(r, players, spec_rounds)
         else:
             dog_round = None
             doc_round = None
@@ -253,18 +161,31 @@ def calculator_handler(calc_message: dict):
             str(r): {
                 "round": r,
                 "players": players,
+                "enemies": class_of_round.enemies,
+                "enemy_health": class_of_round.health,
+                "spawnrate": class_of_round.spawn_delay,
+                "raw_spawnrate": class_of_round.raw_spawn_delay,
+                "network_frame": class_of_round.network_frame,
+                "round_time": round_time,
+                "game_time": game_time,
+                "is_insta_round": class_of_round.is_insta_round,
+
+                "map_code": map_code,
+                "map_name": map_translator(map_code),
+
                 "is_special_round": is_special_round,
                 "spec_round_average": special_average,
                 "num_of_spec_rounds": num_of_special_rounds,
-                "round_time": round_time,
-                "game_time": game_time,
-                "class_of_round": class_of_round,
-                "zombie_round": zombie_round,
-                "dog_round": dog_round,
-                "doctor_round": doc_round,
-                "monkey_round": monkey_round,
-                "leaper_round": leaper_round,
-                "prenades_round": prenades_round,
+
+                "prenades": prenades_round.prenades,
+
+                "class_of_round": class_of_round.__name__,
+                "zombie_round": vars(zombie_round),
+                "dog_round": vars(dog_round),
+                "doctor_round": vars(doc_round),
+                "monkey_round": vars(monkey_round),
+                "leaper_round": vars(leaper_round),
+                "prenades_round": vars(prenades_round),
             }
         })
 
@@ -277,10 +198,8 @@ def calculator_handler(calc_message: dict):
         "calc_modifier": calc_modifier,
         "output_types": output_types,
     }
-    if is_rich_answer:
-        assemble_output(True, all_results, assemble_data)
-    else:
-        assemble_output(False, all_results, assemble_data)
+
+    assemble_output(is_rich_answer, all_results, assemble_data)
 
 
 def get_colorama() -> dict:
@@ -330,10 +249,11 @@ def get_colorama() -> dict:
 
 
 def main() -> None:
-    from pycore.output_controller import display_results, return_error
+    from pycore import init_args
 
+    init_args()
     c = get_colorama()
-    print(f"Welcome in ZM Round Calculator {c['f_yellow']}V3{c['reset']} by Zi0")
+    print(f"Welcome in ZM Round Calculator {c['f_yellow']}V4{c['reset']} by Zi0")
     print(f"Source: '{c['f_cyan']}https://github.com/Zi0MIX/ZM-RoundCalculator{c['reset']}'")
     print(f"Check out web implementation of the calculator under '{c['f_cyan']}https://zi0mix.github.io{c['reset']}'")
     print("Enter round number and amount of players separated by spacebar, then optional arguments")
@@ -350,15 +270,16 @@ def main() -> None:
 
 
 def api(msg_to_api: dict | str) -> dict:
-    from pycore.output_controller import display_results, return_error
-    import pycore.api_handler as api
+    from pycore import init_apiconfig, init_args
+    from pycore.api_handler import load_api_message_from_file, verify_api_message
 
     try:
-        api.init_apiconfig()
+        init_apiconfig()
+        init_args()
 
         if isinstance(msg_to_api, str):
-            msg_to_api = api.load_api_message_from_file(msg_to_api)
-        msg_to_api = api.verify_api_message(msg_to_api)
+            msg_to_api = load_api_message_from_file(msg_to_api)
+        msg_to_api = verify_api_message(msg_to_api)
 
         calculator_handler(msg_to_api)
         # display_results(calculator_handler(arguments))

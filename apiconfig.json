@@ -3,6 +3,7 @@
         "arg_conflict_method": "ignore",
         "arg_overrides": {},
         "custom_translations": {},
-        "custom_modifiers": {}
+        "custom_modifiers": {},
+        "custom_patterns": {}
     }
 }

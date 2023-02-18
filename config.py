@@ -184,23 +184,6 @@ DEFAULT_ARGUMENTS = {
     }
 }
 
-ANSWER_BLUEPRINT = {
-    "type": "blueprint",
-    "mod": "",
-    "message": "",
-    "round": 0,
-    "players": 0,
-    "zombies": 0,
-    "hordes": 0.0,
-    "time_output": "00:00",
-    "special_average": 0.0,
-    "spawnrate": 0.0,
-    "raw_spawnrate": 0.0,
-    "network_frame": 0.0,
-    "is_insta_round": False,
-    "map_name": "",
-    "class_content": {},
-}
 
 DEFAULT_MAP_TRANSLATIONS = {
     "zm_prototype": "Nacht Der Untoten",
@@ -242,14 +225,44 @@ MODIFIER_DEFINITIONS: dict = {
     "-pr": "prenades",
 }
 
-# Wildcard is a text enclosed in double curly braces inside of patters, value is a key in calculated_data or calculator_data dictionary in assemble_output()
+# Wildcard is a text enclosed in curly braces inside of patterns, value is a key in calculated_data or calculator_data dictionary in assemble_output()
 WILDCARDS_TRANSLATION = {
     "ROUND_NUMBER": "round",
-    "TIME_OF_SPAWN": "round_time",
-    "ZOMBIES": "",
-    "SPAWNRATE": "",
-    "NETWORK_FRAME": "",
-    "PERFECT_ROUND_TIME": "",
-    "MAP_NAME": "",
+    "PLAYERS": "players",
+    "ENEMIES": "enemies",
+    "ENEMY_HEALTH": "enemy_health",
+    "SPAWNRATE": "spawnrate",
+    "NETWORK_FRAME": "network_frame",
+    "ROUND_TIME": "round_time",
+    "GAME_TIME": "game_time",
+    "INSTAROUND": "is_insta_round",
+    "MAP_CODE": "map_code",
+    "MAP_NAME": "map_name",
+    "IS_SPECIAL_ROUND": "is_special_round",
+    "SPECIAL_AVERAGE": "spec_round_average",
+    "SPECIAL_ROUNDS": "num_of_spec_rounds",
+    "PRENADES": "prenades",
+    "ZOMBIE_ROUND": "zombie_round",
+    "DOG_ROUND": "dog_round",
+    "DOCTOR_ROUND": "doctor_round",
+    "MONKEY_ROUND": "monkey_round",
+    "LEAPER_ROUND": "leaper_round",
+    "PRENADES_ROUND": "prenades_round"
+}
 
+DEFAULT_PATTERNS = {
+    "round_times": "Round {ROUND_NUMBER} will spawn in {ROUND_TIME} and has {ENEMIES} {ENEMY_TYPE}. Spawnrate: {SPAWNRATE} Network frame: {NETWORK_FRAME}",
+    "perfect_times": "Perfect time to round {ROUND_NUMBER} for {PLAYERS} players is {GAME_TIME} on {MAP_NAME}",
+    "debugclasses": "zombie_round={ZOMBIE_ROUND}\ndog_round={DOG_ROUND}\ndoctor_round={DOCTOR_ROUND}\nmonkey_round={MONKEY_ROUND}\nleaper_round={LEAPER_ROUND}\n{PRENADES_ROUND}",
+    "spawnrates": "{SPAWNRATE}",
+    "zombiecount": "{ENEMIES}",
+    "zombiehealth": "{ENEMY_HEALTH}",
+    "instarounds": "{INSTAROUND}",
+    "exception": "{EXCEPTION}",
+    "prenades": "{PRENADES}",
+}
+
+CLEAR_PATTERNS = {
+    "round_times": "{ROUND_TIME}",
+    "perfect_times": "{GAME_TIME}",
 }

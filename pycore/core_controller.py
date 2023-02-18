@@ -13,28 +13,35 @@ def import_dogrounds() -> tuple:
     return DOGS_PERFECT
 
 
-
 def assemble_output(rich: bool, calculated_data: dict, calculator_data: dict) -> dict:
     """Function assembles a dictionary using provided data"""
-    from pycore.output_controller import get_answer_blueprint
+    from config import WILDCARDS_TRANSLATION
 
-    def assemble_rich_output(normal_output: dict) -> dict:
-        """Function adds additional data to a class_output dictionary using provided data"""
+    def generate_answer(calc_type: str, data_this_line: dict) -> str:
+        pattern: str = calculator_data["output_types"][calc_type]
 
-        return normal_output
-    
+        # Map values with wildcards
+        wildcard_map = {}
+        for k, v in WILDCARDS_TRANSLATION.items():
+            wildcard_map.update({k: data_this_line[v]})
 
-    def parse_pattern(calc_type: str) -> str:
-        pattern = calculator_data["output_types"][calc_type]
-    
+        # Format output accordingly
+        answer = pattern.format(**wildcard_map)
+
+        return answer
+
 
     calc_type = calculator_data["calculator_type"]
-    a = get_answer_blueprint()
-    a["type"] = calc_type
-    a["answer"] = list()
+    a = {
+        "type": calc_type,
+        "answer": list(),
+    }
+
+    for data in calculated_data.values():
+        a["answer"].append(generate_answer(calc_type, data))
 
     if rich:
-        a = assemble_rich_output(a)
+        a.update(calculated_data)
 
     return a
 
