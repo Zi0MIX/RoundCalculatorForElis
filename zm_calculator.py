@@ -9,12 +9,13 @@ from pycore.output_controller import map_translator, get_readable_time, display_
 
 
 def mod_preprocessor(mod: str) -> any:
+    """Function used to execute mods before the main loop. It is recommended to kill the program early after it's used"""
     if mod == "-ex":
         raise Exception(f"This is a test exception raised by mod {mod}")
     return
 
 
-def calculator_handler(calc_message: dict):
+def calculator_handler(calc_message: dict) -> dict:
 
     def parse_calculator_data(data: dict) -> tuple[int, int, str, str]:
         rnd, players = int(data["round"]), int(data["players"])
@@ -137,6 +138,7 @@ def calculator_handler(calc_message: dict):
 
     for r in range(1, rnd + 1):
         zombie_round = ZombieRound(r, players)
+        # Cast for separate classes, decided not to make one universal gigant for special rounds in general, allowes for more freedom outside of class
         if has_special_rounds:
             dog_round = DogRound(r, players, spec_rounds)
             doc_round = DoctorRound(r, players, spec_rounds)
@@ -199,7 +201,7 @@ def calculator_handler(calc_message: dict):
         "output_types": output_types,
     }
 
-    assemble_output(is_rich_answer, all_results, assemble_data)
+    return assemble_output(is_rich_answer, all_results, assemble_data)
 
 
 def get_colorama() -> dict:
@@ -281,9 +283,7 @@ def api(msg_to_api: dict | str) -> dict:
             msg_to_api = load_api_message_from_file(msg_to_api)
         msg_to_api = verify_api_message(msg_to_api)
 
-        calculator_handler(msg_to_api)
-        # display_results(calculator_handler(arguments))
-        # return calculator_handler(arguments)
+        return calculator_handler(msg_to_api)
 
     except Exception:
         pass

@@ -57,8 +57,13 @@ def get_readable_time(round_time: float, args: dict) -> str:
     return new_time
 
 
-def return_error(nolist: bool = False) -> dict | list[dict]:
+# Remove override print after func is ready
+def return_error(nolist: bool = False, override_print: bool = True) -> dict | list[dict]:
     from traceback import format_exc
+
+    if override_print:
+        print(format_exc())
+        exit()
 
     if nolist:
         return {"type": "error", "message": str(format_exc())}
