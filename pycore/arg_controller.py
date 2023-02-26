@@ -1,4 +1,22 @@
-from . import ARGS
+def init_args():
+    """Initialize global variable `ARGS`. It can then be accessed or modified using `get_args()` and `update_args()` respectivelly"""
+    from config import DEFAULT_ARGUMENTS
+    from pycore.api_handler import apiconfing_defined, get_apiconfig
+
+    all_arguments = DEFAULT_ARGUMENTS
+
+    if apiconfing_defined():
+        overrides = get_apiconfig("arg_overrides")
+        for high_key in overrides.keys():
+            # There is no validation for keys that can be replaced, hopefully there doesn't have to be
+            for low_key in overrides[high_key].keys():
+                all_arguments.update({high_key[low_key]: overrides[high_key[low_key]]})
+
+    global ARGS
+    ARGS = {}
+    [ARGS.update({key: all_arguments[key]["default_state"]}) for key in all_arguments.keys()]
+
+    return
 
 
 def get_args(key: str = "") -> bool | dict:

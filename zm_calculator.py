@@ -1,11 +1,16 @@
 import numpy as np
 import config as cfg
-from pycore import verify_optional_input
 from pycore.api_handler import apiconfing_defined, get_apiconfig
 from pycore.arg_controller import get_args, update_args
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
 from pycore.core_controller import import_dogrounds, evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round
 from pycore.output_controller import map_translator, get_readable_time, display_results, return_error
+
+
+def verify_optional_input(data: dict, key: str) -> any:
+    if key in data.keys() and data[key] is not None and data[key]:
+        return data[key]
+    return None
 
 
 def mod_preprocessor(mod: str) -> any:
@@ -68,7 +73,7 @@ def calculator_handler(calc_message: dict) -> dict:
                 return apiconfig_mods[modifier]
         if get_args("perfect_times"):
             return "perfect_times"
-        
+
         return "round_times"
 
 
@@ -251,7 +256,8 @@ def get_colorama() -> dict:
 
 
 def main() -> None:
-    from pycore import init_args
+    from pycore.app_controller import collect_input
+    from pycore.arg_controller import init_args
 
     init_args()
     c = get_colorama()
@@ -264,7 +270,8 @@ def main() -> None:
     while True:
         try:
             c["reinit"]()
-            result = calculator_handler(None)
+            calc_input = collect_input(c)
+            result = calculator_handler(calc_input)
             display_results(result)
             c["deinit"]()
         except Exception:
@@ -272,8 +279,8 @@ def main() -> None:
 
 
 def api(msg_to_api: dict | str) -> dict:
-    from pycore import init_apiconfig, init_args
-    from pycore.api_handler import load_api_message_from_file, verify_api_message
+    from pycore.api_handler import init_apiconfig, load_api_message_from_file, verify_api_message
+    from pycore.arg_controller import init_args
 
     try:
         init_apiconfig()
@@ -287,6 +294,7 @@ def api(msg_to_api: dict | str) -> dict:
 
     except Exception:
         pass
+
 
 if __name__ == "__main__":
     main()

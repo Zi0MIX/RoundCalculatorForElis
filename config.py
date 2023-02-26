@@ -22,11 +22,11 @@ DOGS_WAIT_END = 8
 # Time between dog spawning to dog appearing on the map
 DOGS_WAIT_TELEPORT = 1.5
 
-MAP_LIST = tuple("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
-MAP_DOGS = tuple("zm_sumpf", "zm_factory", "zm_theater")
-MAP_DOCTOR = tuple("zm_pentagon")
-MAP_MONKEYS = tuple("zm_cosmodrome")
-MAP_LEAPERS = tuple("zm_highrise")
+MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
+MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
+MAP_DOCTOR = ("zm_pentagon")
+MAP_MONKEYS = ("zm_cosmodrome")
+MAP_LEAPERS = ("zm_highrise")
 
 DEFAULT_ARGUMENTS = {
     "break": {
@@ -64,6 +64,24 @@ DEFAULT_ARGUMENTS = {
         "shortcode": "-e",
         "default_state": False,
         "exp": "Time output always has 5 symbols."
+    },
+    "grenade_damage": {
+        "use_in_web": True,
+        "require_map": False,
+        "require_special_round": False,
+        "readable_name": "Extra grenade damage",
+        "shortcode": "-gd",
+        "default_state": 150,
+        "exp": "Overrides default extra damage value."
+    },
+    "grenade_radius": {
+        "use_in_web": True,
+        "require_map": False,
+        "require_special_round": False,
+        "readable_name": "Grenade radius",
+        "shortcode": "-gr",
+        "default_state": 128.0,
+        "exp": "Overrides default radius value."
     },
     "hordes": {
         "use_in_web": True,
@@ -111,7 +129,7 @@ DEFAULT_ARGUMENTS = {
         "exp": "Instead of perfect round times, display perfect split times for choosen map."
     },
     "prenades": {
-        "use_in_web": False,    # Arg is not yet usable
+        "use_in_web": False,
         "require_map": True,
         "require_special_round": False,
         "readable_name": "Prenades",
@@ -184,7 +202,6 @@ DEFAULT_ARGUMENTS = {
     }
 }
 
-
 DEFAULT_MAP_TRANSLATIONS = {
     "zm_prototype": "Nacht Der Untoten",
     "zm_asylum": "Verruckt",
@@ -208,7 +225,8 @@ DEFAULT_APICONFIG = {
     "own_print": True,
     "arg_overrides": {},
     "new_rules": {},
-    "custom_translations": {}
+    "custom_translations": {},
+    "custom_modifiers": {},
 }
 
 CONFLICTING_ARGUMENTS: list[dict] = [{
@@ -216,13 +234,12 @@ CONFLICTING_ARGUMENTS: list[dict] = [{
 }]
 
 MODIFIER_DEFINITIONS: dict = {
-    "-db": "debugclasses",
-    "-sp": "spawnrates",
-    "-zc": "zombiecount",
-    "-zh": "zombiehealth",
-    "-ir": "instarounds",
-    "-ex": "exception",
-    "-pr": "prenades",
+    "-dbc": "debugclasses",
+    "-spr": "spawnrates",
+    "-zcn": "zombiecount",
+    "-zhp": "zombiehealth",
+    "-irn": "instarounds",
+    "-exc": "exception",
 }
 
 # Wildcard is a text enclosed in curly braces inside of patterns, value is a key in calculated_data or calculator_data dictionary in assemble_output()

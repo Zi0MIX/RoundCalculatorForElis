@@ -1,5 +1,52 @@
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
 from pycore.arg_controller import get_args
+from pycore.api_handler import get_apiconfig
+
+
+def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, list[str]]:
+    """Function takes either argv string or direct user input and disassembles it to arguments\n
+    Set `validation` to `False` to enable sandbox mode in terms of accepted numbers"""
+    import argparse as arg
+
+    v_round, v_players = range(1, 65535), range(1, 9)
+    if not validation:
+        v_round, v_players = None, None
+
+    parser = arg.ArgumentParser(prog="ZM-RoundCalculator", add_help=False)
+    # Main
+    parser.add_argument("round", type=int, action="store", choices=v_round)
+    parser.add_argument("players", type=int, action="store", choices=v_players)
+
+    # Extra
+    parser.add_argument("-map", "--mapcode", required=False, type=str, action="store", dest="map_code")
+    parser.add_argument("-spec", "--specialrounds", required=False, type=str, action="store", dest="special_rounds")
+
+    # Args
+    from config import DEFAULT_ARGUMENTS
+    for k, v in DEFAULT_ARGUMENTS.items():
+        store_type = "store_true"
+        if not isinstance(v["default_state"], bool):
+            store_type = "store"
+        parser.add_argument(v["shortcode"], f"--{k}", action=store_type, dest=k, help=v["exp"])
+
+    # Mods (can only use one at the time)
+    mods = parser.add_mutually_exclusive_group()
+    from config import MODIFIER_DEFINITIONS
+
+    modifier_definitions = MODIFIER_DEFINITIONS
+    apiconfig_mods = get_apiconfig("custom_modifiers")
+    if isinstance(apiconfig_mods, dict):
+        modifier_definitions.update(apiconfig_mods)
+
+    for k, v in modifier_definitions.items():
+        mods.add_argument(k, f"--{v}", action="store_true", dest=v)
+
+    # Parse
+    if isinstance(calc_input, str):
+        calc_input = calc_input.split(" ")
+    args, remainer = parser.parse_known_args(calc_input)
+
+    return (vars(args), remainer)
 
 
 def import_dogrounds() -> tuple:
