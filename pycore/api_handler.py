@@ -35,7 +35,7 @@ def get_apiconfig(key: str = "") -> dict | None:
     try:
         APICONFIG
     except (NameError, UnboundLocalError):
-        init_apiconfig()
+        return None
 
     if isinstance(APICONFIG, dict) and key:
         return APICONFIG["api"][key]

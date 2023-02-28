@@ -98,7 +98,7 @@ DEFAULT_ARGUMENTS = {
         "require_special_round": False,
         "readable_name": "Insta Rounds",
         "shortcode": "-i",
-        "default_state": True,
+        "default_state": False,
         "exp": "Add information about instakill rounds to the output."
     },
     "lower_time": {
@@ -248,6 +248,7 @@ WILDCARDS_TRANSLATION = {
     "PLAYERS": "players",
     "ENEMIES": "enemies",
     "ENEMY_HEALTH": "enemy_health",
+    "ENEMY_TYPE": "enemy_type",
     "SPAWNRATE": "spawnrate",
     "NETWORK_FRAME": "network_frame",
     "ROUND_TIME": "round_time",
@@ -282,4 +283,9 @@ DEFAULT_PATTERNS = {
 CLEAR_PATTERNS = {
     "round_times": "{ROUND_TIME}",
     "perfect_times": "{GAME_TIME}",
+}
+
+GRENADETYPES = {
+    "german": ["zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory"],
+    "semtex": ["zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_buried", "zm_tomb"]
 }

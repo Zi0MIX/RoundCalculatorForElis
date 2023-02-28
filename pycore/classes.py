@@ -7,14 +7,20 @@ from dataclasses import dataclass
 class ZombieRound:
     number: int
     players: int
+    map_code: str
 
 
     def __post_init__(self):
+        self.set_enemy_type()
         self.get_network_frame()
         self.get_zombies()
         self.get_spawn_delay()
         self.get_round_time()
         self.get_zombie_health()
+
+
+    def set_enemy_type(self, enemy_type: str = "zombie"):
+        self.enemy_type = enemy_type
 
 
     def get_network_frame(self):
@@ -195,6 +201,7 @@ class DogRound(ZombieRound):
 
 
     def __post_init__(self):
+        self.set_enemy_type("dog")
         self.get_network_frame()
         self.get_dogs()
         self.get_teleport_time()
@@ -280,68 +287,34 @@ class LeaperRound(ZombieRound):
 
 @dataclass
 class PrenadesRound(ZombieRound):
-    nade_type: str
     radius: float = None
     extra_damage: int = None
 
 
     def __post_init__(self):
+        self.set_enemy_type()
+        self.get_nade_type()
+        self.get_zombie_health()
         self.explosives_handler()
 
 
-    def get_nadeconfig(self) -> dict:
-        nadeconfigs = {
-            "frag": {
-                "max_radius": np.float32(256.0),
-                "min_radius": np.float32(0.0),
-                "max_damage": np.int32(300),
-                "min_damage": np.int32(75),
-                "damage_extra_max": np.int32(200),
-                "damage_extra_min": np.int32(100),
-            },
-            "german": {
-                "max_radius": np.float32(256.0),
-                "min_radius": np.float32(0.0),
-                "max_damage": np.int32(200),
-                "min_damage": np.int32(50),
-                "damage_extra_max": np.int32(200),
-                "damage_extra_min": np.int32(100),
-            },
-            "semtex": {
-                "max_radius": np.float32(256.0),
-                "min_radius": np.float32(0.0),
-                "max_damage": np.int32(300),
-                "min_damage": np.int32(55),
-                "damage_extra_max": np.int32(200),
-                "damage_extra_min": np.int32(100),
-            },
-        }
+    def get_nade_type(self):
+        self.grenade_type = "frag"
 
-        return nadeconfigs[self.nade_type]
-    
-
-    def get_bmx_damage(self) -> np.int32:
-        if self.nade_type == "frag":
-            return np.int32(np.float32(-0.880) * np.float32(self.radius) + np.int32(300))
-        elif self.nade_type == "german":
-            return np.int32(np.float32(-0.585) * np.float32(self.radius) + np.int32(200))
-        elif self.nade_type == "semtex":
-            return np.int32(np.float32(-0.958) * np.float32(self.radius) + np.int32(300))
-        else:
-            raise Exception(f"Could not set BMX damage value for nade type {self.nade_type}")
+        if self.map_code is not None:
+            for k, v in cfg.GRENADETYPES.values():
+                if self.map_code in v:
+                    self.grenade_type = k
 
 
     def explosives_handler(self):
         """Function uses Numpy to emulate Game Engine behavior.\n
         Available nade types are `frag`, `german`, `semtex`"""
 
-        if not isinstance(self.radius, float):
-            raise Exception(f"Wrong argument type passed to 'radius_override'. Expected '{type(float())}', received '{type(self.radius)}'")
-
         nadecfg = self.get_nadeconfig()
 
         # Get average radius or else pickup override value. Important to pass float to the function call
-        if self.radius is None:
+        if not isinstance(self.radius, float):
             self.radius = np.float32((nadecfg["max_radius"] + nadecfg["min_radius"]) / 2)
         else:
             self.radius = np.float32(self.radius)
@@ -350,7 +323,7 @@ class PrenadesRound(ZombieRound):
         bmx_damage = self.get_bmx_damage()
 
         # Get average extra damage or else pickup override value
-        if self.extra_damage is None:
+        if not isinstance(self.extra_damage, int):
             self.extra_damage = np.int32((nadecfg["damage_extra_max"] + nadecfg["damage_extra_min"]) / 2) + np.int32(self.number)
         else:
             self.extra_damage = np.int32(self.extra_damage) + np.int32(self.number)
@@ -383,3 +356,43 @@ class PrenadesRound(ZombieRound):
         # print(f"DEV: Prenades on {self.number}: {self.prenades}")
 
 
+    def get_nadeconfig(self) -> dict:
+        nadeconfigs = {
+            "frag": {
+                "max_radius": np.float32(256.0),
+                "min_radius": np.float32(0.0),
+                "max_damage": np.int32(300),
+                "min_damage": np.int32(75),
+                "damage_extra_max": np.int32(200),
+                "damage_extra_min": np.int32(100),
+            },
+            "german": {
+                "max_radius": np.float32(256.0),
+                "min_radius": np.float32(0.0),
+                "max_damage": np.int32(200),
+                "min_damage": np.int32(50),
+                "damage_extra_max": np.int32(200),
+                "damage_extra_min": np.int32(100),
+            },
+            "semtex": {
+                "max_radius": np.float32(256.0),
+                "min_radius": np.float32(0.0),
+                "max_damage": np.int32(300),
+                "min_damage": np.int32(55),
+                "damage_extra_max": np.int32(200),
+                "damage_extra_min": np.int32(100),
+            },
+        }
+
+        return nadeconfigs[self.grenade_type]
+    
+
+    def get_bmx_damage(self) -> np.int32:
+        if self.grenade_type == "frag":
+            return np.int32(np.float32(-0.880) * np.float32(self.radius) + np.int32(300))
+        elif self.grenade_type == "german":
+            return np.int32(np.float32(-0.585) * np.float32(self.radius) + np.int32(200))
+        elif self.grenade_type == "semtex":
+            return np.int32(np.float32(-0.958) * np.float32(self.radius) + np.int32(300))
+        else:
+            raise Exception(f"Could not set BMX damage value for nade type {self.grenade_type}")

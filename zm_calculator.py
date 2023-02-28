@@ -3,7 +3,7 @@ import config as cfg
 from pycore.api_handler import apiconfing_defined, get_apiconfig
 from pycore.arg_controller import get_args, update_args
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
-from pycore.core_controller import import_dogrounds, evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round
+from pycore.core_controller import evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round, get_class_vars
 from pycore.output_controller import map_translator, get_readable_time, display_results, return_error
 
 
@@ -23,20 +23,20 @@ def mod_preprocessor(mod: str) -> any:
 def calculator_handler(calc_message: dict) -> dict:
 
     def parse_calculator_data(data: dict) -> tuple[int, int, str, str]:
+        def evaluate_special_rounds(spec_rounds: any) -> list[int]:
+            # Special rounds array hasn't been provided or we calculating remix
+            if spec_rounds is None or get_args("remix"):
+                # We default to dog rounds. In the future lock others behind if statements based on map_code
+                spec_rounds = cfg.DOGS_PERFECT
+            # Else make sure everything is an integer
+            else:
+                spec_rounds = [int(d) for d in spec_rounds]
+
         rnd, players = int(data["round"]), int(data["players"])
         map_code = verify_optional_input(data, "map_code")
+        special_rounds = evaluate_special_rounds(verify_optional_input(data, "special_rounds"))
 
-        return (rnd, players, map_code)
-
-
-    def parse_grenade_data(data: dict) -> dict:
-        grenade_data = data["grenade_data"]
-        grenades = {}
-        grenades.update({"type": grenade_data["type"]})
-        grenades.update({"radius": verify_optional_input(grenade_data, "radius")})
-        grenades.update({"extra_damage": verify_optional_input(grenade_data, "extra_damage")})
-
-        return grenades
+        return (rnd, players, map_code, special_rounds)
 
 
     def parse_output_types(output_types: dict | None) -> dict:
@@ -86,7 +86,7 @@ def calculator_handler(calc_message: dict) -> dict:
     is_rich_answer = calc_message["rich_answer"]
 
     # Extract data from calc_data
-    rnd, players, map_code = parse_calculator_data(calc_data)
+    rnd, players, map_code, spec_rounds = parse_calculator_data(calc_data)
 
     # Set args from calc_arguments
     for key in get_args().keys():
@@ -99,19 +99,6 @@ def calculator_handler(calc_message: dict) -> dict:
     # Extract modifier from calc_message
     # Remember to add modifier handling somewhere, there is already a relation defined in config.py between modifier and output pattern
     calc_modifier = verify_optional_input(calc_message, "modifier")
-
-    # Extract special rounds from calc message
-    spec_rounds = verify_optional_input(calc_message, "special_rounds")
-    # Special rounds array hasn't been provided or we calculating remix
-    if spec_rounds is None or get_args("remix"):
-        # We default to dog rounds. In the future lock others behind if statements based on map_code
-        spec_rounds = cfg.DOGS_PERFECT
-    # Else make sure everything is an integer
-    else:
-        spec_rounds = [int(d) for d in spec_rounds]
-
-    # Extract nades setup from calc message
-    grenade_setup = parse_grenade_data(calc_message)
 
     # Extract output types from calc message
     output_types = parse_output_types(calc_message["output_types"])
@@ -142,19 +129,19 @@ def calculator_handler(calc_message: dict) -> dict:
     mod_preprocessor(calc_modifier)
 
     for r in range(1, rnd + 1):
-        zombie_round = ZombieRound(r, players)
+        zombie_round = ZombieRound(r, players, map_code)
         # Cast for separate classes, decided not to make one universal gigant for special rounds in general, allowes for more freedom outside of class
         if has_special_rounds:
-            dog_round = DogRound(r, players, spec_rounds)
-            doc_round = DoctorRound(r, players, spec_rounds)
-            monkey_round = MonkeyRound(r, players, spec_rounds)
-            leaper_round = LeaperRound(r, players, spec_rounds)
+            dog_round = DogRound(r, players, map_code, spec_rounds)
+            doc_round = DoctorRound(r, players, map_code, spec_rounds)
+            monkey_round = MonkeyRound(r, players, map_code, spec_rounds)
+            leaper_round = LeaperRound(r, players, map_code, spec_rounds)
         else:
             dog_round = None
             doc_round = None
             monkey_round = None
             leaper_round = None
-        prenades_round = PrenadesRound(r, players, grenade_setup["type"], grenade_setup["radius"], grenade_setup["extra_damage"])
+        prenades_round = PrenadesRound(r, players, map_code, get_args("grenade_radius"), get_args("grenade_damage"))
 
         class_of_round = evaluate_class_of_round(r, spec_rounds, map_code, zombie_round, dog_round, doc_round, monkey_round, leaper_round, prenades_round)
 
@@ -170,6 +157,7 @@ def calculator_handler(calc_message: dict) -> dict:
                 "players": players,
                 "enemies": class_of_round.enemies,
                 "enemy_health": class_of_round.health,
+                "enemy_type": class_of_round.enemy_type,
                 "spawnrate": class_of_round.spawn_delay,
                 "raw_spawnrate": class_of_round.raw_spawn_delay,
                 "network_frame": class_of_round.network_frame,
@@ -186,13 +174,13 @@ def calculator_handler(calc_message: dict) -> dict:
 
                 "prenades": prenades_round.prenades,
 
-                "class_of_round": class_of_round.__name__,
-                "zombie_round": vars(zombie_round),
-                "dog_round": vars(dog_round),
-                "doctor_round": vars(doc_round),
-                "monkey_round": vars(monkey_round),
-                "leaper_round": vars(leaper_round),
-                "prenades_round": vars(prenades_round),
+                "class_of_round": type(class_of_round).__name__,
+                "zombie_round": get_class_vars(zombie_round),
+                "dog_round": get_class_vars(dog_round),
+                "doctor_round": get_class_vars(doc_round),
+                "monkey_round": get_class_vars(monkey_round),
+                "leaper_round": get_class_vars(leaper_round),
+                "prenades_round": get_class_vars(prenades_round),
             }
         })
 
@@ -270,7 +258,7 @@ def main() -> None:
     while True:
         try:
             c["reinit"]()
-            calc_input = collect_input(c)
+            calc_input = collect_input()
             result = calculator_handler(calc_input)
             display_results(result)
             c["deinit"]()

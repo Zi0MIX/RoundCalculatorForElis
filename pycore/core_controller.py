@@ -24,9 +24,14 @@ def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, lis
     # Args
     from config import DEFAULT_ARGUMENTS
     for k, v in DEFAULT_ARGUMENTS.items():
-        store_type = "store_true"
+
         if not isinstance(v["default_state"], bool):
             store_type = "store"
+        elif v["default_state"]:
+            store_type = "store_false"
+        elif not v["default_state"]:
+            store_type = "store_true"
+
         parser.add_argument(v["shortcode"], f"--{k}", action=store_type, dest=k, help=v["exp"])
 
     # Mods (can only use one at the time)
@@ -47,17 +52,6 @@ def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, lis
     args, remainer = parser.parse_known_args(calc_input)
 
     return (vars(args), remainer)
-
-
-def import_dogrounds() -> tuple:
-    from config import CYA, RES, DOGS_PERFECT
-    print(f"{CYA}Enter special rounds separated with space.{RES}")
-    raw_special = str(input("> "))
-
-    list_special = [int(x) for x in raw_special.split(" ") if x.isdigit()]
-    if len(list_special):
-        return tuple(list_special)
-    return DOGS_PERFECT
 
 
 def assemble_output(rich: bool, calculated_data: dict, calculator_data: dict) -> dict:
@@ -157,3 +151,11 @@ def evaluate_game_time(game_time: int | float, round_time: int | float) -> int |
 
     new_game_time = game_time + round_time + RND_WAIT_END
     return new_game_time
+
+
+def get_class_vars(instance: any) -> dict | None:
+    """Function makes a call to vars but will return `None` on exception, allowing for passing wrong instance, such as `None`"""
+    try:
+        return vars(instance)
+    except Exception:
+        return None

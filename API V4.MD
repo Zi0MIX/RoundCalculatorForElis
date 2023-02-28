@@ -18,7 +18,8 @@ Below is an example for API call
     "data": {
         "round": "255",
         "players": "1",
-        "map_code": "zm_prototype"
+        "map_code": "zm_prototype",
+        "special_rounds": [5, 10, 15]
     },
     "output_types": {
         "round_times": {
@@ -34,12 +35,6 @@ Below is an example for API call
         "range": true
     },
     "modifier": null,
-    "special_rounds": [5, 10, 15],
-    "grenade_data": {
-        "type": "german",
-        "radius": 128.0,
-        "extra_damage": 150
-    }
 }
 ```
 
