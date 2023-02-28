@@ -1,5 +1,5 @@
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
-from pycore.arg_controller import get_args
+from pycore.arg_controller import get_args, eval_break, eval_save
 from pycore.api_handler import get_apiconfig
 
 
@@ -12,14 +12,15 @@ def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, lis
     if not validation:
         v_round, v_players = None, None
 
-    parser = arg.ArgumentParser(prog="ZM-RoundCalculator", add_help=False)
+    # Exit on error removes default error messages, function will back up to try/except in main and display error message there
+    parser = arg.ArgumentParser(prog="ZM-RoundCalculator", add_help=False, exit_on_error=False)
     # Main
     parser.add_argument("round", type=int, action="store", choices=v_round)
     parser.add_argument("players", type=int, action="store", choices=v_players)
 
     # Extra
-    parser.add_argument("-map", "--mapcode", required=False, type=str, action="store", dest="map_code")
-    parser.add_argument("-spec", "--specialrounds", required=False, type=str, action="store", dest="special_rounds")
+    parser.add_argument("-map", "--mapcode", required=False, type=str, action="store", dest="map_code", default=None)
+    parser.add_argument("-spec", "--specialrounds", required=False, type=str, action="store", dest="special_rounds", default=None)
 
     # Args
     from config import DEFAULT_ARGUMENTS
@@ -32,7 +33,7 @@ def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, lis
         elif not v["default_state"]:
             store_type = "store_true"
 
-        parser.add_argument(v["shortcode"], f"--{k}", action=store_type, dest=k, help=v["exp"])
+        parser.add_argument(v["shortcode"], f"--{k}", action=store_type, dest=k, help=v["exp"], default=v["default_state"], choices=v["allowed_values"])
 
     # Mods (can only use one at the time)
     mods = parser.add_mutually_exclusive_group()
@@ -159,3 +160,32 @@ def get_class_vars(instance: any) -> dict | None:
         return vars(instance)
     except Exception:
         return None
+
+
+def display_output(data: dict, c: dict, **extras) -> None:
+    if data["type"] == "error":
+        print(f"{c['f_red']}An error occured:{c['reset']}\n{data['answer'][0]}\n")
+        return
+
+    save_path = None
+    if "save_path" in extras.keys():
+        save_path = extras["save_path"]
+
+    data_to_output = data["answer"]
+
+    if not get_args("range"):
+        data_to_output = data_to_output[-1]
+    elif get_args("perfect_times"):
+        data_to_output = data_to_output[1:]
+
+    if isinstance(data_to_output, list):
+        for a in data_to_output:
+            print(a)
+            eval_break()
+            eval_save(a, save_path)
+    else:
+        print(data_to_output)
+        eval_break()
+        eval_save(data_to_output, save_path)
+
+    return

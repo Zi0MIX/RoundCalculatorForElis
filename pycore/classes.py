@@ -19,7 +19,27 @@ class ZombieRound:
         self.get_zombie_health()
 
 
-    def set_enemy_type(self, enemy_type: str = "zombie"):
+    def get_game(self):
+        from pycore.arg_controller import get_args
+        self.game_code = get_args("game")
+        if self.game_code is None:
+            for k, v in cfg.GAME_TITLES.items():
+                if self.map_code in v["maps"]:
+                    self.game_code = k
+
+        # This should only occur in scenarios where game title is not necessary
+        if self.game_code is None:
+            self.game_code = ""
+
+        self.game_title = "Undefined title"
+        if self.game_code:
+            try:
+                self.game_title = cfg.GAME_TITLES[self.game_code]
+            except Exception:
+                pass
+
+
+    def set_enemy_type(self, enemy_type: str = "zombies"):
         self.enemy_type = enemy_type
 
 
@@ -201,7 +221,7 @@ class DogRound(ZombieRound):
 
 
     def __post_init__(self):
-        self.set_enemy_type("dog")
+        self.set_enemy_type("dogs")
         self.get_network_frame()
         self.get_dogs()
         self.get_teleport_time()
@@ -292,8 +312,10 @@ class PrenadesRound(ZombieRound):
 
 
     def __post_init__(self):
+        self.get_game()
         self.set_enemy_type()
         self.get_nade_type()
+        self.translate_nade_type()
         self.get_zombie_health()
         self.explosives_handler()
 
@@ -302,9 +324,16 @@ class PrenadesRound(ZombieRound):
         self.grenade_type = "frag"
 
         if self.map_code is not None:
-            for k, v in cfg.GRENADETYPES.values():
+            for k, v in cfg.GRENADETYPES.items():
                 if self.map_code in v:
                     self.grenade_type = k
+
+
+    def translate_nade_type(self):
+        if self.grenade_type == "german":
+            self.grenade_name = "Stielhandgranate"
+        else:
+            self.grenade_name = self.grenade_type.capitalize()
 
 
     def explosives_handler(self):

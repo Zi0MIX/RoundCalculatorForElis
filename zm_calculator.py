@@ -1,26 +1,14 @@
 import numpy as np
 import config as cfg
 from pycore.api_handler import apiconfing_defined, get_apiconfig
-from pycore.arg_controller import get_args, update_args
+from pycore.arg_controller import get_args, update_args, eval_hordes
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
-from pycore.core_controller import evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round, get_class_vars
-from pycore.output_controller import map_translator, get_readable_time, display_results, return_error
+from pycore.core_controller import evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round, get_class_vars, display_output
+from pycore.functions import verify_optional_input, mod_preprocessor, display_metadata, time_processor, get_player_string, get_insta_round
+from pycore.output_controller import map_translator, return_error
 
 
-def verify_optional_input(data: dict, key: str) -> any:
-    if key in data.keys() and data[key] is not None and data[key]:
-        return data[key]
-    return None
-
-
-def mod_preprocessor(mod: str) -> any:
-    """Function used to execute mods before the main loop. It is recommended to kill the program early after it's used"""
-    if mod == "-ex":
-        raise Exception(f"This is a test exception raised by mod {mod}")
-    return
-
-
-def calculator_handler(calc_message: dict) -> dict:
+def calculator_handler(calc_message: dict) -> tuple[dict, str]:
 
     def parse_calculator_data(data: dict) -> tuple[int, int, str, str]:
         def evaluate_special_rounds(spec_rounds: any) -> list[int]:
@@ -31,6 +19,9 @@ def calculator_handler(calc_message: dict) -> dict:
             # Else make sure everything is an integer
             else:
                 spec_rounds = [int(d) for d in spec_rounds]
+
+            return spec_rounds
+
 
         rnd, players = int(data["round"]), int(data["players"])
         map_code = verify_optional_input(data, "map_code")
@@ -73,6 +64,8 @@ def calculator_handler(calc_message: dict) -> dict:
                 return apiconfig_mods[modifier]
         if get_args("perfect_times"):
             return "perfect_times"
+        if get_args("prenades"):
+            return "prenades"
 
         return "round_times"
 
@@ -151,38 +144,46 @@ def calculator_handler(calc_message: dict) -> dict:
 
         round_time = evaluate_round_time(class_of_round)
 
-        all_results.update({
-            str(r): {
-                "round": r,
-                "players": players,
-                "enemies": class_of_round.enemies,
-                "enemy_health": class_of_round.health,
-                "enemy_type": class_of_round.enemy_type,
-                "spawnrate": class_of_round.spawn_delay,
-                "raw_spawnrate": class_of_round.raw_spawn_delay,
-                "network_frame": class_of_round.network_frame,
-                "round_time": round_time,
-                "game_time": game_time,
-                "is_insta_round": class_of_round.is_insta_round,
+        # Assemble simple answer
+        round_result = {
+            "round": r,
+            "players": players,
+            "players_string": get_player_string(players),
+            "enemy_health": class_of_round.health,
+            "spawnrate": class_of_round.spawn_delay,
+            "raw_spawnrate": class_of_round.raw_spawn_delay,
+            "network_frame": class_of_round.network_frame,
+            "round_time": time_processor(round_time),
+            "game_time": time_processor(game_time),
 
-                "map_code": map_code,
-                "map_name": map_translator(map_code),
+            "is_insta_round": class_of_round.is_insta_round,
+            "insta_round_text": get_insta_round(class_of_round.is_insta_round),
 
-                "is_special_round": is_special_round,
-                "spec_round_average": special_average,
-                "num_of_spec_rounds": num_of_special_rounds,
+            "map_code": map_code,
+            "map_name": map_translator(map_code),
 
-                "prenades": prenades_round.prenades,
+            "is_special_round": is_special_round,
+            "spec_round_average": special_average,
+            "num_of_spec_rounds": num_of_special_rounds,
 
-                "class_of_round": type(class_of_round).__name__,
-                "zombie_round": get_class_vars(zombie_round),
-                "dog_round": get_class_vars(dog_round),
-                "doctor_round": get_class_vars(doc_round),
-                "monkey_round": get_class_vars(monkey_round),
-                "leaper_round": get_class_vars(leaper_round),
-                "prenades_round": get_class_vars(prenades_round),
-            }
-        })
+            "prenades": prenades_round.prenades,
+            "nade_type": prenades_round.grenade_type,
+            "nade_name": prenades_round.grenade_name,
+
+            "class_of_round": type(class_of_round).__name__,
+            "zombie_round": get_class_vars(zombie_round),
+            "dog_round": get_class_vars(dog_round),
+            "doctor_round": get_class_vars(doc_round),
+            "monkey_round": get_class_vars(monkey_round),
+            "leaper_round": get_class_vars(leaper_round),
+            "prenades_round": get_class_vars(prenades_round),
+        }
+
+        # Add dynamic keys
+        round_result["enemies"], round_result["enemy_type"] = eval_hordes(class_of_round)
+
+        # Update all results
+        all_results.update({str(r): round_result})
 
         # Calculate it after updating results, the reason for it is that'll be the actual representation of gametime till specified round, eg time to round 1 will always equal to `cfg.RND_WAIT_INITIAL`. It makes the calcultion redundant for last iteration, but it's fine
         game_time = evaluate_game_time(game_time, round_time)
@@ -194,7 +195,7 @@ def calculator_handler(calc_message: dict) -> dict:
         "output_types": output_types,
     }
 
-    return assemble_output(is_rich_answer, all_results, assemble_data)
+    return (assemble_output(is_rich_answer, all_results, assemble_data), calc_modifier)
 
 
 def get_colorama() -> dict:
@@ -258,12 +259,12 @@ def main() -> None:
     while True:
         try:
             c["reinit"]()
-            calc_input = collect_input()
-            result = calculator_handler(calc_input)
-            display_results(result)
+            calc_input, scrap = collect_input()
+            result, modifier = calculator_handler(calc_input)
+            display_output(result, c, **display_metadata(modifier, calc_input))
             c["deinit"]()
         except Exception:
-            display_results(return_error())
+            display_output(*return_error(c))
 
 
 def api(msg_to_api: dict | str) -> dict:

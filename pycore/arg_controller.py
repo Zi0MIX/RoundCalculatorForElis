@@ -1,3 +1,6 @@
+from pycore.classes import ZombieRound
+
+
 def init_args():
     """Initialize global variable `ARGS`. It can then be accessed or modified using `get_args()` and `update_args()` respectivelly"""
     from config import DEFAULT_ARGUMENTS
@@ -62,3 +65,39 @@ def resolve_argument_conflict(dict_of_args: dict, method: str = "error") -> dict
             conflict_found(keys_in_conflict)
 
     return dict_of_args
+
+
+def eval_break():
+    """Insert empty line if argument `break` is set to `True`"""
+    if get_args("break"):
+        print()
+    return
+
+
+def eval_save(content: str, path: str = None) -> tuple[bool, str]:
+
+    if not get_args("save"):
+        return
+
+    import os.path
+    import datetime as dt
+
+    if path is None:
+        print("Path to where the file should be saved in:")
+        path = input("> ")
+
+    filename = f"calculator{str(int(dt.datetime.now().timestamp()))}.txt"
+    try:
+        with open(os.path.join(path, filename), "a", encoding="utf-8") as txt_io:
+            txt_io.write(content)
+        print(f"Results saved in '{filename}'")
+    except Exception as exc:
+        print(f"Failed to save results in '{filename}'\n{exc}")
+
+    return
+
+
+def eval_hordes(class_of_round: any) -> tuple[float, str]:
+    if isinstance(class_of_round, ZombieRound) and get_args("hordes"):
+        return (round(class_of_round.enemies / 24, 2), "hordes")
+    return (class_of_round.enemies, class_of_round.enemy_type)

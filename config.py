@@ -22,6 +22,21 @@ DOGS_WAIT_END = 8
 # Time between dog spawning to dog appearing on the map
 DOGS_WAIT_TELEPORT = 1.5
 
+GAME_TITLES = {
+    "waw": {
+        "title": "World at War",
+        "maps": []
+    },
+    "bo1": {
+        "title": "Black Ops",
+        "maps": ["zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon"]
+    },
+    "bo2": {
+        "title": "Black Ops II",
+        "maps": ["zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb"]
+    },
+}
+
 MAP_LIST = ("zm_prototype", "zm_asylum", "zm_sumpf", "zm_factory", "zm_theater", "zm_pentagon", "zm_cosmodrome", "zm_coast", "zm_temple", "zm_moon", "zm_transit", "zm_nuked", "zm_highrise", "zm_prison", "zm_buried", "zm_tomb")
 MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
 MAP_DOCTOR = ("zm_pentagon")
@@ -36,6 +51,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Break",
         "shortcode": "-b",
         "default_state": True,
+        "allowed_values": None,
         "exp": "Display an empty line between results."
     },
     "clear": {
@@ -45,6 +61,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Clear output",
         "shortcode": "-c",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Show only numeric output as oppose to complete sentences. Use for datasets."
     },
     "detailed": {
@@ -54,6 +71,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Detailed",
         "shortcode": "-d",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Show time in miliseconds instead of formatted string."
     },
     "even_time": {
@@ -63,7 +81,18 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Even time",
         "shortcode": "-e",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Time output always has 5 symbols."
+    },
+    "game": {
+        "use_in_web": True,
+        "require_map": False,
+        "require_special_round": False,
+        "readable_name": "Game",
+        "shortcode": "-g",
+        "default_state": None,
+        "allowed_values": GAME_TITLES.keys() + [None],
+        "exp": "Specify game."
     },
     "grenade_damage": {
         "use_in_web": True,
@@ -72,6 +101,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Extra grenade damage",
         "shortcode": "-gd",
         "default_state": 150,
+        "allowed_values": range(100, 201),
         "exp": "Overrides default extra damage value."
     },
     "grenade_radius": {
@@ -81,6 +111,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Grenade radius",
         "shortcode": "-gr",
         "default_state": 128.0,
+        "allowed_values": None,
         "exp": "Overrides default radius value."
     },
     "hordes": {
@@ -90,6 +121,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Hordes",
         "shortcode": "-h",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Show the amount of hordes instead of the amount of zombies in the output."
     },
     "insta_rounds": {
@@ -99,6 +131,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Insta Rounds",
         "shortcode": "-i",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Add information about instakill rounds to the output."
     },
     "lower_time": {
@@ -108,6 +141,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Lower Time",
         "shortcode": "-l",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Change seconds rounding to go down instead of up."
     },
     "nodecimal": {
@@ -117,6 +151,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Nodecimal",
         "shortcode": "-n",
         "default_state": True,
+        "allowed_values": None,
         "exp": "Show time without decimals."
     },
     "perfect_times": {
@@ -126,6 +161,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Perfect times",
         "shortcode": "-p",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Instead of perfect round times, display perfect split times for choosen map."
     },
     "prenades": {
@@ -135,6 +171,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Prenades",
         "shortcode": "-P",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Instead of perfect round times, display amount of prenades."
     },
     "range": {
@@ -144,6 +181,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Range",
         "shortcode": "-r",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Show results for all rounds leading to selected number."
     },
     "remix": {
@@ -153,6 +191,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Remix",
         "shortcode": "-x",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Use spawn and zombie logic applied in 5and5s mod Remix."
     },
     "save": {
@@ -162,6 +201,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Save",
         "shortcode": "-v",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Save output to text file."
     },
     "special_rounds": {
@@ -171,6 +211,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Special rounds",
         "shortcode": "-S",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Add own set of special rounds to perfect times predictor to maps that support it."
     },
     "speedrun_time": {
@@ -180,6 +221,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Speedrun time",
         "shortcode": "-s",
         "default_state": False,
+        "allowed_values": None,
         "exp": "Show times accordingly to speedrun rules, round end is on number transition instead of when zombies start spawning."
     },
     "teleport_time": {
@@ -189,17 +231,9 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Teleport time",
         "shortcode": "-t",
         "default_state": True,
+        "allowed_values": None,
         "exp": "Adds dog appearance time to perfect dog rounds accordingly to the pattern: 't * dogs / (2 * players))'"
     },
-    "waw_spawnrate": {
-        "use_in_web": True,
-        "require_map": False,
-        "require_special_round": False,
-        "readable_name": "World at War Spawnrate",
-        "shortcode": "-w",
-        "default_state": False,
-        "exp": "Apply higher initial spawnrate value from WaW's maps Nacht, Verruckt and Shino."
-    }
 }
 
 DEFAULT_MAP_TRANSLATIONS = {
@@ -246,6 +280,7 @@ MODIFIER_DEFINITIONS: dict = {
 WILDCARDS_TRANSLATION = {
     "ROUND_NUMBER": "round",
     "PLAYERS": "players",
+    "PLAYERS_STRING": "players_string",
     "ENEMIES": "enemies",
     "ENEMY_HEALTH": "enemy_health",
     "ENEMY_TYPE": "enemy_type",
@@ -253,13 +288,16 @@ WILDCARDS_TRANSLATION = {
     "NETWORK_FRAME": "network_frame",
     "ROUND_TIME": "round_time",
     "GAME_TIME": "game_time",
-    "INSTAROUND": "is_insta_round",
+    "INSTA_ROUND": "is_insta_round",
+    "INSTA_TEXT": "insta_round_text",
     "MAP_CODE": "map_code",
     "MAP_NAME": "map_name",
     "IS_SPECIAL_ROUND": "is_special_round",
     "SPECIAL_AVERAGE": "spec_round_average",
     "SPECIAL_ROUNDS": "num_of_spec_rounds",
     "PRENADES": "prenades",
+    "GRENADE_TYPE": "nade_type",
+    "GRENADE_NAME": "nade_name",
     "ZOMBIE_ROUND": "zombie_round",
     "DOG_ROUND": "dog_round",
     "DOCTOR_ROUND": "doctor_round",
@@ -269,20 +307,21 @@ WILDCARDS_TRANSLATION = {
 }
 
 DEFAULT_PATTERNS = {
-    "round_times": "Round {ROUND_NUMBER} will spawn in {ROUND_TIME} and has {ENEMIES} {ENEMY_TYPE}. Spawnrate: {SPAWNRATE} Network frame: {NETWORK_FRAME}",
-    "perfect_times": "Perfect time to round {ROUND_NUMBER} for {PLAYERS} players is {GAME_TIME} on {MAP_NAME}",
+    "round_times": "Round {ROUND_NUMBER} will spawn in {ROUND_TIME} and has {ENEMIES} {ENEMY_TYPE}. Spawnrate: {SPAWNRATE} Network frame: {NETWORK_FRAME}. {INSTA_TEXT}",
+    "perfect_times": "Perfect time to round {ROUND_NUMBER} for {PLAYERS} {PLAYERS_STRING} is {GAME_TIME} on {MAP_NAME}. {INSTA_TEXT}",
+    "prenades": "{GRENADE_NAME}s on round {ROUND_NUMBER}: {PRENADES} on {MAP_NAME}",
     "debugclasses": "zombie_round={ZOMBIE_ROUND}\ndog_round={DOG_ROUND}\ndoctor_round={DOCTOR_ROUND}\nmonkey_round={MONKEY_ROUND}\nleaper_round={LEAPER_ROUND}\n{PRENADES_ROUND}",
     "spawnrates": "{SPAWNRATE}",
     "zombiecount": "{ENEMIES}",
     "zombiehealth": "{ENEMY_HEALTH}",
     "instarounds": "{INSTAROUND}",
     "exception": "{EXCEPTION}",
-    "prenades": "{PRENADES}",
 }
 
 CLEAR_PATTERNS = {
     "round_times": "{ROUND_TIME}",
     "perfect_times": "{GAME_TIME}",
+    "prenades": "{PRENADES}"
 }
 
 GRENADETYPES = {

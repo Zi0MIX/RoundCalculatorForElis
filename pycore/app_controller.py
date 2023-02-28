@@ -1,10 +1,14 @@
+import argparse
 from pycore.core_controller import parse_arguments
 
 
-def collect_input() -> dict:
+def collect_input() -> tuple[dict, any]:
     calc_input = str(input("> "))
-    known_input, unknown_input = parse_arguments(calc_input)
-    return process_input(known_input)
+    try:
+        known_input, unknown_input = parse_arguments(calc_input)
+    except argparse.ArgumentError as exc:
+        raise Exception(f"An error occured while parsing arguments\n{exc}")
+    return (process_input(known_input), unknown_input)
 
 
 def process_input(raw_input: dict) -> dict:
@@ -23,6 +27,7 @@ def process_input(raw_input: dict) -> dict:
         "output_types": None,    # Set in calculator handler
         "arguments": {},
         "modifier": None,
+        "save_path": None,
     }
 
     # Set arguments

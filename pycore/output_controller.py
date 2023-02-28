@@ -14,60 +14,16 @@ def map_translator(map_code: str) -> str:
     return map_code
 
 
-def get_readable_time(round_time: float, args: dict) -> str:
-    h, m, s, ms = 0, 0, 0, int(round_time * 1000)
-
-    while ms > 999:
-        s += 1
-        ms -= 1000
-    while s > 59:
-        m += 1
-        s -= 60
-    # Do not reduce minutes to hours if even_time is on
-    if not args["even_time"]:
-        while m > 59:
-            h += 1
-            m -= 60
-
-    dec = f".{str(ms).zfill(3)}"
-    # Clear decimals and append a second, this way it's always rounding up
-    if args["nodecimal"] and not args["lower_time"]:
-        dec = ""
-        s += 1
-        if s > 59:
-            m += 1
-            s -= 60
-            if m > 59:
-                h += 1
-                m -= 60
-    # Otherwise just clear decimals, it then rounds down
-    elif args["nodecimal"]:
-        dec = ""
-
-    if not h and not m:
-        new_time = f"{s}{dec} seconds"
-    elif not h:
-        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
-    else:
-        new_time = f"{str(h).zfill(2)}:{str(m).zfill(2)}:{str(s).zfill(2)}{dec}"
-
-    if args["even_time"]:
-        new_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}"
-
-    return new_time
-
-
 # Remove override print after func is ready
-def return_error(nolist: bool = False, override_print: bool = True) -> dict | list[dict]:
+def return_error(*passthrough) -> list[dict, any]:
     from traceback import format_exc
 
-    if override_print:
-        print(format_exc())
-        exit()
+    answer = {
+        "type": "error",
+        "answer": [str(format_exc(chain=False))],
+    }
 
-    if nolist:
-        return {"type": "error", "message": str(format_exc())}
-    return [{"type": "error", "message": str(format_exc())}]
+    return [answer] + list(passthrough)
 
 
 def display_results(results: list[dict], save_only: bool = False):
