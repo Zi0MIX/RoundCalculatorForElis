@@ -91,7 +91,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Game",
         "shortcode": "-g",
         "default_state": None,
-        "allowed_values": GAME_TITLES.keys() + [None],
+        "allowed_values": list(GAME_TITLES.keys()) + [None],
         "exp": "Specify game."
     },
     "grenade_damage": {

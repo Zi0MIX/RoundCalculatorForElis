@@ -27,13 +27,16 @@ def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, lis
     for k, v in DEFAULT_ARGUMENTS.items():
 
         if not isinstance(v["default_state"], bool):
-            store_type = "store"
-        elif v["default_state"]:
+            parser.add_argument(v["shortcode"], f"--{k}", action="store", dest=k, help=v["exp"], default=v["default_state"], choices=v["allowed_values"])
+            continue
+
+        if v["default_state"]:
             store_type = "store_false"
-        elif not v["default_state"]:
+        else:
             store_type = "store_true"
 
-        parser.add_argument(v["shortcode"], f"--{k}", action=store_type, dest=k, help=v["exp"], default=v["default_state"], choices=v["allowed_values"])
+        parser.add_argument(v["shortcode"], f"--{k}", action=store_type, dest=k, help=v["exp"], default=v["default_state"])
+
 
     # Mods (can only use one at the time)
     mods = parser.add_mutually_exclusive_group()

@@ -1,5 +1,6 @@
 import numpy as np
 import config as cfg
+import sys
 from pycore.api_handler import apiconfing_defined, get_apiconfig
 from pycore.arg_controller import get_args, update_args, eval_hordes
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
@@ -184,6 +185,9 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
 
         # Update all results
         all_results.update({str(r): round_result})
+
+        if get_args("prenades") and r >= 100:
+            break
 
         # Calculate it after updating results, the reason for it is that'll be the actual representation of gametime till specified round, eg time to round 1 will always equal to `cfg.RND_WAIT_INITIAL`. It makes the calcultion redundant for last iteration, but it's fine
         game_time = evaluate_game_time(game_time, round_time)
