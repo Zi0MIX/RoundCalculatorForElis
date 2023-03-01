@@ -5,7 +5,7 @@ from pycore.api_handler import apiconfing_defined, get_apiconfig
 from pycore.arg_controller import get_args, update_args, eval_hordes
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
 from pycore.core_controller import evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round, get_class_vars, display_output
-from pycore.functions import verify_optional_input, mod_preprocessor, display_metadata, time_processor, get_player_string, get_insta_round
+from pycore.functions import verify_optional_input, mod_preprocessor, display_metadata, time_processor, get_player_string, get_insta_round, get_162_health
 from pycore.output_controller import map_translator, return_error
 
 
@@ -119,6 +119,7 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
 
     # Initialize variables for for loop
     special_average, num_of_special_rounds = 0.0, 0
+    health_162 = get_162_health()
 
     preprocess = mod_preprocessor(calc_modifier)
 
@@ -136,7 +137,13 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
             doc_round = None
             monkey_round = None
             leaper_round = None
-        prenades_round = PrenadesRound(r, players, map_code, get_args("grenade_radius"), get_args("grenade_damage"))
+
+        if r <= 100:
+            prenades_round = PrenadesRound(r, players, map_code, health_162, radius=get_args("grenade_radius"), extra_damage=get_args("grenade_damage"))
+        elif get_args("prenades"):
+            break
+        else:
+            prenades_round = None
 
         class_of_round = evaluate_class_of_round(r, spec_rounds, map_code, zombie_round, dog_round, doc_round, monkey_round, leaper_round, prenades_round)
 
@@ -173,9 +180,9 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
             "spec_round_average": special_average,
             "num_of_spec_rounds": num_of_special_rounds,
 
-            "prenades": prenades_round.prenades,
-            "nade_type": prenades_round.grenade_type,
-            "nade_name": prenades_round.grenade_name,
+            "prenades": get_class_vars(prenades_round, "prenades"),
+            "nade_type": get_class_vars(prenades_round, "grenade_type"),
+            "nade_name": get_class_vars(prenades_round, "grenade_name"),
 
             "class_of_round": type(class_of_round).__name__,
             "zombie_round": get_class_vars(zombie_round),
@@ -191,9 +198,6 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
 
         # Update all results
         all_results.update({str(r): round_result})
-
-        if get_args("prenades") and r >= 100:
-            break
 
         # Calculate it after updating results, the reason for it is that'll be the actual representation of gametime till specified round, eg time to round 1 will always equal to `cfg.RND_WAIT_INITIAL`. It makes the calcultion redundant for last iteration, but it's fine
         game_time = evaluate_game_time(game_time, round_time)

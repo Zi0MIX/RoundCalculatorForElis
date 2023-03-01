@@ -200,7 +200,6 @@ class ZombieRound:
 
         self.is_insta_round = False
         self.health = np.int32(150)
-        self.health_162 = None
 
         for r in range(2, self.number + 1):
             if r < 10:
@@ -214,18 +213,9 @@ class ZombieRound:
             # print(f"DEV: Round: {r} / Health: {self.health}")
 
 
-    def remove_instas(self):
-        if self.health_162 is None:
-            health = np.int32(150)
-            for r in range(2, 163):
-                if r < 10:
-                    health += np.int32(100)
-                else:
-                    health += np.int32(np.float32(self.health) * np.float32(0.1))
-            self.health_162 = health
-
+    def remove_instas(self, health_162: np.int32):
         if self.is_insta_round:
-            self.health = self.health_162
+            self.health = health_162
 
 
 @dataclass
@@ -320,6 +310,7 @@ class LeaperRound(ZombieRound):
 
 @dataclass
 class PrenadesRound(ZombieRound):
+    health_162: np.int32
     radius: float = None
     extra_damage: int = None
 
@@ -330,7 +321,7 @@ class PrenadesRound(ZombieRound):
         self.get_nade_type()
         self.translate_nade_type()
         self.get_zombie_health()
-        self.remove_instas()
+        # self.remove_instas(self.health_162)
         self.explosives_handler()
 
 

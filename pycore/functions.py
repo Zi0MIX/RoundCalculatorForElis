@@ -1,3 +1,4 @@
+import numpy as np
 import pycore.arg_controller as arg
 from pycore.classes import ZombieRound
 
@@ -10,9 +11,10 @@ def verify_optional_input(data: dict, key: str) -> any:
 
 def mod_preprocessor(mod: str) -> any:
     """Function used to execute mods before the main loop. It is recommended to kill the program early after it's used"""
+    print(f"DEV: mod {mod}")
     if mod == "-exc":
         raise Exception(f"This is a test exception raised by mod {mod}")
-    if mod == "instarounds":
+    if mod == "-irn":
         return filter_only_instarounds
     return
 
@@ -93,3 +95,14 @@ def filter_only_instarounds(obj: ZombieRound) -> bool:
     if not isinstance(obj, ZombieRound) or not obj.is_insta_round:
         return "skip_noninsta_round"
     return ""
+
+
+def get_162_health() -> np.int32:
+
+    health = np.int32(150)
+    for r in range(2, 163):
+        if r < 10:
+            health += np.int32(100)
+        else:
+            health += np.int32(np.float32(health) * np.float32(0.1))
+    return health

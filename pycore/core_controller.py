@@ -158,10 +158,13 @@ def evaluate_game_time(game_time: int | float, round_time: int | float) -> int |
     return new_game_time
 
 
-def get_class_vars(instance: any) -> dict | None:
+def get_class_vars(instance: any, key: str = None) -> dict | None:
     """Function makes a call to vars but will return `None` on exception, allowing for passing wrong instance, such as `None`"""
     try:
-        return vars(instance)
+        class_content = vars(instance)
+        if key is None:
+            return class_content
+        return class_content[key]
     except Exception:
         return None
 
