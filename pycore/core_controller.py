@@ -83,6 +83,7 @@ def assemble_output(rich: bool, calculated_data: dict, calculator_data: dict) ->
     }
 
     for data in calculated_data.values():
+        # print(f"DEV: data={data}")
         a["answer"].append(generate_answer(calc_type, data))
 
     if rich:

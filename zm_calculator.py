@@ -120,9 +120,10 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
     # Initialize variables for for loop
     special_average, num_of_special_rounds = 0.0, 0
 
-    mod_preprocessor(calc_modifier)
+    preprocess = mod_preprocessor(calc_modifier)
 
     for r in range(1, rnd + 1):
+        # print(f"DEV: tick {r}")
         zombie_round = ZombieRound(r, players, map_code)
         # Cast for separate classes, decided not to make one universal gigant for special rounds in general, allowes for more freedom outside of class
         if has_special_rounds:
@@ -144,6 +145,11 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
             special_average, num_of_special_rounds, is_special_round = evaluate_special_round(special_average, num_of_special_rounds, r, class_of_round)
 
         round_time = evaluate_round_time(class_of_round)
+
+        # Seems good place, perhaps move around later
+        if preprocess is not None:
+            if preprocess(class_of_round) == "skip_noninsta_round":
+                continue
 
         # Assemble simple answer
         round_result = {

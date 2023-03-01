@@ -14,7 +14,6 @@ def map_translator(map_code: str) -> str:
     return map_code
 
 
-# Remove override print after func is ready
 def return_error(*passthrough) -> list[dict, any]:
     from traceback import format_exc
 

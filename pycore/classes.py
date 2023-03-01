@@ -378,12 +378,17 @@ class PrenadesRound(ZombieRound):
             # print(f"DEV: nades: {nades} / number_of_nades: {number_of_nades} / current_health: {current_health}")
 
         # Get exact number when number is already low
-        damage_per_iter = self.recalculate_damage(1, nadecfg)
+        if self.extra_damage is None:
+            damage_per_iter = self.recalculate_damage(1, nadecfg)
+        else:
+            damage_per_iter = self.extra_damage + self.number
+
         while (damage_per_iter / current_health * np.int32(100) < np.int32(10)) and (current_health > np.int32(150)):
             # print(f"DEV: percent: {self.nade_damage / current_health * 100}% / current_health: {current_health}")
             current_health -= damage_per_iter
             nades += 1
-            damage_per_iter = self.recalculate_damage(1, nadecfg)
+            if self.extra_damage is not None:
+                damage_per_iter = self.recalculate_damage(1, nadecfg)
 
         self.prenades = nades
 

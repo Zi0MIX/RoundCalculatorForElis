@@ -314,7 +314,7 @@ DEFAULT_PATTERNS = {
     "spawnrates": "{SPAWNRATE}",
     "zombiecount": "{ENEMIES}",
     "zombiehealth": "{ENEMY_HEALTH}",
-    "instarounds": "{INSTAROUND}",
+    "instarounds": "{ROUND_NUMBER}",
     "exception": "{EXCEPTION}",
 }
 

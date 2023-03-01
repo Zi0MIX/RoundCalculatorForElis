@@ -1,4 +1,6 @@
 import pycore.arg_controller as arg
+from pycore.classes import ZombieRound
+
 
 def verify_optional_input(data: dict, key: str) -> any:
     if key in data.keys() and data[key] is not None and data[key]:
@@ -8,8 +10,10 @@ def verify_optional_input(data: dict, key: str) -> any:
 
 def mod_preprocessor(mod: str) -> any:
     """Function used to execute mods before the main loop. It is recommended to kill the program early after it's used"""
-    if mod == "-ex":
+    if mod == "-exc":
         raise Exception(f"This is a test exception raised by mod {mod}")
+    if mod == "instarounds":
+        return filter_only_instarounds
     return
 
 
@@ -82,4 +86,10 @@ def get_insta_round(is_insta_round: bool) -> str:
             return "It was Insta-Kill round"
         else:
             return "It's Insta-Kill round"
+    return ""
+
+
+def filter_only_instarounds(obj: ZombieRound) -> bool:
+    if not isinstance(obj, ZombieRound) or not obj.is_insta_round:
+        return "skip_noninsta_round"
     return ""
