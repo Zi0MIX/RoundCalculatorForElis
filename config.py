@@ -101,7 +101,7 @@ DEFAULT_ARGUMENTS = {
         "readable_name": "Extra grenade damage",
         "shortcode": "-gd",
         "default_state": 150,
-        "allowed_values": range(100, 201),
+        "allowed_values": [str(a) for a in range(100, 201)],
         "exp": "Overrides default extra damage value."
     },
     "grenade_radius": {

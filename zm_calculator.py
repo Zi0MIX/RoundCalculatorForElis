@@ -139,7 +139,7 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
             leaper_round = None
 
         if r <= 100:
-            prenades_round = PrenadesRound(r, players, map_code, health_162, radius=get_args("grenade_radius"), extra_damage=get_args("grenade_damage"))
+            prenades_round = PrenadesRound(r, players, map_code, health_162, radius=float(get_args("grenade_radius")), extra_damage=int(get_args("grenade_damage")))
         elif get_args("prenades"):
             break
         else:

@@ -316,6 +316,7 @@ class PrenadesRound(ZombieRound):
 
 
     def __post_init__(self):
+        self.preprocess_types()
         self.get_game()
         self.set_enemy_type()
         self.get_nade_type()
@@ -323,6 +324,23 @@ class PrenadesRound(ZombieRound):
         self.get_zombie_health()
         # self.remove_instas(self.health_162)
         self.explosives_handler()
+
+
+    def preprocess_types(self):
+        if isinstance(self.health_162, (float, np.float32)):
+            raise Exception(f"Wrong data type {type(self.health_162)} passed to 'health_162' property.")
+        else:
+            self.health_162 = np.int32(self.health_162)
+
+        if isinstance(self.radius, (int, np.int32)):
+            raise Exception(f"Wrong data type {type(self.radius)} passed to 'radius' property.")
+        else:
+            self.radius = np.float32(self.radius)
+
+        if isinstance(self.extra_damage, (float, np.float32)):
+            raise Exception(f"Wrong data type {type(self.extra_damage)} passed to 'extra_damage' property.")
+        elif self.extra_damage is not None:
+            self.extra_damage = np.int32(self.extra_damage)
 
 
     def get_nade_type(self):
@@ -345,13 +363,35 @@ class PrenadesRound(ZombieRound):
         """Function uses Numpy to emulate Game Engine behavior.\n
         Available nade types are `frag`, `german`, `semtex`"""
 
-        nadecfg = self.get_nadeconfig()
 
-        # Get average radius or else pickup override value. Important to pass float to the function call
-        if not isinstance(self.radius, float):
-            self.radius = np.float32((nadecfg["max_radius"] + nadecfg["min_radius"]) / 2)
-        else:
-            self.radius = np.float32(self.radius)
+        def damage_type() -> str:
+            if self.extra_damage is None:
+                return "average"
+            return "constant"
+
+
+        def recalculate_damage(nadeconfig: dict, type_of_calc: str, no_of_nades: int = 1, level: int = 0) -> np.int32:
+
+            new_damage = np.int32(0)
+            for _ in range(no_of_nades):
+                if type_of_calc == "constant":
+                    addition = self.extra_damage
+                elif type_of_calc == "average":
+                    addition = np.int32((nadeconfig["damage_extra_min"] + nadeconfig["damage_extra_max"]) // 2)
+                elif type_of_calc == "average_quater":
+                    average = np.int32((nadeconfig["damage_extra_min"] + nadeconfig["damage_extra_max"]) // 2)
+                    addition = np.int32((nadeconfig["damage_extra_min"] + average) // 2)
+                elif type_of_calc == "random":
+                    import random
+                    addition = np.int32(random.randint(nadeconfig["damage_extra_min"], nadeconfig["damage_extra_max"]))
+
+                new_damage += self.nade_damage + addition + np.int32(self.number)
+
+            print(f"DEV: new_damage='{new_damage}' no_of_nades='{no_of_nades}' type_of_calc='{type_of_calc}' round='{self.number}' level='{level}'")
+            return new_damage
+
+
+        nadecfg = self.get_nadeconfig()
 
         # It has to wait until radius is defined
         bmx_damage = self.get_bmx_damage()
@@ -360,26 +400,30 @@ class PrenadesRound(ZombieRound):
         current_health = np.int32(self.health)
         nades = 0
 
+        type_of_calc = damage_type()
+        damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=2)
+
         # Deal with bigger numbers for high rounds
         # 400_000 and 450_000 are the fastest for computation
-        number_of_nades = np.int32(400_000) // self.recalculate_damage(1, nadecfg)
+        number_of_nades = np.int32(400_000) // damage_per_iter
         while current_health > np.int32(450_000):
-            current_health -= self.recalculate_damage(number_of_nades, nadecfg)
+            current_health -= damage_per_iter
             nades += number_of_nades
+
+            if type_of_calc == "random":
+                damage_per_iter = recalculate_damage(nadecfg, no_of_nades=number_of_nades, level=1)
             # print(f"DEV: nades: {nades} / number_of_nades: {number_of_nades} / current_health: {current_health}")
 
-        # Get exact number when number is already low
-        if self.extra_damage is None:
-            damage_per_iter = self.recalculate_damage(1, nadecfg)
-        else:
-            damage_per_iter = self.extra_damage + self.number
+        damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=2)
 
+        # Get exact number when number is already low
         while (damage_per_iter / current_health * np.int32(100) < np.int32(10)) and (current_health > np.int32(150)):
             # print(f"DEV: percent: {self.nade_damage / current_health * 100}% / current_health: {current_health}")
             current_health -= damage_per_iter
             nades += 1
-            if self.extra_damage is not None:
-                damage_per_iter = self.recalculate_damage(1, nadecfg)
+
+            if type_of_calc == "random":
+                damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=3)
 
         self.prenades = nades
 
@@ -429,16 +473,3 @@ class PrenadesRound(ZombieRound):
         else:
             raise Exception(f"Could not set BMX damage value for nade type {self.grenade_type}")
 
-
-    def recalculate_damage(self, no_of_nades: int, nadeconfig: dict) -> np.int32:
-        import random
-
-        new_damage = np.int32(0)
-        for _ in range(no_of_nades):
-            average = np.int32((nadeconfig["damage_extra_min"] + nadeconfig["damage_extra_max"]) // 2)
-            # average_quater = np.int32((nadeconfig["damage_extra_min"] + average) // 2)
-            # dmg_random = np.int32(random.randint(nadeconfig["damage_extra_min"], nadeconfig["damage_extra_max"]))
-
-            new_damage += self.nade_damage + average + np.int32(self.number)
-
-        return new_damage
