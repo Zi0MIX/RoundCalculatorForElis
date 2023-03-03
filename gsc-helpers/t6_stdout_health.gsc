@@ -25,6 +25,14 @@ main()
     replaceFunc(maps\mp\zombies\_zm::ai_calculate_health, ::ai_debug_health);
 }
 
+init()
+{
+    level.zombie_total_set_func = ::print_zombie_total;
+
+    wait 0.25;
+    level.round_number = 255;
+}
+
 ai_debug_health()
 {
     level.zombie_health = level.zombie_vars["zombie_health_start"];
@@ -64,4 +72,9 @@ ai_debug_health()
 
         print("ZM Health on round " + i + ": " + zombie_health);
     }
+}
+
+print_zombie_total()
+{
+    print("Zombie on round " + level.round_number + ": " + level.zombie_total);
 }
