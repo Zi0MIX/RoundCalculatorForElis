@@ -196,3 +196,14 @@ def display_output(data: dict, c: dict, **extras) -> None:
         eval_save(data_to_output, save_path)
 
     return
+
+
+def return_error(*passthrough) -> list[dict, any]:
+    from traceback import format_exc
+
+    answer = {
+        "type": "error",
+        "answer": [str(format_exc(chain=False))],
+    }
+
+    return [answer] + list(passthrough)

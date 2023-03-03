@@ -98,7 +98,7 @@ def filter_only_instarounds(obj: ZombieRound) -> bool:
 
 
 def get_162_health() -> np.int32:
-
+    """Get max health of round 162, which is artifical cap for BO2 health"""
     health = np.int32(150)
     for r in range(2, 163):
         if r < 10:
@@ -106,3 +106,21 @@ def get_162_health() -> np.int32:
         else:
             health += np.int32(np.float32(health) * np.float32(0.1))
     return health
+
+
+def map_translator(map_code: str) -> str:
+    from config import DEFAULT_MAP_TRANSLATIONS
+    from pycore.api_handler import apiconfing_defined, get_apiconfig
+
+    if apiconfing_defined():
+        api_translations = get_apiconfig("custom_translations")
+
+        if map_code in api_translations.keys():
+            return api_translations[map_code]
+
+    if map_code in DEFAULT_MAP_TRANSLATIONS.keys():
+        return DEFAULT_MAP_TRANSLATIONS[map_code]
+
+    return map_code
+
+

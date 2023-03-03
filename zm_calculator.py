@@ -4,9 +4,8 @@ import sys
 from pycore.api_handler import apiconfing_defined, get_apiconfig
 from pycore.arg_controller import get_args, update_args, eval_hordes
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
-from pycore.core_controller import evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round, get_class_vars, display_output
-from pycore.functions import verify_optional_input, mod_preprocessor, display_metadata, time_processor, get_player_string, get_insta_round, get_162_health
-from pycore.output_controller import map_translator, return_error
+from pycore.core_controller import evaluate_class_of_round, evaluate_game_time, evaluate_round_time, assemble_output, evaluate_special_round, get_class_vars, display_output, return_error
+from pycore.functions import verify_optional_input, mod_preprocessor, display_metadata, time_processor, get_player_string, get_insta_round, get_162_health, map_translator
 
 
 def calculator_handler(calc_message: dict) -> tuple[dict, str]:
