@@ -11,7 +11,7 @@ def verify_optional_input(data: dict, key: str) -> any:
 
 def mod_preprocessor(mod: str) -> any:
     """Function used to execute mods before the main loop. It is recommended to kill the program early after it's used"""
-    print(f"DEV: mod {mod}")
+    # print(f"DEV: mod {mod}")
     if mod == "-exc":
         raise Exception(f"This is a test exception raised by mod {mod}")
     if mod == "-irn":

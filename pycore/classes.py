@@ -387,7 +387,7 @@ class PrenadesRound(ZombieRound):
 
                 new_damage += self.nade_damage + addition + np.int32(self.number)
 
-            print(f"DEV: new_damage='{new_damage}' no_of_nades='{no_of_nades}' type_of_calc='{type_of_calc}' round='{self.number}' level='{level}'")
+            # print(f"DEV: new_damage='{new_damage}' no_of_nades='{no_of_nades}' type_of_calc='{type_of_calc}' round='{self.number}' level='{level}'")
             return new_damage
 
 
