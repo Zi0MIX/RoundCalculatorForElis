@@ -137,7 +137,7 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
             monkey_round = None
             leaper_round = None
 
-        if r <= 100:
+        if r <= cfg.NADE_ROUND_CALC_LIMIT:
             prenades_round = PrenadesRound(r, players, map_code, health_162, radius=float(get_args("grenade_radius")), extra_damage=int(get_args("grenade_damage")))
         elif get_args("prenades"):
             break

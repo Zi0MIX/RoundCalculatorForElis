@@ -1,5 +1,6 @@
 COL, RES, YEL, GRE, RED, CYA = "", "", "", "", "", ""
 DEC = 3
+NADE_ROUND_CALC_LIMIT = 100
 
 # Time from "initial_blackscreen_passed" to "start_of_round" triggers
 RND_WAIT_INITIAL = 8.25
