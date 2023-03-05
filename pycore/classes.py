@@ -403,17 +403,6 @@ class PrenadesRound(ZombieRound):
         type_of_calc = damage_type()
         damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=2)
 
-        # Deal with bigger numbers for high rounds
-        # 400_000 and 450_000 are the fastest for computation
-        number_of_nades = np.int32(400_000) // damage_per_iter
-        while current_health > np.int32(450_000):
-            current_health -= damage_per_iter
-            nades += number_of_nades
-
-            if type_of_calc == "random":
-                damage_per_iter = recalculate_damage(nadecfg, no_of_nades=number_of_nades, level=1)
-            # print(f"DEV: nades: {nades} / number_of_nades: {number_of_nades} / current_health: {current_health}")
-
         damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=2)
 
         # Get exact number when number is already low
