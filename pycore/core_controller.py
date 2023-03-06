@@ -96,30 +96,57 @@ def evaluate_class_of_round(rnd: int, special_rounds: list[int], map_code: str, 
     """Function evaluates provided arguments and returns the object that's to be used while evaluating provided round"""
     from config import MAP_DOGS, MAP_DOCTOR, MAP_MONKEYS, MAP_LEAPERS
 
-    for c in classes:
+
+    def return_object(object):
+        """Wrapping function to allow dev print"""
+        print(f"DEV: rnd={rnd} class_of_round={type(object).__name__} special_rounds={special_rounds} map_code={map_code}")
+        return object
+    
+
+    def match_type(object: any, match: any) -> bool:
+        """Match exact type of object, to counter inherited matches"""
+
+        if isinstance(match, (tuple, list)):
+            for m in match:
+                if type(match) is m:
+                    return True
+            return False
+        
+        if type(object) is match:
+            return True
+        return False
+
+
+    default = None
+    for i, c in enumerate(classes):
+        print(f"DEV: rnd={rnd} | i={i} | c={type(c).__name__} | default={type(default).__name__}")
+
         # If perfect times is not used, we only really care about ZombieRound
-        if not get_args("perfect_times") and isinstance(c, ZombieRound):
-            return c
+        if not get_args("perfect_times") and match_type(c, ZombieRound):
+            return return_object(c)
         elif not get_args("perfect_times"):
             continue
 
         # DogRound
-        if rnd in special_rounds and map_code in MAP_DOGS and isinstance(c, DogRound):
-            return c
+        if rnd in special_rounds and map_code in MAP_DOGS and match_type(c, DogRound):
+            return return_object(c)
         # DoctorRound
-        elif rnd in special_rounds and map_code in MAP_DOCTOR and isinstance(c, DoctorRound):
-            return c
+        elif rnd in special_rounds and map_code in MAP_DOCTOR and match_type(c, DoctorRound):
+            return return_object(c)
         # MonkeyRound
-        elif rnd in special_rounds and map_code in MAP_MONKEYS and isinstance(c, MonkeyRound):
-            return c
+        elif rnd in special_rounds and map_code in MAP_MONKEYS and match_type(c, MonkeyRound):
+            return return_object(c)
         # LeaperRound
-        elif rnd in special_rounds and map_code in MAP_LEAPERS and isinstance(c, LeaperRound):
-            return c
+        elif rnd in special_rounds and map_code in MAP_LEAPERS and match_type(c, LeaperRound):
+            return return_object(c)
         # ZombieRound
-        elif isinstance(c, ZombieRound):
-            return c
+        elif match_type(c, ZombieRound):
+            default = c
 
-    raise Exception("Could not evaluate class_of_round")
+    if default is None:
+        raise Exception("Could not evaluate class_of_round")
+
+    return return_object(default)
 
 
 def evaluate_special_round(current_average: float, current_spec_rounds: int, rnd: int, class_of_round: any) -> tuple[float, int, bool]:
