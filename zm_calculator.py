@@ -10,7 +10,7 @@ from pycore.functions import verify_optional_input, mod_preprocessor, display_me
 
 def calculator_handler(calc_message: dict) -> tuple[dict, str]:
 
-    def parse_calculator_data(data: dict) -> tuple[int, int, str, str]:
+    def parse_calculator_data(data: dict) -> tuple[int, int, str, list[str]]:
         def evaluate_special_rounds(spec_rounds: any) -> list[int]:
             # Special rounds array hasn't been provided or we calculating remix
             if spec_rounds is None or get_args("remix"):
@@ -117,7 +117,7 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
     game_time = cfg.RND_WAIT_INITIAL
 
     # Initialize variables for for loop
-    special_average, num_of_special_rounds = 0.0, 0
+    special_average, num_of_special_rounds = 0.0, 1
     health_162 = get_162_health()
 
     preprocess = mod_preprocessor(calc_modifier)
@@ -127,10 +127,10 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
         zombie_round = ZombieRound(r, players, map_code)
         # Cast for separate classes, decided not to make one universal gigant for special rounds in general, allowes for more freedom outside of class
         if has_special_rounds:
-            dog_round = DogRound(r, players, map_code, spec_rounds)
-            doc_round = DoctorRound(r, players, map_code, spec_rounds)
-            monkey_round = MonkeyRound(r, players, map_code, spec_rounds)
-            leaper_round = LeaperRound(r, players, map_code, spec_rounds)
+            dog_round = DogRound(r, players, map_code, num_of_special_rounds)
+            doc_round = DoctorRound(r, players, map_code, num_of_special_rounds)
+            monkey_round = MonkeyRound(r, players, map_code, num_of_special_rounds)
+            leaper_round = LeaperRound(r, players, map_code, num_of_special_rounds)
         else:
             dog_round = None
             doc_round = None
