@@ -230,7 +230,7 @@ class DogRound(ZombieRound):
         self.get_teleport_time()
         self.get_dog_spawn_delay()
         self.get_total_delay()
-        self.round_up()
+        self.get_round_time()
         self.get_dog_health()
 
 
@@ -274,15 +274,18 @@ class DogRound(ZombieRound):
         self.raw_time = round(self.raw_time, 2)
 
 
-    def round_up(self):
-        # round_wait() function clocks every .5 seconds
-        time_in_ms = round(self.raw_time * 1000)
-        if not time_in_ms % 500:
-            self.round_time = self.raw_time
-            return
+    def get_round_time(self):
+        # Add values from constants
+        raw_time = self.raw_time + cfg.DOGS_WAIT_START + cfg.DOGS_WAIT_TELEPORT + cfg.DOGS_WAIT_END + cfg.RND_WAIT_END
 
-        self.round_time = ((time_in_ms - (time_in_ms % 500)) + 500) / 1000
-        return
+        # Convert to MS for rounding
+        time_in_ms = round(raw_time * 1000)
+
+        # Round to .5 to match GSC
+        if time_in_ms % 500:
+            self.round_time = ((time_in_ms - (time_in_ms % 500)) + 500) / 1000
+        else:
+            self.round_time = raw_time
 
 
     def add_teleport_time(self):
