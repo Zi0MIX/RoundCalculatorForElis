@@ -308,20 +308,32 @@ class DogRound(ZombieRound):
 
 @dataclass
 class DoctorRound(ZombieRound):
-    # FIVE
-    pass
+    special_rounds: int
+
+
+    def __post_init__(self):
+        self.set_enemy_type("doctor")
+        self.get_network_frame()
 
 
 @dataclass
 class MonkeyRound(ZombieRound):
-    # Ascension
-    pass
+    special_rounds: int
+
+
+    def __post_init__(self):
+        self.set_enemy_type("monkeys")
+        self.get_network_frame()
 
 
 @dataclass
 class LeaperRound(ZombieRound):
-    # Die Rise
-    pass
+    special_rounds: int
+
+
+    def __post_init__(self):
+        self.set_enemy_type("leapers")
+        self.get_network_frame()
 
 
 @dataclass
