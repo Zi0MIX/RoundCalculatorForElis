@@ -100,13 +100,13 @@ def evaluate_class_of_round(rnd: int, special_rounds: list[int], map_code: str, 
 
     def return_object(object):
         """Wrapping function to allow dev print"""
-        print(f"DEV: rnd={rnd} class_of_round={type(object).__name__} special_rounds={special_rounds} map_code={map_code}")
+        # print(f"DEV: rnd={rnd} class_of_round={type(object).__name__} special_rounds={special_rounds} map_code={map_code}")
         return object
 
 
     default = None
     for i, c in enumerate(classes):
-        print(f"DEV: rnd={rnd} | i={i} | c={type(c).__name__} | default={type(default).__name__}")
+        # print(f"DEV: rnd={rnd} | i={i} | c={type(c).__name__} | default={type(default).__name__}")
 
         # If perfect times is not used, we only really care about ZombieRound
         if not get_args("perfect_times") and match_type(c, ZombieRound):
