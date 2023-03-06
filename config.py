@@ -23,6 +23,9 @@ DOGS_WAIT_END = 8
 # Time between dog spawning to dog appearing on the map
 DOGS_WAIT_TELEPORT = 1.5
 
+DOCTOR_HEALTH_MULTIPLIER = 2000
+DOCTOR_HEALTH_LIMIT = 60000
+
 GAME_TITLES = {
     "waw": {
         "title": "World at War",

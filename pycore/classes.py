@@ -316,6 +316,23 @@ class DoctorRound(ZombieRound):
         self.get_network_frame()
 
 
+    def get_enemy_health(self):
+        health = self.number * cfg.DOCTOR_HEALTH_MULTIPLIER
+        if health > cfg.DOCTOR_HEALTH_LIMIT:
+            health = cfg.DOCTOR_HEALTH_LIMIT
+
+        health = np.int32(health)
+        if self.players == 1:
+            health = np.int32(health * 0.3)
+        elif self.players == 2:
+            health = np.int32(health * 0.6)
+        elif self.players == 3:
+            health = np.int32(health * 0.8)
+
+        self.is_insta_round = False
+        self.health = health
+
+
 @dataclass
 class MonkeyRound(ZombieRound):
     special_rounds: int
