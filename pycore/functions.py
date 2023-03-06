@@ -129,7 +129,7 @@ def match_type(object: any, match: any) -> bool:
 
     if isinstance(match, (tuple, list)):
         for m in match:
-            if type(match) is m:
+            if type(object) is m:
                 return True
         return False
     
