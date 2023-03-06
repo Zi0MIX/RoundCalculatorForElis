@@ -304,14 +304,15 @@ WILDCARDS_TRANSLATION = {
     "DOCTOR_ROUND": "doctor_round",
     "MONKEY_ROUND": "monkey_round",
     "LEAPER_ROUND": "leaper_round",
-    "PRENADES_ROUND": "prenades_round"
+    "PRENADES_ROUND": "prenades_round",
+    "CLASS_OF_ROUND": "class_of_round",
 }
 
 DEFAULT_PATTERNS = {
     "round_times": "Round {ROUND_NUMBER} will spawn in {ROUND_TIME} and has {ENEMIES} {ENEMY_TYPE}. Spawnrate: {SPAWNRATE} Network frame: {NETWORK_FRAME}. {INSTA_TEXT}",
     "perfect_times": "Perfect time to round {ROUND_NUMBER} for {PLAYERS} {PLAYERS_STRING} is {GAME_TIME} on {MAP_NAME}. {INSTA_TEXT}",
     "prenades": "{GRENADE_NAME}s on round {ROUND_NUMBER}: {PRENADES} on {MAP_NAME}",
-    "debugclasses": "zombie_round={ZOMBIE_ROUND}\ndog_round={DOG_ROUND}\ndoctor_round={DOCTOR_ROUND}\nmonkey_round={MONKEY_ROUND}\nleaper_round={LEAPER_ROUND}\n{PRENADES_ROUND}",
+    "debugclasses": "Round: {ROUND_NUMBER}\nclass_of_round={CLASS_OF_ROUND}\nzombie_round={ZOMBIE_ROUND}\ndog_round={DOG_ROUND}\ndoctor_round={DOCTOR_ROUND}\nmonkey_round={MONKEY_ROUND}\nleaper_round={LEAPER_ROUND}\nprenade_round={PRENADES_ROUND}\n\n",
     "spawnrates": "{SPAWNRATE}",
     "zombiecount": "{ENEMIES}",
     "zombiehealth": "{ENEMY_HEALTH}",
