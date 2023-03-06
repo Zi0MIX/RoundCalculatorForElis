@@ -1,6 +1,7 @@
 from pycore.classes import ZombieRound, DogRound, DoctorRound, MonkeyRound, LeaperRound, PrenadesRound
 from pycore.arg_controller import get_args, eval_break, eval_save
 from pycore.api_handler import get_apiconfig
+from pycore.functions import match_type
 
 
 def parse_arguments(calc_input: str, validation: bool = True) -> tuple[dict, list[str]]:
@@ -103,20 +104,6 @@ def evaluate_class_of_round(rnd: int, special_rounds: list[int], map_code: str, 
         return object
 
 
-    def match_type(object: any, match: any) -> bool:
-        """Match exact type of object, to counter inherited matches"""
-
-        if isinstance(match, (tuple, list)):
-            for m in match:
-                if type(match) is m:
-                    return True
-            return False
-        
-        if type(object) is match:
-            return True
-        return False
-
-
     default = None
     for i, c in enumerate(classes):
         print(f"DEV: rnd={rnd} | i={i} | c={type(c).__name__} | default={type(default).__name__}")
@@ -155,7 +142,7 @@ def evaluate_special_round(current_average: float, current_spec_rounds: int, rnd
     `current_spec_round`: int = Either passes through number of special rounds that occured so far, or returns that number incremented by 1\n
     `is_special_round`: bool = True or False depending if it's a special round or not"""
 
-    if isinstance(class_of_round, ZombieRound) or isinstance(class_of_round, PrenadesRound):
+    if match_type(class_of_round, (ZombieRound, PrenadesRound)):
         return (current_average, current_spec_rounds, False)
 
     # Prevent division by 0
@@ -171,7 +158,7 @@ def evaluate_round_time(class_of_round: any) -> int | float:
     """Function evaluates provided arguments and returns amount of seconds the round has taken"""
 
     # Add teleport time to dog round
-    if isinstance(class_of_round, DogRound) and get_args("teleport_time"):
+    if match_type(class_of_round, DogRound) and get_args("teleport_time"):
         class_of_round.add_teleport_time()
 
     return class_of_round.round_time

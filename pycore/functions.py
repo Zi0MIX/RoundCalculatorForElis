@@ -124,3 +124,15 @@ def map_translator(map_code: str) -> str:
     return map_code
 
 
+def match_type(object: any, match: any) -> bool:
+    """Match exact type of object, to counter inherited matches"""
+
+    if isinstance(match, (tuple, list)):
+        for m in match:
+            if type(match) is m:
+                return True
+        return False
+    
+    if type(object) is match:
+        return True
+    return False
