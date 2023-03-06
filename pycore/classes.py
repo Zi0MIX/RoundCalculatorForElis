@@ -231,6 +231,7 @@ class DogRound(ZombieRound):
         self.get_dog_spawn_delay()
         self.get_total_delay()
         self.round_up()
+        self.get_dog_health()
 
 
     def get_dogs(self):
@@ -282,13 +283,25 @@ class DogRound(ZombieRound):
 
         self.round_time = ((time_in_ms - (time_in_ms % 500)) + 500) / 1000
         return
-    
+
 
     def add_teleport_time(self):
         # Call if dog teleport time should be added for each dog on class level
         self.round_time += self.teleport_time
         return
-    
+
+
+    def get_dog_health(self):
+        self.is_insta_round = False
+        self.health = np.int32(1600)
+
+        if self.special_rounds == 1:
+            self.health = np.int32(400)
+        elif self.special_rounds == 2:
+            self.health = np.int32(900)
+        elif self.special_rounds == 3:
+            self.health = np.int32(1300)
+
 
 @dataclass
 class DoctorRound(ZombieRound):

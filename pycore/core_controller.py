@@ -101,7 +101,7 @@ def evaluate_class_of_round(rnd: int, special_rounds: list[int], map_code: str, 
         """Wrapping function to allow dev print"""
         print(f"DEV: rnd={rnd} class_of_round={type(object).__name__} special_rounds={special_rounds} map_code={map_code}")
         return object
-    
+
 
     def match_type(object: any, match: any) -> bool:
         """Match exact type of object, to counter inherited matches"""
