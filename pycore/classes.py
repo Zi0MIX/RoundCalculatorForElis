@@ -358,6 +358,7 @@ class PrenadesRound(ZombieRound):
     health_162: np.int32
     radius: float = None
     extra_damage: int = None
+    last_round: any = None
 
 
     def __post_init__(self):
@@ -449,6 +450,10 @@ class PrenadesRound(ZombieRound):
         damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=2)
 
         damage_per_iter = recalculate_damage(nadecfg, type_of_calc, level=2)
+
+        if self.last_round is not None:
+            current_health -= self.last_round.prenades * damage_per_iter
+            nades = self.last_round.prenades
 
         # Get exact number when number is already low
         while (damage_per_iter / current_health * np.int32(100) < np.int32(10)) and (current_health > np.int32(150)):

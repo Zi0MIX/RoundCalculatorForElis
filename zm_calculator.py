@@ -122,6 +122,9 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
 
     preprocess = mod_preprocessor(calc_modifier)
 
+    # Initialize the class content variable
+    prenades_round = None
+
     for r in range(1, rnd + 1):
         # print(f"DEV: tick {r}")
         zombie_round = ZombieRound(r, players, map_code)
@@ -138,7 +141,7 @@ def calculator_handler(calc_message: dict) -> tuple[dict, str]:
             leaper_round = None
 
         if r <= cfg.NADE_ROUND_CALC_LIMIT:
-            prenades_round = PrenadesRound(r, players, map_code, health_162, radius=float(get_args("grenade_radius")), extra_damage=int(get_args("grenade_damage")))
+            prenades_round = PrenadesRound(r, players, map_code, health_162, radius=float(get_args("grenade_radius")), extra_damage=int(get_args("grenade_damage")), last_round=prenades_round)
         elif get_args("prenades"):
             break
         else:
