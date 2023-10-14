@@ -33,6 +33,7 @@ MAP_DOGS = ("zm_sumpf", "zm_factory", "zm_theater")
 class ZombieRound:
     number: int
     players: int
+    moon_teleports: int
 
 
     def __post_init__(self):
@@ -123,7 +124,7 @@ class ZombieRound:
             self.raw_spawn_delay = 3.0
 
         if self.number > 1:
-            for _ in range(1, self.number):
+            for _ in range(1, self.number + (self.moon_teleports * 2)):
                 self.zombie_spawn_delay *= np.float32(0.95)
 
             self.zombie_spawn_delay = self.get_round_spawn_delay(self.zombie_spawn_delay)
@@ -508,6 +509,7 @@ def get_answer_blueprint() -> dict:
         "raw_spawnrate": 0.0,
         "network_frame": 0.0,
         "map_name": "",
+        "moon_teleports": 0,
         "class_content": {},
     }
 
@@ -641,6 +643,14 @@ def get_arguments() -> dict:
             "shortcode": "-t",
             "default_state": True,
             "exp": "Adds dog appearance time to perfect dog rounds accordingly to the pattern: 't * dogs / (2 * players))'"
+        },
+        "teleports": {
+            "use_in_web": True,
+            "require_map": False,
+            "readable_name": "Moon teleports",
+            "shortcode": "-m",
+            "default_state": False,
+            "exp": "Enable adding number of moon teleports to spawnrate calculation (web only, won't work with --range)"
         },
         "waw_spawnrate": {
             "use_in_web": True,
@@ -843,7 +853,7 @@ def get_readable_time(round_time: float) -> str:
     return new_time
 
 
-def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool) -> dict:
+def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: bool, num_of_teleports: int) -> dict:
 
     a = get_answer_blueprint()
     a["type"] = "perfect_times"
@@ -851,6 +861,7 @@ def get_perfect_times(time_total: float, rnd: int, map_code: str, insta_round: b
     a["raw_time"] = time_total
     a["map_name"] = map_translator(map_code)
     a["is_insta_round"] = insta_round
+    a["moon_teleports"] = num_of_teleports
 
     split_adj = 0.0
     if get_args("speedrun_time"):
@@ -877,6 +888,7 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
     a["raw_spawnrate"] = rnd.raw_spawn_delay
     a["network_frame"] = rnd.network_frame
     a["is_insta_round"] = rnd.is_insta_round
+    a["moon_teleports"] = rnd.moon_teleports
     a["class_content"] = vars(rnd)
 
     split_adj = 0
@@ -891,12 +903,12 @@ def get_round_times(rnd: ZombieRound | DogRound) -> dict:
     return a
 
 
-def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
+def calculator_custom(rnd: int, players: int, mods: list[str], moon_teleports: int) -> list[dict]:
     calc_result = []
     single_iteration = False
     for r in range(1, rnd + 1):
-        zm_round = ZombieRound(r, players)
-        dog_round = DogRound(r, players, r)
+        zm_round = ZombieRound(r, players, moon_teleports=moon_teleports)
+        dog_round = DogRound(r, players, moon_teleports, r)
 
         a = get_answer_blueprint()
         a["type"] = "mod"
@@ -906,6 +918,7 @@ def calculator_custom(rnd: int, players: int, mods: list[str]) -> list[dict]:
         a["spawnrate"] = zm_round.zombie_spawn_delay
         a["zombies"] = zm_round.zombies
         a["health"] = zm_round.health
+        a["moon_teleports"] = zm_round.moon_teleports
         a["class_content"] = vars(zm_round)
         a["message"] = ""
 
@@ -974,11 +987,6 @@ def calculator_handler(json_input: dict = None):
     all_arguments = get_arguments()
     load_args()
 
-    # We do not process all the argument logic if arguments are not defined
-    result = ZombieRound(rnd, players)
-    if not use_arguments:
-        return [get_round_times(result)]
-
     # Define state of arguments
     if json_input is None:
         selected_arguments = raw_input[2:]
@@ -993,6 +1001,16 @@ def calculator_handler(json_input: dict = None):
             except KeyError:
                 continue
 
+    teleport_rnd_offset = 0
+    # Pull teleports only if it's toggled on, range is not used and we're in api mode
+    if get_args("teleports") and not get_args("range") and isinstance(json_input, dict):
+        teleport_rnd_offset = int(json_input["teleports"])
+
+    # We do not process all the argument logic if arguments are not defined
+    result = ZombieRound(rnd, players, teleport_rnd_offset)
+    if not use_arguments:
+        return [get_round_times(result)]
+
     # Define state of mods
     if json_input is None:
         selected_mods = raw_input[2:]
@@ -1002,7 +1020,7 @@ def calculator_handler(json_input: dict = None):
 
     # If mods are selected, custom calculator function entered instead
     if len(mods):
-        return calculator_custom(rnd, players, mods)
+        return calculator_custom(rnd, players, mods, teleport_rnd_offset)
 
     all_results = []
 
@@ -1045,8 +1063,8 @@ def calculator_handler(json_input: dict = None):
 
         dog_rounds = 1
         for r in range(1, rnd):
-            zm_round = ZombieRound(r, players)
-            dog_round = DogRound(r, players, dog_rounds)
+            zm_round = ZombieRound(r, players, teleport_rnd_offset)
+            dog_round = DogRound(r, players, teleport_rnd_offset, dog_rounds)
 
             # Handle arguments here
             if get_args("teleport_time"):
@@ -1065,7 +1083,7 @@ def calculator_handler(json_input: dict = None):
             if get_args("range"):
                 remembered_dog_average = 0.0
 
-                res = get_perfect_times(time_total, r + 1, map_code, zm_round.is_insta_round)
+                res = get_perfect_times(time_total, r + 1, map_code, zm_round.is_insta_round, teleport_rnd_offset)
                 res["players"] = players
                 res["class_content"] = vars(zm_round)
                 res["special_average"] = remembered_dog_average
@@ -1080,7 +1098,7 @@ def calculator_handler(json_input: dict = None):
                 all_results.append(res)
 
         if not get_args("range"):
-            res = get_perfect_times(time_total, rnd, map_code, zm_round.is_insta_round)
+            res = get_perfect_times(time_total, rnd, map_code, zm_round.is_insta_round, teleport_rnd_offset)
             res["players"] = players
             res["class_content"] = vars(zm_round)
             res["special_average"] = dog_rounds_average
@@ -1091,10 +1109,10 @@ def calculator_handler(json_input: dict = None):
         return all_results
 
     if get_args("range"):
-        all_results = [get_round_times(ZombieRound(r, players)) for r in range (1, rnd)]
+        all_results = [get_round_times(ZombieRound(r, players, teleport_rnd_offset)) for r in range (1, rnd)]
         return all_results
 
-    return [get_round_times(ZombieRound(rnd, players))]
+    return [get_round_times(ZombieRound(rnd, players, teleport_rnd_offset))]
 
 
 def display_results(results: list[dict]) -> list[dict]:
