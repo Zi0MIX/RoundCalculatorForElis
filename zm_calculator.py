@@ -679,7 +679,17 @@ def curate_arguments(provided_args: dict) -> dict:
             "master": "waw_spawnrate",
             "slave": "remix",
             "eval_true": True,
-        }
+        },
+        "3": {
+            "master": "teleports",
+            "slave": "range",
+            "eval_true": True,
+        },
+        "4": {
+            "master": "teleports",
+            "slave": "perfect_times",
+            "eval_true": True,
+        },
     })
 
     defaults = get_arguments()
