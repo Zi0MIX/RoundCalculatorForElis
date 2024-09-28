@@ -261,7 +261,7 @@ class DogRound(ZombieRound):
             delay = self.get_round_spawn_delay(self.dog_spawn_delay - (i / self.dogs))
 
             self.raw_time += delay
-            self.delays.append(delay)
+            self.delays.append(delay.item())
 
         self.raw_time = round(self.raw_time, 2)
 
