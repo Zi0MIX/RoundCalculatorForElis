@@ -1,9 +1,14 @@
+# New version
+
+This project is archived as of October 2024, new version of the calculator shared as a web application can be found [HERE](https://b2.wtf/calculator)
+
+The project remains public but it will not be maintained anymore.
+
 # Program
 ZM Round Calculator is a little tool, initially meant to just provide perfect round end times for round speedrunners in Black Ops and Black Ops 2 zombies. It has gained some weight since then.
 - Values tested against real life scenarios in Black Ops and Black Ops 2. 
-    * For BO2 Plutonium it assumes you're running a correct Spawn Fix (yes it's still neeeded, no the ones that were made originally are not fixing the issue), you can use [First Room Fix](https://github.com/Zi0MIX/T6-FIRST-ROOM-FIX).
+    * For BO2 Plutonium it assumes you're running a correct Spawn Fix (yes it's still neeeded, no the ones that were made originally are not fixing the issue).
 - Check [ARGUMENTS](https://github.com/Zi0MIX/ZM-RoundCalculator/blob/main/ARGUMENTS.MD) file for more info on arguments.
-- Check out [web version](https://zi0mix.github.io/) of this program.
 
 ### Perfect times calculations
 - Maps without special rounds should be accurate to the second

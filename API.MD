@@ -1,6 +1,6 @@
 # General
-Round Calculator can now be used as API. Check out my [web interface](https://zi0mix.github.io/) built as an example.
-You can use it as part of your own project, but make sure to credit me and link the original repository: `https://github.com/Zi0MIX/ZM-RoundCalculator`
+Round Calculator can now be used as API.
+You can use it as part of your own project, but probably don't as the quality of this version leaves a lot to be desired. Check out new version of the calculator (linked in the Readme)
 
 ## Examples of use
 - Standalone script on a server, can be called via terminal, in that case it is required to pass arguments as argvs

@@ -1,6 +1,5 @@
 *.exe
 *.pyc
-*.txt
 *.ods#
 /.vscode
 /venv
